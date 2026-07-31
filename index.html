@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workforce Realtime Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Kanit', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kanit', 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.25s ease-in-out;
+        }
+        .glass-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col justify-between">
+
+    <!-- Header Navbar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800 px-4 py-3 sm:px-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-users-gear text-white text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-bold tracking-tight text-white">Workforce Pulse</h1>
+                        <span id="syncStatusBadge" class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            <i class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i> Google Sheet Live
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">ภาพรวมรายงานกำลังคนแบบเรียลไทม์ประจำวัน</p>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                <div id="currentDateDisplay" class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80 text-slate-300 flex items-center gap-2">
+                    <i class="fa-regular fa-calendar text-blue-400"></i>
+                    <span>วันที่ปัจจุบัน</span>
+                </div>
+                <button onclick="fetchSheetData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate text-blue-400"></i>
+                    <span>อัปเดตทันที</span>
+                </button>
+                <button onclick="openConfigModal()" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                    <span>ตั้งค่า Google Sheet</span>
+                </button>
+                <button onclick="openInspectorModal()" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-magnifying-glass-chart text-indigo-400"></i>
+                    <span>ตรวจสอบข้อมูล Sheet</span>
+                </button>
+                <button onclick="exportSummaryReport()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-download"></i>
+                    <span>ส่งออกรายงาน</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Body -->
+    <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 space-y-6 flex-grow w-full">
+
+        <!-- Status Alert Banner (Compact & Discreet) -->
+        <div id="syncAlertBanner" class="py-1.5 px-3 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400 text-[11px] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-blue-400/70 text-xs"></i>
+                <span id="syncAlertMsg">กำลังซิงค์และตรวจสอบข้อมูลจาก Google Sheet...</span>
+            </div>
+            <span id="lastSyncTime" class="text-slate-500 text-[10px]">อัปเดตล่าสุด: --:--</span>
+        </div>
+
+        <!-- TOP METRICS GRID (5 CARDS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            
+            <!-- 1. Total Active Employees -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between border-slate-700/60 hover:border-blue-500/40">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">พนักงานทั้งหมด</span>
+                    <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                        <i class="fa-solid fa-users text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="metricTotalActive" class="text-3xl font-extrabold text-blue-200">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <p class="text-[11px] text-blue-400/80 mt-2 pt-1.5 border-t border-slate-800 flex items-center justify-between">
+                        <span>รวมทุกประเภทสัญญา</span>
+                        <span class="font-bold bg-blue-500/10 px-2 py-0.5 rounded text-blue-300 border border-blue-500/20 text-[10px]">Primary Metric</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 2. Active VSC Employees -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between border-slate-700/60 hover:border-indigo-500/40">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">พนักงาน VSC ทั้งหมด</span>
+                    <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                        <i class="fa-solid fa-id-card text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="metricActiveVSC" class="text-3xl font-extrabold text-indigo-200">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <p class="text-[11px] text-indigo-400/90 mt-2 pt-1.5 border-t border-slate-800 flex items-center justify-between">
+                        <span>สัดส่วน:</span>
+                        <span id="metricVSCPct" class="font-bold bg-indigo-500/10 px-2 py-0.5 rounded text-indigo-300 border border-indigo-500/20">0%</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 3. Active Outsource Employees -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between border-slate-700/60 hover:border-amber-500/40">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">พนักงาน OUTSOURCE</span>
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+                        <i class="fa-solid fa-handshake text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="metricActiveOutsource" class="text-3xl font-extrabold text-amber-200">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <p class="text-[11px] text-amber-400/90 mt-2 pt-1.5 border-t border-slate-800 flex items-center justify-between">
+                        <span>สัดส่วน: <span id="metricOutsourcePct" class="font-bold text-amber-300">0%</span></span>
+                        <span class="text-[10px] text-slate-400">PCT:<strong id="metricOutsourcePCT" class="text-amber-300 ml-0.5">0</strong> | BP:<strong id="metricOutsourceBP" class="text-amber-300 ml-0.5">0</strong></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 4. Production Staff -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between border-slate-700/60 hover:border-emerald-500/40">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">PRODUCTION STAFF</span>
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                        <i class="fa-solid fa-industry text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="metricProductionStaff" class="text-3xl font-extrabold text-emerald-200">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <div class="mt-2 pt-1.5 border-t border-slate-800 flex flex-col gap-0.5 text-[11px]">
+                        <div class="flex items-center justify-between text-emerald-400/90">
+                            <span>สายการผลิต:</span>
+                            <span id="metricProductionPct" class="font-bold text-emerald-300">0%</span>
+                        </div>
+                        <div class="flex items-center justify-between text-amber-400/90">
+                            <span>Excluded Plan:</span>
+                            <span class="font-bold"><strong id="metricProductionExcluded">0</strong> คน</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. New Comer Waiting -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between border-slate-700/60 hover:border-cyan-500/40">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">NEW COMER WAITING</span>
+                    <div class="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+                        <i class="fa-solid fa-user-plus text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="metricWaitingOnboarding" class="text-3xl font-extrabold text-cyan-200">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <p class="text-[11px] text-cyan-400/90 mt-2 pt-1.5 border-t border-slate-800 flex items-center justify-between">
+                        <span>สถานะ:</span>
+                        <span class="font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">Waiting Onboarding</span>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PRODUCTION WORKFORCE BREAKDOWN SECTION -->
+        <div class="glass-panel rounded-2xl p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                        <i class="fa-solid fa-sitemap"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white">เจาะลึกพนักงาน Production Staff (Production Workforce Breakdown)</h2>
+                        <p class="text-xs text-slate-400">แบ่งตามสัญญากลุ่มพนักงานฝ่ายผลิตประจำวัน (Active VSC, PCT, BP Production Staff)</p>
+                    </div>
+                </div>
+                <span class="text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700/60 w-fit">
+                    สัดส่วนกำลังคนสายการผลิต
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Production VSC -->
+                <div class="bg-slate-900/60 rounded-xl p-4 border border-indigo-500/20">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-indigo-300 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Production VSC
+                        </span>
+                        <span id="pctProdVSC" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">0%</span>
+                    </div>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span id="metricProdVSC" class="text-2xl font-bold text-white">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                        <div id="barProdVSC" class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Production PCT -->
+                <div class="bg-slate-900/60 rounded-xl p-4 border border-amber-500/20">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-amber-300 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Production PCT
+                        </span>
+                        <span id="pctProdPCT" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">0%</span>
+                    </div>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span id="metricProdPCT" class="text-2xl font-bold text-white">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                        <div id="barProdPCT" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Production BP -->
+                <div class="bg-slate-900/60 rounded-xl p-4 border border-purple-500/20">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-purple-300 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Production BP
+                        </span>
+                        <span id="pctProdBP" class="text-xs font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">0%</span>
+                    </div>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span id="metricProdBP" class="text-2xl font-bold text-white">0</span>
+                        <span class="text-xs text-slate-400">คน</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                        <div id="barProdBP" class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD CHARTS GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- 1. Headcount by Department (Pie Chart) -->
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-blue-400"></i> Headcount by Department
+                        </h3>
+                        <p class="text-xs text-slate-400">สัดส่วนกำลังคนแยกตามแผนก (อ้างอิงข้อมูลจริงจากชีท Departments - GID: 573246361)</p>
+                    </div>
+                </div>
+                <div class="relative w-full h-96 flex items-center justify-center p-2">
+                    <canvas id="chartDepartment"></canvas>
+                </div>
+            </div>
+
+            <!-- 2. Headcount by Level (Bar Chart) -->
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-simple text-indigo-400"></i> Headcount by Level (จำแนกตามระดับ L1a - L8)
+                        </h3>
+                        <p class="text-xs text-slate-400">จำนวนพนักงานแยกตามระดับโครงสร้างตำแหน่ง (อ้างอิงชีท Levels)</p>
+                    </div>
+                </div>
+                <div class="relative w-full h-96">
+                    <canvas id="chartLevels"></canvas>
+                </div>
+            </div>
+
+            <!-- 3. Headcount by Gender (Doughnut Chart) -->
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-venus-mars text-pink-400"></i> Headcount by Gender (จำแนกตามเพศ)
+                        </h3>
+                        <p class="text-xs text-slate-400">สัดส่วนเพศชายและเพศหญิง (อ้างอิงชีท Demographics: Male B2, Female B3)</p>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                        <i class="fa-solid fa-chart-pie mr-1"></i> Doughnut
+                    </span>
+                </div>
+                <div class="relative w-full h-72 flex items-center justify-center">
+                    <canvas id="chartGender"></canvas>
+                </div>
+            </div>
+
+            <!-- 4. Headcount by Nation (Doughnut Chart) -->
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-flag text-emerald-400"></i> Headcount by Nation (จำแนกตามสัญชาติ)
+                        </h3>
+                        <p class="text-xs text-slate-400">สัดส่วนสัญชาติไทยและเมียนมา (อ้างอิงชีท Demographics)</p>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <i class="fa-solid fa-chart-pie mr-1"></i> Doughnut
+                    </span>
+                </div>
+                <div class="relative w-full h-72 flex items-center justify-center">
+                    <canvas id="chartNation"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 5. Trend Movement Monthly -->
+        <div class="glass-panel rounded-2xl p-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-cyan-400"></i> Trend Movement Monthly (อัตราพนักงานเข้าใหม่ - ลาออก รายเดือน)
+                    </h3>
+                    <p class="text-xs text-slate-400">จำนวน Join (คอลัมน์ B), Resign (คอลัมน์ C) และ Turnover Rate % (คอลัมน์ S) จากชีท Trends</p>
+                </div>
+            </div>
+            <div class="relative w-full h-80">
+                <canvas id="chartTrends"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL: Sheet Config Settings -->
+    <div id="modalConfig" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 mx-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-emerald-400"></i> ตั้งค่าเชื่อมต่อ Google Sheet
+                </h3>
+                <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Google Sheet URL หรือ Sheet ID</label>
+                    <input type="text" id="inputSheetId" placeholder="วาง URL หรือ Sheet ID ที่นี่"
+                           class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                </div>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    * กรุณาแชร์สิทธิ์ไฟล์ Google Sheet เป็น <span class="text-emerald-400 font-semibold">"ทุกคนที่มีลิงก์มีสิทธิ์ดู" (Anyone with the link can view)</span> เพื่อให้ระบบดึงข้อมูลได้สำเร็จ
+                </p>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                <button onclick="resetToDemoData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">
+                    ใช้ค่าเริ่มต้น
+                </button>
+                <button onclick="saveSheetConfig()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs shadow-lg shadow-emerald-600/30">
+                    บันทึกและซิงค์ข้อมูล
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Data Inspector -->
+    <div id="modalInspector" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 mx-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bug text-indigo-400"></i> ตรวจสอบการอ่านข้อมูลจาก Sheet
+                </h3>
+                <button onclick="closeInspectorModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="inspectorLogContent" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs font-mono text-slate-300 h-80 overflow-y-auto space-y-2">
+                <!-- Log content will be injected here -->
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeInspectorModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-4 px-6 text-center text-xs text-slate-500">
+        <p>Workforce Realtime Dashboard &copy; 2026 WorkForcePulse System. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const DEFAULT_SHEET_ID = '1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo';
+        const DEFAULT_DEPT_GID = '573246361';
+
+        let sheetConfig = {
+            sheetId: localStorage.getItem('wf_sheet_id') || DEFAULT_SHEET_ID,
+            deptGid: DEFAULT_DEPT_GID
+        };
+
+        // Main Application Data State
+        let appData = {
+            summary: {
+                totalActive: 279,
+                activeVSC: 237,
+                activeOutsource: 42,
+                productionStaff: 151,
+                waitingOnboarding: 5,
+                excludedPlan: 4,
+                prodVSC: 112,
+                prodPCT: 22,
+                prodBP: 17
+            },
+            departments: [],
+            levels: [],
+            gender: { male: 1580, female: 1265 },
+            nation: { thai: 1850, myanmar: 995 },
+            trends: []
+        };
+
+        // Chart References
+        let chartDepartment = null;
+        let chartLevels = null;
+        let chartGender = null;
+        let chartNation = null;
+        let chartTrends = null;
+
+        let inspectorLogs = [];
+
+        function logInspector(msg) {
+            console.log(msg);
+            inspectorLogs.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+        }
+
+        // Safe DOM manipulation helpers
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = value;
+        }
+
+        function setStyleWidth(id, width) {
+            const el = document.getElementById(id);
+            if (el) el.style.width = width;
+        }
+
+        const KNOWN_DEPARTMENTS = [
+            "Accounting Department", "BOI Department", "Creative Chef Department",
+            "Executive Assistance & Admin Department", "Learning & Growth Department",
+            "Marketing and Communication Department", "People Business Partner Department",
+            "Production Department", "Quality Assurance Department", "Quality Control Department",
+            "Research & Development Department", "Safety Department", "Supply Chain Management Department",
+            "Technical Operation And Enhancement Department", "VSC-Accounting", "Warehouse Department"
+        ];
+
+        const MONTH_NAMES = [
+            "january", "february", "febuary", "march", "april", "may", "june",
+            "july", "august", "september", "october", "november", "december"
+        ];
+
+        window.onload = function() {
+            // Set Thai Current Date
+            const now = new Date();
+            const thaiYear = now.getFullYear() + 543;
+            const dateStr = `วัน${now.toLocaleDateString('th-TH', { weekday: 'long' })}ที่ ${now.getDate()} ${now.toLocaleDateString('th-TH', { month: 'long' })} ${thaiYear}`;
+            setText('currentDateDisplay', dateStr);
+            const dateEl = document.getElementById('currentDateDisplay');
+            if (dateEl) {
+                dateEl.innerHTML = `<i class="fa-regular fa-calendar text-blue-400"></i> <span>${dateStr}</span>`;
+            }
+
+            // Initialize Charts
+            initCharts();
+
+            // Fetch live Google Sheet data
+            fetchSheetData();
+        };
+
+        async function fetchSheetData() {
+            if (!sheetConfig.sheetId) {
+                updateSyncUI('demo', 'กำลังใช้งานข้อมูลจำลอง (กดตั้งค่า Google Sheet เพื่อเชื่อมต่อ)');
+                return;
+            }
+
+            updateSyncUI('syncing', 'กำลังดึงและซิงค์ข้อมูลจาก Google Sheet...');
+            inspectorLogs = [];
+
+            try {
+                const sheetId = sheetConfig.sheetId;
+
+                // 1. Fetch Summary Tab
+                logInspector("Fetching Summary Tab...");
+                const summaryRows = await fetchTabRows(sheetId, 'Summary');
+                if (summaryRows) parseSummaryData(summaryRows);
+
+                // 2. Fetch Departments Tab (GID: 573246361)
+                logInspector("Fetching Departments Tab (GID: 573246361)...");
+                let deptRows = await fetchTabRows(sheetId, DEFAULT_DEPT_GID);
+                if (!deptRows) deptRows = await fetchTabRows(sheetId, '1810359834');
+                if (!deptRows) deptRows = await fetchTabRows(sheetId, 'Departments');
+                if (deptRows) parseDepartmentsData(deptRows);
+
+                // 3. Fetch Levels Tab
+                logInspector("Fetching Levels Tab...");
+                const levelRows = await fetchTabRows(sheetId, 'Levels');
+                if (levelRows) parseLevelsData(levelRows);
+
+                // 4. Fetch Demographics Tab
+                logInspector("Fetching Demographics Tab...");
+                const demoRows = await fetchTabRows(sheetId, 'Demographics');
+                if (demoRows) parseDemographicsData(demoRows);
+
+                // 5. Fetch Trends Tab
+                logInspector("Fetching Trends Tab...");
+                const trendRows = await fetchTabRows(sheetId, 'Trends');
+                if (trendRows) parseTrendsData(trendRows);
+
+                // Render all updated UI & Charts
+                updateUI();
+                const nowStr = new Date().toLocaleTimeString('th-TH');
+                updateSyncUI('success', `ซิงค์สำเร็จเมื่อเวลา ${nowStr}`);
+
+            } catch (err) {
+                console.error("Error fetching sheet data:", err);
+                logInspector(`Error: ${err.message}`);
+                updateSyncUI('error', 'เกิดข้อผิดพลาดในการดึงข้อมูลจาก Google Sheet');
+            }
+        }
+
+        async function fetchTabRows(sheetId, tabNameOrGid) {
+            let url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+            if (/^\d+$/.test(String(tabNameOrGid))) {
+                url += `&gid=${tabNameOrGid}`;
+            } else {
+                url += `&sheet=${encodeURIComponent(tabNameOrGid)}`;
+            }
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) return null;
+                const text = await res.text();
+                const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
+                if (!jsonMatch || !jsonMatch[1]) return null;
+                const parsed = JSON.parse(jsonMatch[1]);
+                if (parsed.status === 'error' || !parsed.table) return null;
+
+                const table = parsed.table;
+                let rawMatrix = [];
+                
+                table.rows.forEach(r => {
+                    let rowVals = [];
+                    if (r && r.c) {
+                        r.c.forEach((cell) => {
+                            const val = cell ? (cell.f !== undefined && cell.f !== null && cell.f !== '' ? cell.f : (cell.v !== null && cell.v !== undefined ? cell.v : '')) : '';
+                            rowVals.push(val);
+                        });
+                    }
+                    rawMatrix.push(rowVals);
+                });
+
+                return rawMatrix;
+            } catch (e) {
+                logInspector(`Failed to fetch tab [${tabNameOrGid}]: ${e.message}`);
+                return null;
+            }
+        }
+
+        function parseNum(val) {
+            if (val === null || val === undefined) return 0;
+            const str = String(val).replace(/,/g, '').replace(/%/g, '').trim();
+            let parsed = parseFloat(str);
+            if (isNaN(parsed)) return 0;
+            return parsed;
+        }
+
+        function parseSummaryData(matrix) {
+            if (!matrix || matrix.length === 0) return;
+
+            let kvMap = {};
+            matrix.forEach((row, rowIndex) => {
+                row.forEach((cellVal, colIndex) => {
+                    const keyStr = String(cellVal).trim();
+                    if (keyStr.length > 0) {
+                        let rightVal = (row[colIndex + 1] !== undefined) ? row[colIndex + 1] : '';
+                        let downVal = (matrix[rowIndex + 1] && matrix[rowIndex + 1][colIndex] !== undefined) ? matrix[rowIndex + 1][colIndex] : '';
+                        kvMap[keyStr.toLowerCase()] = rightVal !== '' ? rightVal : downVal;
+                    }
+                });
+            });
+
+            function getValueFor(matchKeys) {
+                for (let key in kvMap) {
+                    for (let target of matchKeys) {
+                        if (key.includes(target.toLowerCase())) {
+                            return kvMap[key];
+                        }
+                    }
+                }
+                return null;
+            }
+
+            const totalAct = parseNum(getValueFor(['Total Active Employees', 'Total Active']));
+            if (totalAct > 0) appData.summary.totalActive = totalAct;
+
+            const vscAct = parseNum(getValueFor(['Active VSC Employees', 'Active VSC']));
+            if (vscAct > 0) appData.summary.activeVSC = vscAct;
+
+            const outsAct = parseNum(getValueFor(['Active Outsource (Non-VSC) Employees', 'Active Outsource']));
+            if (outsAct > 0) appData.summary.activeOutsource = outsAct;
+
+            const prodAct = parseNum(getValueFor(['Total Active Production Staff', 'Active Production Staff']));
+            if (prodAct > 0) appData.summary.productionStaff = prodAct;
+
+            const waitAct = parseNum(getValueFor(['Waiting Onbroading', 'Waiting Onboarding', 'New Comer: Waiting']));
+            if (waitAct > 0) appData.summary.waitingOnboarding = waitAct;
+
+            const exclAct = parseNum(getValueFor(['Headcount Excluded from Plan', 'Excluded from Plan']));
+            if (exclAct > 0) appData.summary.excludedPlan = exclAct;
+
+            const pVSC = parseNum(getValueFor(['Active VSC Production Staff']));
+            if (pVSC > 0) appData.summary.prodVSC = pVSC;
+
+            const pPCT = parseNum(getValueFor(['Active PCT Production Staff']));
+            if (pPCT > 0) appData.summary.prodPCT = pPCT;
+
+            const pBP = parseNum(getValueFor(['Active BP Production Staff']));
+            if (pBP > 0) appData.summary.prodBP = pBP;
+        }
+
+        function parseDepartmentsData(matrix) {
+            if (!matrix || matrix.length === 0) return;
+
+            let depts = [];
+
+            // Detect if a header row exists with explicit "Total" / "รวม" column index
+            let totalColIndex = -1;
+            if (matrix.length > 0) {
+                const firstRow = matrix[0];
+                firstRow.forEach((cell, colIdx) => {
+                    const cellStr = String(cell).toLowerCase().trim();
+                    if (cellStr.includes('total') || cellStr.includes('รวม') || cellStr.includes('headcount') || cellStr.includes('all')) {
+                        totalColIndex = colIdx;
+                    }
+                });
+            }
+
+            matrix.forEach(row => {
+                if (row.length >= 2) {
+                    const label = String(row[0]).trim();
+                    const isMonth = MONTH_NAMES.some(m => label.toLowerCase().includes(m));
+                    const isDeptKeyword = label.toLowerCase().includes('department') || KNOWN_DEPARTMENTS.some(kd => kd.toLowerCase() === label.toLowerCase());
+                    const isHeader = label.toLowerCase() === 'department' || label.toLowerCase() === 'departments' || label.toLowerCase() === 'แผนก';
+
+                    if (label.length > 2 && !isMonth && !isHeader && (isDeptKeyword || parseNum(row[1]) > 0)) {
+                        let val = 0;
+
+                        if (totalColIndex > 0 && row[totalColIndex] !== undefined && parseNum(row[totalColIndex]) > 0) {
+                            val = parseNum(row[totalColIndex]);
+                        } else {
+                            // Extract all numeric cells from col 1 onwards
+                            let rowNums = [];
+                            for (let c = 1; c < row.length; c++) {
+                                let num = parseNum(row[c]);
+                                if (row[c] !== '' && row[c] !== null && row[c] !== undefined && !isNaN(num)) {
+                                    rowNums.push(num);
+                                }
+                            }
+
+                            if (rowNums.length === 1) {
+                                val = rowNums[0];
+                            } else if (rowNums.length > 1) {
+                                const lastNum = rowNums[rowNums.length - 1];
+                                const maxNum = Math.max(...rowNums);
+                                
+                                // Total is typically the rightmost cell or maximum sum cell in the row
+                                val = (lastNum === maxNum || lastNum > 0) ? lastNum : maxNum;
+                            }
+                        }
+
+                        if (val > 0 && !depts.some(d => d.name === label)) {
+                            depts.push({ name: label, count: val });
+                        }
+                    }
+                }
+            });
+
+            if (depts.length > 0) {
+                appData.departments = depts;
+                logInspector(`Parsed ${depts.length} departments cleanly.`);
+            }
+        }
+
+        function parseLevelsData(matrix) {
+            if (!matrix || matrix.length === 0) return;
+
+            let levels = [];
+            matrix.forEach(row => {
+                if (row.length >= 2) {
+                    const label = String(row[0]).trim();
+                    let val = 0;
+                    for (let c = row.length - 1; c >= 1; c--) {
+                        let n = parseNum(row[c]);
+                        if (n > 0) { val = n; break; }
+                    }
+                    if (/^L\d/i.test(label) || label.toLowerCase().includes('level')) {
+                        levels.push({ level: label, count: val });
+                    }
+                }
+            });
+
+            if (levels.length > 0) appData.levels = levels;
+        }
+
+        function parseDemographicsData(matrix) {
+            if (!matrix || matrix.length === 0) return;
+
+            logInspector("Demographics Tab Rows: " + matrix.length);
+
+            let foundMale = null;
+            let foundFemale = null;
+            let foundThai = null;
+            let foundMyanmar = null;
+
+            matrix.forEach((row, rIdx) => {
+                row.forEach((cell, cIdx) => {
+                    const str = String(cell).trim().toLowerCase();
+                    const rightVal = parseNum(row[cIdx + 1]);
+                    const downVal = (matrix[rIdx + 1] && matrix[rIdx + 1][cIdx] !== undefined) ? parseNum(matrix[rIdx + 1][cIdx]) : 0;
+                    const val = rightVal > 0 ? rightVal : downVal;
+
+                    if (str === 'male' || str === 'ชาย' || str.startsWith('male') || str.includes('เพศชาย')) {
+                        if (val > 0) foundMale = val;
+                    } else if (str === 'female' || str === 'หญิง' || str.startsWith('female') || str.includes('เพศหญิง')) {
+                        if (val > 0) foundFemale = val;
+                    } else if (str === 'thai' || str === 'ไทย' || str.includes('สัญชาติไทย')) {
+                        if (val > 0) foundThai = val;
+                    } else if (str === 'myanmar' || str === 'เมียนมา' || str === 'พม่า' || str.includes('เมียนมาร์')) {
+                        if (val > 0) foundMyanmar = val;
+                    }
+                });
+            });
+
+            if (foundMale === null && matrix.length >= 2 && matrix[1] && matrix[1].length >= 2) {
+                const valB2 = parseNum(matrix[1][1]);
+                if (valB2 > 0) foundMale = valB2;
+            }
+            if (foundFemale === null && matrix.length >= 3 && matrix[2] && matrix[2].length >= 2) {
+                const valB3 = parseNum(matrix[2][1]);
+                if (valB3 > 0) foundFemale = valB3;
+            }
+
+            if (foundMale !== null) appData.gender.male = foundMale;
+            if (foundFemale !== null) appData.gender.female = foundFemale;
+            if (foundThai !== null) appData.nation.thai = foundThai;
+            if (foundMyanmar !== null) appData.nation.myanmar = foundMyanmar;
+        }
+
+        function parseTrendsData(matrix) {
+            if (!matrix || matrix.length === 0) return;
+
+            let trends = [];
+            matrix.forEach((row, idx) => {
+                if (idx === 0) return;
+                if (row.length >= 3) {
+                    const month = String(row[0]).trim();
+                    const join = parseNum(row[1]);
+                    const resign = parseNum(row[2]);
+                    
+                    let turnoverRaw = row[18] !== undefined ? row[18] : (row[3] !== undefined ? row[3] : '0%');
+                    let turnoverStr = String(turnoverRaw).trim();
+                    if (!turnoverStr.includes('%')) {
+                        let parsedNum = parseNum(turnoverStr);
+                        turnoverStr = parsedNum + '%';
+                    }
+
+                    if (month.length > 0 && !month.toLowerCase().includes('month') && !month.toLowerCase().includes('เดือน')) {
+                        trends.push({
+                            month: month,
+                            join: join,
+                            resign: resign,
+                            turnover: turnoverStr
+                        });
+                    }
+                }
+            });
+
+            if (trends.length > 0) appData.trends = trends;
+        }
+
+        function updateUI() {
+            const sum = appData.summary;
+
+            setText('metricTotalActive', sum.totalActive.toLocaleString());
+            setText('metricExcludedPlan', sum.excludedPlan.toLocaleString());
+
+            setText('metricActiveVSC', sum.activeVSC.toLocaleString());
+            const vscPct = sum.totalActive > 0 ? ((sum.activeVSC / sum.totalActive) * 100).toFixed(1) : 0;
+            setText('metricVSCPct', `${vscPct}%`);
+
+            setText('metricActiveOutsource', sum.activeOutsource.toLocaleString());
+            const outsPct = sum.totalActive > 0 ? ((sum.activeOutsource / sum.totalActive) * 100).toFixed(1) : 0;
+            setText('metricOutsourcePct', `${outsPct}%`);
+            setText('metricOutsourcePCT', sum.prodPCT);
+            setText('metricOutsourceBP', sum.prodBP);
+
+            setText('metricProductionStaff', sum.productionStaff.toLocaleString());
+            const prodPct = sum.totalActive > 0 ? ((sum.productionStaff / sum.totalActive) * 100).toFixed(1) : 0;
+            setText('metricProductionPct', `${prodPct}%`);
+            setText('metricProductionExcluded', sum.excludedPlan.toLocaleString());
+
+            setText('metricWaitingOnboarding', sum.waitingOnboarding.toLocaleString());
+
+            // Production Breakdown Bars
+            setText('metricProdVSC', sum.prodVSC.toLocaleString());
+            setText('metricProdPCT', sum.prodPCT.toLocaleString());
+            setText('metricProdBP', sum.prodBP.toLocaleString());
+
+            const prodTotal = sum.prodVSC + sum.prodPCT + sum.prodBP || 1;
+            const pctVSC = ((sum.prodVSC / prodTotal) * 100).toFixed(1);
+            const pctPCT = ((sum.prodPCT / prodTotal) * 100).toFixed(1);
+            const pctBP = ((sum.prodBP / prodTotal) * 100).toFixed(1);
+
+            setText('pctProdVSC', `${pctVSC}%`);
+            setText('pctProdPCT', `${pctPCT}%`);
+            setText('pctProdBP', `${pctBP}%`);
+
+            setStyleWidth('barProdVSC', `${pctVSC}%`);
+            setStyleWidth('barProdPCT', `${pctPCT}%`);
+            setStyleWidth('barProdBP', `${pctBP}%`);
+
+            // Update Chart Data
+            updateCharts();
+        }
+
+        function initCharts() {
+            // 1. Department Chart (Pie Chart)
+            const elDept = document.getElementById('chartDepartment');
+            if (elDept) {
+                chartDepartment = new Chart(elDept.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: appData.departments.length > 0 ? appData.departments.map(d => d.name) : KNOWN_DEPARTMENTS,
+                        datasets: [{
+                            label: 'จำนวนพนักงาน (คน)',
+                            data: appData.departments.length > 0 ? appData.departments.map(d => d.count) : [12, 8, 15, 6, 10, 14, 9, 166, 18, 16, 11, 7, 22, 19, 5, 25],
+                            backgroundColor: [
+                                '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316',
+                                '#eab308', '#84cc16', '#10b981', '#06b6d4', '#0284c7', '#2563eb',
+                                '#7c3aed', '#db2777', '#ea580c', '#059669'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#0f172a'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    color: '#cbd5e1',
+                                    font: { family: 'Kanit', size: 9 },
+                                    boxWidth: 10,
+                                    padding: 8
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Levels Chart (Bar Chart)
+            const elLevels = document.getElementById('chartLevels');
+            if (elLevels) {
+                chartLevels = new Chart(elLevels.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['L1a', 'L1b', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8'],
+                        datasets: [{
+                            label: 'จำนวนพนักงาน (คน)',
+                            data: [120, 85, 45, 18, 10, 6, 3, 2, 1],
+                            backgroundColor: '#6366f1',
+                            borderRadius: 8,
+                            barThickness: 20
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            // 3. Gender Chart (DOUGHNUT CHART)
+            const elGender = document.getElementById('chartGender');
+            if (elGender) {
+                chartGender = new Chart(elGender.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['ชาย (Male)', 'หญิง (Female)'],
+                        datasets: [{
+                            label: 'จำนวนพนักงาน (คน)',
+                            data: [appData.gender.male, appData.gender.female],
+                            backgroundColor: ['#3b82f6', '#ec4899'],
+                            borderWidth: 2,
+                            borderColor: '#0f172a',
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#cbd5e1', font: { family: 'Kanit', size: 12 }, padding: 16 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 4. Nation Chart (DOUGHNUT CHART)
+            const elNation = document.getElementById('chartNation');
+            if (elNation) {
+                chartNation = new Chart(elNation.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['สัญชาติไทย (Thai)', 'สัญชาติเมียนมา (Myanmar)'],
+                        datasets: [{
+                            label: 'จำนวนพนักงาน (คน)',
+                            data: [appData.nation.thai, appData.nation.myanmar],
+                            backgroundColor: ['#10b981', '#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: '#0f172a',
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#cbd5e1', font: { family: 'Kanit', size: 12 }, padding: 16 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 5. Trends Chart (Combined Bar + Line)
+            const elTrends = document.getElementById('chartTrends');
+            if (elTrends) {
+                chartTrends = new Chart(elTrends.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.'],
+                        datasets: [
+                            {
+                                label: 'พนักงานเข้าใหม่ (Join)',
+                                data: [15, 20, 12, 18, 25, 14, 19],
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'พนักงานลาออก (Resign)',
+                                data: [8, 12, 6, 10, 15, 9, 11],
+                                backgroundColor: '#ef4444',
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Turnover Rate (%)',
+                                data: [1.8, 2.4, 1.2, 2.0, 2.8, 1.7, 2.1],
+                                type: 'line',
+                                borderColor: '#f59e0b',
+                                borderWidth: 3,
+                                fill: false,
+                                yAxisID: 'yTurnover',
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                            y: {
+                                ticks: { color: '#94a3b8' },
+                                grid: { color: 'rgba(255,255,255,0.05)' },
+                                title: { display: true, text: 'จำนวนคน', color: '#94a3b8' }
+                            },
+                            yTurnover: {
+                                position: 'right',
+                                ticks: {
+                                    color: '#f59e0b',
+                                    callback: function(value) { return value + '%'; }
+                                },
+                                grid: { display: false },
+                                title: { display: true, text: 'Turnover Rate (%)', color: '#f59e0b' }
+                            }
+                        },
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8', font: { family: 'Kanit' } } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateCharts() {
+            // Update Department Chart
+            if (chartDepartment && appData.departments.length > 0) {
+                chartDepartment.data.labels = appData.departments.map(d => d.name);
+                chartDepartment.data.datasets[0].data = appData.departments.map(d => d.count);
+                chartDepartment.update();
+            }
+
+            // Update Levels Chart
+            if (chartLevels && appData.levels.length > 0) {
+                chartLevels.data.labels = appData.levels.map(l => l.level);
+                chartLevels.data.datasets[0].data = appData.levels.map(l => l.count);
+                chartLevels.update();
+            }
+
+            // Update Gender Chart (Doughnut)
+            if (chartGender) {
+                chartGender.data.datasets[0].data = [appData.gender.male, appData.gender.female];
+                chartGender.update();
+            }
+
+            // Update Nation Chart (Doughnut)
+            if (chartNation) {
+                chartNation.data.datasets[0].data = [appData.nation.thai, appData.nation.myanmar];
+                chartNation.update();
+            }
+
+            // Update Trends Chart
+            if (chartTrends && appData.trends.length > 0) {
+                chartTrends.data.labels = appData.trends.map(t => t.month);
+                chartTrends.data.datasets[0].data = appData.trends.map(t => t.join);
+                chartTrends.data.datasets[1].data = appData.trends.map(t => t.resign);
+                chartTrends.data.datasets[2].data = appData.trends.map(t => parseNum(t.turnover));
+                chartTrends.update();
+            }
+        }
+
+        function updateSyncUI(status, msg) {
+            const msgEl = document.getElementById('syncAlertMsg');
+            const badge = document.getElementById('syncStatusBadge');
+
+            if (msgEl) msgEl.innerText = msg;
+            setText('lastSyncTime', `อัปเดตล่าสุด: ${new Date().toLocaleTimeString('th-TH')}`);
+
+            if (badge) {
+                if (status === 'syncing') {
+                    badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                    badge.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i> กำลังซิงค์...`;
+                } else if (status === 'success') {
+                    badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                    badge.innerHTML = `<i class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i> Google Sheet Live`;
+                } else if (status === 'error') {
+                    badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                    badge.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> ข้อผิดพลาด`;
+                }
+            }
+        }
+
+        // Export Concise Text Report (.txt Format)
+        function exportSummaryReport() {
+            const now = new Date();
+            const thaiYear = now.getFullYear() + 543;
+            const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${thaiYear}`;
+
+            const sum = appData.summary;
+
+            const reportText = 
+`========================================
+WORKFORCE REALTIME REPORT (Google Sheet Synced)
+วันที่สกัดข้อมูล: ${dateStr}
+========================================
+
+1. สรุปพนักงานภาพรวม (OVERALL HEADCOUNT):
+   - พนักงานทั้งหมด (Total Active Employees): ${sum.totalActive} คน
+   - Excluded from Plan: ${sum.excludedPlan} คน
+   - พนักงาน VSC ทั้งหมด: ${sum.activeVSC} คน
+   - พนักงาน Outsource ทั้งหมด: ${sum.activeOutsource} คน
+
+2. เจาะลึก PRODUCTION STAFF (${sum.productionStaff} คน):
+   - Active VSC Production Staff: ${sum.prodVSC} คน
+   - Active PCT Production Staff: ${sum.prodPCT} คน
+   - Active BP Production Staff: ${sum.prodBP} คน
+
+========================================
+System Report Generated Automatically by WorkforcePulse
+========================================`;
+
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Workforce_Report_${now.getFullYear()}${now.getMonth()+1}${now.getDate()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Modal Handlers
+        function openConfigModal() {
+            const input = document.getElementById('inputSheetId');
+            if (input) input.value = sheetConfig.sheetId;
+            const modal = document.getElementById('modalConfig');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeConfigModal() {
+            const modal = document.getElementById('modalConfig');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function saveSheetConfig() {
+            const input = document.getElementById('inputSheetId');
+            if (input) {
+                const val = input.value.trim();
+                if (val) {
+                    let extractedId = val;
+                    const match = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                    if (match && match[1]) extractedId = match[1];
+
+                    sheetConfig.sheetId = extractedId;
+                    localStorage.setItem('wf_sheet_id', extractedId);
+                    closeConfigModal();
+                    fetchSheetData();
+                }
+            }
+        }
+
+        function resetToDemoData() {
+            sheetConfig.sheetId = DEFAULT_SHEET_ID;
+            localStorage.setItem('wf_sheet_id', DEFAULT_SHEET_ID);
+            closeConfigModal();
+            fetchSheetData();
+        }
+
+        function openInspectorModal() {
+            const container = document.getElementById('inspectorLogContent');
+            if (container) {
+                container.innerHTML = inspectorLogs.map(log => `<div>${log}</div>`).join('') || '<div>ยังไม่มีบันทึกข้อมูล...</div>';
+            }
+            const modal = document.getElementById('modalInspector');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeInspectorModal() {
+            const modal = document.getElementById('modalInspector');
+            if (modal) modal.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
