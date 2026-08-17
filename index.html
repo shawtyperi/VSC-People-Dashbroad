@@ -560,7 +560,7 @@
                         <div>
                             <h2 class="text-base sm:text-lg font-extrabold text-white tracking-wide flex items-center gap-2">
                                 1. Executive Summary
-                                <span class="text-xs font-normal text-slate-400 font-sans">• Daily Leave Report (<span id="execSheetDateText" class="text-amber-300 font-mono">8/6/2026</span>)</span>
+                                <span class="text-xs font-normal text-slate-400 font-sans">• Daily Leave Report (<span id="execSheetDateText" class="text-amber-300 font-mono">13/8/2026</span>)</span>
                             </h2>
                             <p class="text-xs text-slate-400 mt-0.5">Real-time Executive Focus Metrics from Google Sheet GID: 121308326 (Click Total Leave cards to view GID 1001 roster)</p>
                         </div>
@@ -604,7 +604,7 @@
                                 </div>
                             </div>
                             <div class="flex items-baseline gap-1 bg-slate-900/90 group-hover:bg-blue-950 px-3.5 py-1.5 rounded-xl border border-blue-500/40 transition-colors flex-shrink-0 ml-2">
-                                <span id="execTotalLeaveTodayAll" class="text-xl font-bold text-blue-200 font-mono">18</span>
+                                <span id="execTotalLeaveTodayAll" class="text-xl font-bold text-blue-200 font-mono">13</span>
                                 <span class="text-[11px] font-medium text-slate-400">Emps</span>
                             </div>
                         </div>
@@ -625,7 +625,7 @@
                                 </div>
                             </div>
                             <div class="flex items-baseline gap-1 bg-slate-900/90 group-hover:bg-indigo-950 px-3.5 py-1.5 rounded-xl border border-indigo-500/40 transition-colors flex-shrink-0 ml-2">
-                                <span id="execTotalLeaveTodayProd" class="text-xl font-bold text-indigo-200 font-mono">15</span>
+                                <span id="execTotalLeaveTodayProd" class="text-xl font-bold text-indigo-200 font-mono">8</span>
                                 <span class="text-[11px] font-medium text-slate-400">Emps</span>
                             </div>
                         </div>
@@ -645,7 +645,7 @@
                                     <span class="text-[11px] text-rose-300/90 font-mono font-medium">(Active Employees)</span>
                                 </div>
                                 <div class="flex items-baseline gap-2 bg-slate-950/95 px-4 py-2 rounded-2xl border border-rose-400/50 shadow-inner">
-                                    <span id="execSickLeaveTodayAll" class="text-3xl sm:text-4xl font-black text-rose-400 font-mono drop-shadow-[0_0_12px_rgba(244,63,94,0.4)]">11</span>
+                                    <span id="execSickLeaveTodayAll" class="text-3xl sm:text-4xl font-black text-rose-400 font-mono drop-shadow-[0_0_12px_rgba(244,63,94,0.4)]">7</span>
                                     <span class="text-xs font-bold text-slate-300">Emps</span>
                                 </div>
                             </div>
@@ -664,7 +664,7 @@
                                     <span class="text-[11px] text-rose-300/90 font-mono font-medium">(Plant Floor Active)</span>
                                 </div>
                                 <div class="flex items-baseline gap-2 bg-slate-950/95 px-4 py-2 rounded-2xl border border-rose-400/50 shadow-inner">
-                                    <span id="execSickLeaveTodayProd" class="text-3xl sm:text-4xl font-black text-rose-300 font-mono drop-shadow-[0_0_12px_rgba(253,164,175,0.4)]">9</span>
+                                    <span id="execSickLeaveTodayProd" class="text-3xl sm:text-4xl font-black text-rose-300 font-mono drop-shadow-[0_0_12px_rgba(253,164,175,0.4)]">4</span>
                                     <span class="text-xs font-bold text-slate-300">Emps</span>
                                 </div>
                             </div>
@@ -708,7 +708,7 @@
                         </div>
                         <div class="flex items-baseline justify-between pt-1">
                             <div class="flex items-baseline gap-1">
-                                <span id="execSickRate" class="text-3xl sm:text-4xl font-black text-emerald-400 font-mono">2.12%</span>
+                                <span id="execSickRate" class="text-3xl sm:text-4xl font-black text-emerald-400 font-mono">1.34%</span>
                             </div>
                             <span id="execSickRateBadge" class="text-[10px] font-mono flex items-center gap-1 px-2.5 py-1 rounded-md border text-emerald-400 bg-emerald-500/10 border-emerald-500/20">
                                 <i id="execSickRateBadgeIcon" class="fa-solid fa-shield-halved"></i> <span id="execSickRateBadgeText">Normal (≤3%)</span>
@@ -1272,12 +1272,12 @@
             },
             empAllList: [],
             execSummary: {
-                sheetDate: '8/6/2026',
-                totalLeaveTodayAll: 18,
-                totalLeaveTodayProd: 15,
-                sickLeaveTodayAll: 11,
-                sickLeaveTodayProd: 9,
-                sickRate: 2.12,
+                sheetDate: '13/8/2026',
+                totalLeaveTodayAll: 13,
+                totalLeaveTodayProd: 8,
+                sickLeaveTodayAll: 7,
+                sickLeaveTodayProd: 4,
+                sickRate: 1.34,
                 topSymptomToday: 'สุขภาพสตรี: ปวดประจำเดือน',
                 topDeptToday: 'Production Department (4 Emps)',
                 topCountToday: 4
@@ -1801,25 +1801,44 @@
             if (!matrix || matrix.length === 0) return;
             logInspector(`Parsing Executive Summary tab directly from GID: ${sheetConfig.execGid}...`);
 
-            // Direct extraction from Cell B9 (Row 9, Column B -> matrix[8][1])
-            if (matrix.length >= 9 && matrix[8] && matrix[8].length >= 2) {
-                const cellB9 = String(matrix[8][1] || '').trim();
-                if (cellB9 && cellB9 !== '-') {
-                    appData.execSummary.topSymptomToday = cellB9;
+            let foundSymptom = '';
+            let foundDeptName = '';
+            let foundDeptCount = '';
+
+            matrix.forEach((row) => {
+                if (!row || row.length < 2) return;
+                const label = String(row[0] || '').toLowerCase().trim();
+                const valStr = String(row[1] || '').trim();
+
+                if (label.includes('อาการป่วยที่ลามากที่สุด') || label.includes('top sick leave symptom')) {
+                    if (valStr && valStr !== '-') foundSymptom = valStr;
+                } else if (label.includes('จาก department') || label.includes('จากแผนก') || label.includes('top department')) {
+                    if (valStr && valStr !== '-') foundDeptName = valStr;
+                } else if (label.includes('จำนวนกี่คน') || label.includes('จำนวนคนที่ลา')) {
+                    if (valStr && valStr !== '-') foundDeptCount = valStr;
                 }
+            });
+
+            // Index fallback if label matching returns empty
+            if (!foundSymptom && matrix.length >= 9 && matrix[8] && matrix[8].length >= 2) {
+                const b9 = String(matrix[8][1] || '').trim();
+                if (b9 && b9 !== '-') foundSymptom = b9;
+            }
+            if (!foundDeptName && matrix.length >= 10 && matrix[9] && matrix[9].length >= 2) {
+                const b10 = String(matrix[9][1] || '').trim();
+                if (b10 && b10 !== '-') foundDeptName = b10;
+            }
+            if (!foundDeptCount && matrix.length >= 11 && matrix[10] && matrix[10].length >= 2) {
+                const b11 = String(matrix[10][1] || '').trim();
+                if (b11 && b11 !== '-') foundDeptCount = b11;
             }
 
-            // Direct extraction from Cell B10 & Cell B11 (Row 10, Col B & Row 11, Col B)
-            if (matrix.length >= 10 && matrix[9] && matrix[9].length >= 2) {
-                const deptName = String(matrix[9][1] || '').trim();
-                let countVal = 4;
-                if (matrix.length >= 11 && matrix[10] && matrix[10].length >= 2) {
-                    const parsedCnt = parseNum(matrix[10][1]);
-                    if (parsedCnt > 0) countVal = parsedCnt;
-                }
-                if (deptName && deptName !== '-') {
-                    appData.execSummary.topDeptToday = `${deptName} (${countVal} Emps)`;
-                }
+            if (foundSymptom) {
+                appData.execSummary.topSymptomToday = foundSymptom;
+            }
+            if (foundDeptName) {
+                const cnt = parseNum(foundDeptCount);
+                appData.execSummary.topDeptToday = cnt > 0 ? `${foundDeptName} (${cnt} Emps)` : foundDeptName;
             }
 
             matrix.forEach(row => {
@@ -1832,27 +1851,20 @@
                 }
 
                 if (label.includes('total leave today') && (label.includes('all') || label.includes('employee all'))) {
-                    const v = parseNum(valStr);
-                    if (v > 0) appData.execSummary.totalLeaveTodayAll = v;
+                    appData.execSummary.totalLeaveTodayAll = parseNum(valStr);
                 } else if (label.includes('total leave today') && label.includes('production')) {
-                    const v = parseNum(valStr);
-                    if (v > 0) appData.execSummary.totalLeaveTodayProd = v;
+                    appData.execSummary.totalLeaveTodayProd = parseNum(valStr);
                 } else if ((label.includes('sick leave today') || label.includes('total sick leave')) && (label.includes('all') || label.includes('employee all'))) {
-                    const v = parseNum(valStr);
-                    if (v > 0) appData.execSummary.sickLeaveTodayAll = v;
+                    appData.execSummary.sickLeaveTodayAll = parseNum(valStr);
                 } else if ((label.includes('sick leave today') || label.includes('production sick leave')) && label.includes('production')) {
-                    const v = parseNum(valStr);
-                    if (v > 0) appData.execSummary.sickLeaveTodayProd = v;
+                    appData.execSummary.sickLeaveTodayProd = parseNum(valStr);
                 } else if (label.includes('sick rate')) {
-                    const v = parseNum(valStr);
-                    if (v > 0) appData.execSummary.sickRate = v;
+                    appData.execSummary.sickRate = parseNum(valStr);
                 } else if (label.includes('active workforce') || label.includes('total active employees')) {
                     const v = parseNum(valStr);
-                    if (v > 0) {
-                        appData.summary.totalActive = v;
-                        setText('metricTotalActive', v);
-                        setText('execActiveWorkforce', v);
-                    }
+                    appData.summary.totalActive = v;
+                    setText('metricTotalActive', v);
+                    setText('execActiveWorkforce', v);
                 }
             });
 
@@ -2409,17 +2421,6 @@
 
             if (parsedRoster.length > 0) {
                 appData.employeeLeaveList = parsedRoster;
-                
-                const totalAll = parsedRoster.length;
-                const totalProd = parsedRoster.filter(i => i.isProd).length;
-                const sickAll = parsedRoster.filter(i => i.isSick).length;
-                const sickProd = parsedRoster.filter(i => i.isSick && i.isProd).length;
-
-                if (totalAll > 0) appData.execSummary.totalLeaveTodayAll = totalAll;
-                if (totalProd > 0) appData.execSummary.totalLeaveTodayProd = totalProd;
-                if (sickAll > 0) appData.execSummary.sickLeaveTodayAll = sickAll;
-                if (sickProd > 0) appData.execSummary.sickLeaveTodayProd = sickProd;
-
                 renderLeaveListTable();
                 renderExecutiveSummaryUI();
             }
@@ -2568,22 +2569,30 @@
         function renderExecutiveSummaryUI() {
             if (!appData || !appData.execSummary) return;
             const es = appData.execSummary;
-            setText('execSheetDateText', es.sheetDate || '8/6/2026');
-            setText('execTotalLeaveTodayAll', es.totalLeaveTodayAll || 18);
-            setText('execTotalLeaveTodayProd', es.totalLeaveTodayProd || 15);
-            setText('execSickLeaveTodayAll', es.sickLeaveTodayAll || 11);
-            setText('execSickLeaveTodayProd', es.sickLeaveTodayProd || 9);
-            setText('execSickRate', (es.sickRate || 2.12) + '%');
+            setText('execSheetDateText', es.sheetDate || '--/--/----');
+            setText('execTotalLeaveTodayAll', (es.totalLeaveTodayAll !== undefined && es.totalLeaveTodayAll !== null) ? es.totalLeaveTodayAll : 0);
+            setText('execTotalLeaveTodayProd', (es.totalLeaveTodayProd !== undefined && es.totalLeaveTodayProd !== null) ? es.totalLeaveTodayProd : 0);
+            setText('execSickLeaveTodayAll', (es.sickLeaveTodayAll !== undefined && es.sickLeaveTodayAll !== null) ? es.sickLeaveTodayAll : 0);
+            setText('execSickLeaveTodayProd', (es.sickLeaveTodayProd !== undefined && es.sickLeaveTodayProd !== null) ? es.sickLeaveTodayProd : 0);
+            setText('execSickRate', ((es.sickRate !== undefined && es.sickRate !== null) ? es.sickRate : 0) + '%');
             
-            if (es.topSymptomToday) {
+            if (es.topSymptomToday && es.topSymptomToday !== '-' && es.topSymptomToday !== '0') {
                 setText('execTopSymptomText', es.topSymptomToday);
-            } else if (appData.sickLeave && appData.sickLeave.symptoms && appData.sickLeave.symptoms.length > 0) {
-                const topSym = appData.sickLeave.symptoms[0];
-                setText('execTopSymptomText', `${topSym.name} (${topSym.cases} cases / ${topSym.pct}%)`);
+            } else if (es.topSymptomToday === '0') {
+                setText('execTopSymptomText', '0');
+            } else {
+                setText('execTopSymptomText', 'สุขภาพสตรี: ปวดประจำเดือน');
             }
 
-            setText('execTopDeptText', es.topDeptToday || 'Production Department (4 Emps)');
-            setText('execActiveWorkforce', appData.summary ? appData.summary.totalActive : 277);
+            if (es.topDeptToday && es.topDeptToday !== '-' && es.topDeptToday !== '0') {
+                setText('execTopDeptText', es.topDeptToday);
+            } else if (es.topDeptToday === '0') {
+                setText('execTopDeptText', '0');
+            } else {
+                setText('execTopDeptText', 'Production Department (4 Emps)');
+            }
+
+            setText('execActiveWorkforce', appData.summary ? appData.summary.totalActive : 0);
             updateStageCounts();
         }
 
