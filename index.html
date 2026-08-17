@@ -294,6 +294,7 @@
 
             </div>
 
+            <!-- LOCATION BREAKDOWN -->
             <div class="glass-panel rounded-3xl p-5 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                     <div class="flex items-center gap-2.5">
@@ -539,8 +540,11 @@
                         </h3>
                         <p class="text-xs text-slate-400">จำนวน Join (คอลัมน์ B), Resign (คอลัมน์ C) และ Turnover Rate % (คอลัมน์ S) จากแท็บ Trends (Direct Sheet Feed GID: 1810359834)</p>
                     </div>
+                    <span class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shadow-sm shadow-cyan-900/50">
+                        <i class="fa-solid fa-hand-pointer mr-1"></i> Click Bars to View Roster (2026)
+                    </span>
                 </div>
-                <div class="relative w-full h-80 sm:h-96">
+                <div class="relative w-full h-80 sm:h-96 cursor-pointer">
                     <canvas id="chartTrendMovementCombo"></canvas>
                 </div>
             </div>
@@ -1128,7 +1132,7 @@
         </div>
     </div>
 
-    <!-- MODAL 5: WORKFORCE CATEGORIZED ROSTER (GIDs 2000001-2000004 & 555555 & GID 0) -->
+    <!-- MODAL 5: WORKFORCE CATEGORIZED ROSTER -->
     <div id="modalWorkforceList" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden p-4">
         <div class="bg-slate-900 border border-blue-500/40 rounded-3xl max-w-5xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col justify-between">
             
@@ -1195,6 +1199,69 @@
         </div>
     </div>
 
+    <!-- MODAL 6: TREND DETAIL ROSTER (YEAR 2026 ONLY) -->
+    <div id="modalTrendDetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden p-4">
+        <div class="bg-slate-900 border border-cyan-500/40 rounded-3xl max-w-6xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col justify-between">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div id="trendModalIcon" class="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+                        <i class="fa-solid fa-user-plus text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+                            <span id="trendModalTitle">Monthly Join Staff Roster (2026)</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono" id="trendModalCountBadge">0 Emps</span>
+                        </h3>
+                        <p class="text-xs text-slate-400" id="trendModalSubTitle">Direct live feed from Google Sheet target GIDs (Year 2026 Only - 1/1/2026 Onwards)</p>
+                    </div>
+                </div>
+                <button onclick="closeTrendDetailModal()" class="text-slate-400 hover:text-white cursor-pointer w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
+                <div class="relative w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="inputTrendSearch" onkeyup="filterTrendDetailModal()" placeholder="Search Emp ID, Name, Nickname, Dept, Position..."
+                           class="w-full pl-9 pr-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs">
+                    <span class="text-slate-400 text-xs px-2 font-mono">Filtered Period: <strong class="text-cyan-400 font-bold">1/1/2026 Onwards</strong></span>
+                </div>
+            </div>
+
+            <div class="overflow-y-auto flex-grow border border-slate-800 rounded-2xl bg-slate-950/60 p-1">
+                <table class="w-full text-left text-xs text-slate-200">
+                    <thead class="bg-slate-900/90 text-slate-400 font-mono uppercase text-[10px] sticky top-0 border-b border-slate-800">
+                        <tr>
+                            <th class="py-3 px-3.5">Emp ID / รหัสพนักงาน</th>
+                            <th class="py-3 px-3.5">ชื่อ-นามสกุล</th>
+                            <th class="py-3 px-3.5">ชื่อเล่น</th>
+                            <th class="py-3 px-3.5">Position / ตำแหน่ง</th>
+                            <th class="py-3 px-3.5">Department / แผนก</th>
+                            <th class="py-3 px-3.5">Location / สถานที่ (Col Q)</th>
+                            <th class="py-3 px-3.5">Emp Type / ประเภท</th>
+                            <th class="py-3 px-3.5" id="trendTableHeadDate">Start Date / วันที่เริ่มงาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trendModalTableBody" class="divide-y divide-slate-800/60 font-sans">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-slate-800 pt-3 flex-shrink-0 text-xs text-slate-400">
+                <span class="flex items-center gap-1.5 font-mono text-[11px]" id="trendModalFooterText">
+                    <i class="fa-solid fa-circle-check text-cyan-400"></i> Direct Live Feed from Target Sheet GID (Year 2026 Only)
+                </span>
+                <button onclick="closeTrendDetailModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition cursor-pointer">
+                    Close Window
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="border-t border-slate-800/80 py-4 px-6 text-center text-xs text-slate-500">
         <p>People Dashboard &copy; 2026 WorkForcePulse System. All rights reserved.</p>
@@ -1202,11 +1269,13 @@
 
     <script>
         // Global variables & state declarations
-        let activeTab = 'workforce';
-        let currentModalFilter = 'all';
-        let currentStageFilter = 'all';
-        let currentWorkforceFilter = 'all';
-        let currentLocationFilter = null;
+        var activeTab = 'workforce';
+        var currentModalFilter = 'all';
+        var currentStageFilter = 'all';
+        var currentWorkforceFilter = 'all';
+        var currentLocationFilter = null;
+        var currentTrendType = 'join';
+        var currentTrendMonth = 'January';
 
         const DEFAULT_SHEET_ID = '1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo';
         const SUMMARY_GID = '926398620';
@@ -1223,6 +1292,8 @@
         const STAGE4_GID = '1000004';
         const LEVELS_GID = '1540331459';
         const DEMOGRAPHICS_GID = '237779043';
+        const JOIN_DETAIL_GID = '3000001';
+        const RESIGN_DETAIL_GID = '3000002';
 
         const WORKFORCE_GIDS = {
             all: '2000001',
@@ -1232,7 +1303,7 @@
             newcomer: '555555'
         };
 
-        let sheetConfig = {
+        var sheetConfig = {
             sheetId: localStorage.getItem('wf_sheet_id') || DEFAULT_SHEET_ID,
             summaryGid: SUMMARY_GID,
             empAllGid: DEFAULT_EMP_ALL_GID,
@@ -1248,10 +1319,12 @@
             stage2Gid: STAGE2_GID,
             stage3Gid: STAGE3_GID,
             stage4Gid: STAGE4_GID,
+            joinGid: JOIN_DETAIL_GID,
+            resignGid: RESIGN_DETAIL_GID,
             wfGids: WORKFORCE_GIDS
         };
 
-        let appData = {
+        var appData = {
             summary: {
                 totalActive: 277,
                 activeVSC: 235,
@@ -1283,6 +1356,8 @@
                 topCountToday: 4
             },
             monthlyTrendData: [],
+            trendDetailJoin: [],
+            trendDetailResign: [],
             deptComparisonData: [],
             employeeLeaveList: [],
             stageRoster: [],
@@ -1294,13 +1369,13 @@
         };
 
         // Chart Instance Handlers
-        let chartDeptHeadcountPieInstance = null;
-        let chartLevelHeadcountBarInstance = null;
-        let chartGenderDonutInstance = null;
-        let chartNationDonutInstance = null;
-        let chartTrendMovementComboInstance = null;
-        let chartSickDonutInstance = null;
-        let chartDeptComparisonInstance = null;
+        var chartDeptHeadcountPieInstance = null;
+        var chartLevelHeadcountBarInstance = null;
+        var chartGenderDonutInstance = null;
+        var chartNationDonutInstance = null;
+        var chartTrendMovementComboInstance = null;
+        var chartSickDonutInstance = null;
+        var chartDeptComparisonInstance = null;
 
         // Core Helper Functions
         function parseNum(val) {
@@ -1373,7 +1448,7 @@
             return str.includes(target);
         }
 
-        let inspectorLogs = [];
+        var inspectorLogs = [];
         function logInspector(msg) {
             console.log(msg);
             inspectorLogs.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
@@ -1412,6 +1487,64 @@
                 lines.push(row);
             }
             return lines;
+        }
+
+        function parseMonthFromDateStr(dateStr) {
+            if (!dateStr) return '';
+            const str = String(dateStr).trim().toLowerCase();
+            const monthMap = {
+                'jan': 'January', 'january': 'January', 'ม.ค.': 'January', 'มกราคม': 'January',
+                'feb': 'February', 'february': 'February', 'febuary': 'February', 'ก.พ.': 'February', 'กุมภาพันธ์': 'February',
+                'mar': 'March', 'march': 'March', 'มี.ค.': 'March', 'มีนาคม': 'March',
+                'apr': 'April', 'april': 'April', 'เม.ย.': 'April', 'เมษายน': 'April',
+                'may': 'May', 'พ.ค.': 'May', 'พฤษภาคม': 'May',
+                'jun': 'June', 'june': 'June', 'มิ.ย.': 'June', 'มิถุนายน': 'June',
+                'jul': 'July', 'july': 'July', 'ก.ค.': 'July', 'กรกฎาคม': 'July',
+                'aug': 'August', 'august': 'August', 'ส.ค.': 'August', 'สิงหาคม': 'August',
+                'sep': 'September', 'september': 'September', 'ก.ย.': 'September', 'กันยายน': 'September',
+                'oct': 'October', 'october': 'October', 'ต.ค.': 'October', 'ตุลาคม': 'October',
+                'nov': 'November', 'november': 'November', 'พ.ย.': 'November', 'พฤศจิกายน': 'November',
+                'dec': 'December', 'december': 'December', 'ธ.ค.': 'December', 'ธันวาคม': 'December'
+            };
+
+            for (const key in monthMap) {
+                if (str.includes(key)) return monthMap[key];
+            }
+
+            const parts = str.split(/[\/\-\.]/);
+            if (parts.length >= 2) {
+                const mNum = parseInt(parts[1] || parts[0], 10);
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                if (mNum >= 1 && mNum <= 12) return monthNames[mNum - 1];
+            }
+            return '';
+        }
+
+        // STRICT YEAR 2026 FILTER FUNCTION
+        function isYear2026(dateStr) {
+            if (!dateStr || dateStr === '-' || dateStr === 'null' || dateStr === 'undefined') return false;
+            const str = String(dateStr).trim();
+            if (!str) return false;
+
+            if (str.includes('2026') || str.includes('2569')) return true;
+
+            const nums = str.match(/\d+/g);
+            if (!nums) return false;
+
+            if (nums.includes('2026') || nums.includes('2569')) return true;
+
+            if (nums.length >= 3) {
+                const yearNum = nums[nums.length - 1];
+                const firstNum = nums[0];
+
+                if (yearNum === '26' || yearNum === '69') return true;
+                if (firstNum === '26' && nums[0].length === 2 && nums[2].length === 2) return true;
+
+                if (yearNum.length === 4 || yearNum.length === 2) return false;
+                if (firstNum.length === 4 || firstNum.length === 2) return false;
+            }
+
+            return false;
         }
 
         // Navigation & Tab Switching
@@ -1797,6 +1930,101 @@
             if (modal) modal.classList.add('hidden');
         }
 
+        // TREND DETAIL MODAL CONTROLLERS & TABLE RENDERING WITH STRICT 2026 FILTER & RESIGNED BADGE
+        function openTrendDetailModal(type, monthName) {
+            currentTrendType = type;
+            currentTrendMonth = monthName || 'January';
+            const modal = document.getElementById('modalTrendDetail');
+            if (modal) modal.classList.remove('hidden');
+            renderTrendDetailTable();
+        }
+
+        function closeTrendDetailModal() {
+            const modal = document.getElementById('modalTrendDetail');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function filterTrendDetailModal() {
+            renderTrendDetailTable();
+        }
+
+        function renderTrendDetailTable() {
+            const tbody = document.getElementById('trendModalTableBody');
+            if (!tbody) return;
+
+            const isJoin = currentTrendType === 'join';
+            const iconEl = document.getElementById('trendModalIcon');
+            const titleEl = document.getElementById('trendModalTitle');
+            const dateHeadEl = document.getElementById('trendTableHeadDate');
+
+            if (isJoin) {
+                if (iconEl) iconEl.className = "w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30";
+                if (titleEl) titleEl.innerText = `Monthly Join Staff Roster - ${currentTrendMonth} (2026)`;
+                if (dateHeadEl) dateHeadEl.innerText = "Start Date / วันที่เริ่มงาน";
+            } else {
+                if (iconEl) iconEl.className = "w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30";
+                if (titleEl) titleEl.innerText = `Monthly Resigned Staff Roster - ${currentTrendMonth} (2026)`;
+                if (dateHeadEl) dateHeadEl.innerText = "Resign Date / วันที่ลาออก";
+            }
+
+            const searchInput = document.getElementById('inputTrendSearch');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            // Collect all Resigned Emp IDs for cross-checking in Join Roster
+            const resignedEmpIds = new Set(
+                (appData.trendDetailResign || [])
+                    .filter(r => isYear2026(r.date))
+                    .map(r => String(r.empId || '').trim().toLowerCase())
+            );
+
+            let rawList = isJoin ? (appData.trendDetailJoin || []) : (appData.trendDetailResign || []);
+
+            let filtered = rawList.filter(item => {
+                if (!isYear2026(item.date)) return false;
+                const itemMonth = parseMonthFromDateStr(item.date);
+                if (currentTrendMonth && itemMonth) {
+                    const normCurrent = currentTrendMonth.toLowerCase().replace('febuary', 'february');
+                    const normItem = itemMonth.toLowerCase().replace('febuary', 'february');
+                    if (normCurrent !== normItem) return false;
+                }
+                if (query !== '') {
+                    return (item.empId || '').toLowerCase().includes(query) ||
+                           (item.name || '').toLowerCase().includes(query) ||
+                           (item.nickname || '').toLowerCase().includes(query) ||
+                           (item.dept || '').toLowerCase().includes(query) ||
+                           (item.position || '').toLowerCase().includes(query);
+                }
+                return true;
+            });
+
+            tbody.innerHTML = filtered.map(item => {
+                const empIdClean = String(item.empId || '').trim().toLowerCase();
+                const hasResigned = item.isResigned || resignedEmpIds.has(empIdClean) || String(item.status || '').toLowerCase().includes('resign');
+
+                let statusBadge = '';
+                if (hasResigned) {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold font-mono flex items-center gap-1 w-fit"><i class="fa-solid fa-user-xmark text-rose-400"></i> Resigned</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold font-mono flex items-center gap-1 w-fit"><i class="fa-solid fa-user-check text-emerald-400"></i> Active</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-900/80 transition ${hasResigned && isJoin ? 'bg-rose-950/20' : ''}">
+                        <td class="py-2.5 px-3.5 font-mono ${hasResigned ? 'text-rose-400' : (isJoin ? 'text-cyan-400' : 'text-rose-400')} font-bold">${item.empId}</td>
+                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
+                        <td class="py-2.5 px-3.5 font-mono">${statusBadge}</td>
+                        <td class="py-2.5 px-3.5 font-mono font-bold ${hasResigned ? 'text-rose-400' : (isJoin ? 'text-emerald-400' : 'text-rose-400')}">${item.date || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            setText('trendModalCountBadge', `${filtered.length} Emps`);
+        }
+
         function parseExecSummary121308326Tab(matrix) {
             if (!matrix || matrix.length === 0) return;
             logInspector(`Parsing Executive Summary tab directly from GID: ${sheetConfig.execGid}...`);
@@ -1819,7 +2047,6 @@
                 }
             });
 
-            // Index fallback if label matching returns empty
             if (!foundSymptom && matrix.length >= 9 && matrix[8] && matrix[8].length >= 2) {
                 const b9 = String(matrix[8][1] || '').trim();
                 if (b9 && b9 !== '-') foundSymptom = b9;
@@ -2106,7 +2333,7 @@
 
             const monthMap = {
                 'jan': 'January', 'january': 'January', 'ม.ค.': 'January', 'มกราคม': 'January', '1': 'January',
-                'feb': 'February', 'february': 'February', 'ก.พ.': 'February', 'กุมภาพันธ์': 'February', '2': 'February',
+                'feb': 'February', 'february': 'February', 'febuary': 'February', 'ก.พ.': 'February', 'กุมภาพันธ์': 'February', '2': 'February',
                 'mar': 'March', 'march': 'March', 'มี.ค.': 'March', 'มีนาคม': 'March', '3': 'March',
                 'apr': 'April', 'april': 'April', 'เม.ย.': 'April', 'เมษายน': 'April', '4': 'April',
                 'may': 'May', 'พ.ค.': 'May', 'พฤษภาคม': 'May', '5': 'May',
@@ -2544,6 +2771,135 @@
             }
         }
 
+        // ACCURATE CSV PARSER FOR TREND DETAIL JOIN/RESIGN ROSTERS WITH COLUMN ALIGNMENT FIX
+        function isPositionWord(str) {
+            if (!str) return false;
+            const s = str.toLowerCase();
+            return s.includes('staff') || s.includes('specialist') || s.includes('manager') || 
+                   s.includes('officer') || s.includes('cleaning') || s.includes('head') || 
+                   s.includes('operator') || s.includes('technician') || s.includes('supervisor') ||
+                   s.includes('lead') || s.includes('assistant') || s.includes('executive');
+        }
+
+        function parseTrendDetailTab(matrix, type) {
+            if (!matrix || matrix.length === 0) return [];
+            let parsedList = [];
+            let bestHeaderIdx = -1;
+            let maxScore = 0;
+
+            let colId = -1, colName = -1, colNick = -1, colPos = -1, colDept = -1, colLoc = -1, colType = -1, colDate = -1, colStatus = -1;
+
+            for (let r = 0; r < Math.min(10, matrix.length); r++) {
+                const row = matrix[r] || [];
+                let score = 0;
+                row.forEach(cell => {
+                    const txt = String(cell || '').toLowerCase().trim();
+                    if (txt.includes('รหัส') || txt.includes('emp id')) score++;
+                    if (txt.includes('ชื่อ') || txt.includes('name')) score++;
+                    if (txt.includes('ตำแหน่ง') || txt.includes('position')) score++;
+                    if (txt.includes('แผนก') || txt.includes('dept')) score++;
+                    if (txt.includes('วันที่') || txt.includes('date') || txt.includes('เริ่มงาน') || txt.includes('ลาออก')) score++;
+                });
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestHeaderIdx = r;
+                }
+            }
+
+            if (bestHeaderIdx !== -1 && maxScore >= 2) {
+                const hRow = matrix[bestHeaderIdx];
+                hRow.forEach((cell, cIdx) => {
+                    const txt = String(cell || '').toLowerCase().trim();
+                    if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('code')) colId = cIdx;
+                    else if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt.includes('nick')) colNick = cIdx;
+                    else if ((txt.includes('ชื่อ-นามสกุล') || txt.includes('ชื่อนามสกุล') || txt.includes('full name') || txt.includes('ชื่อ')) && colName === -1) colName = cIdx;
+                    else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role')) colPos = cIdx;
+                    else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) colDept = cIdx;
+                    else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา')) colLoc = cIdx;
+                    else if (txt.includes('ประเภท') || txt.includes('emp type') || txt.includes('contract')) colType = cIdx;
+                    else if (txt.includes('สถานะ') || txt.includes('status')) colStatus = cIdx;
+                    else if (txt.includes('วันที่') || txt.includes('date') || txt.includes('เริ่มงาน') || txt.includes('ลาออก')) colDate = cIdx;
+                });
+            }
+
+            if (colId === -1) colId = 0;
+            if (colName === -1) colName = 1;
+
+            const startRow = bestHeaderIdx !== -1 ? bestHeaderIdx + 1 : 1;
+
+            for (let r = startRow; r < matrix.length; r++) {
+                const row = matrix[r];
+                if (!row || row.length === 0) continue;
+
+                let empId = String(row[colId] || '').trim();
+                let name = String(row[colName] || '').trim();
+
+                if (!empId && !name) continue;
+                if (isTotalRow(empId) || isTotalRow(name)) continue;
+
+                let nickname = '', position = '', dept = '', location = '', empType = 'VSC', dateVal = '', statusVal = '';
+
+                let cell2 = (colNick !== -1 && colNick < row.length) ? String(row[colNick] || '').trim() : String(row[2] || '').trim();
+                let cell3 = (colPos !== -1 && colPos < row.length) ? String(row[colPos] || '').trim() : String(row[3] || '').trim();
+
+                if (isPositionWord(cell2) && (!cell3 || cell3 === '-')) {
+                    position = cell2;
+                    nickname = '-';
+                } else {
+                    nickname = cell2;
+                    position = cell3;
+                }
+
+                dept = (colDept !== -1 && colDept < row.length) ? String(row[colDept] || '').trim() : String(row[4] || '').trim();
+                location = (colLoc !== -1 && colLoc < row.length) ? String(row[colLoc] || '').trim() : 'Factory / โรงงาน';
+                empType = (colType !== -1 && colType < row.length) ? String(row[colType] || '').trim() : 'VSC';
+                statusVal = (colStatus !== -1 && colStatus < row.length) ? String(row[colStatus] || '').trim() : '';
+
+                if (colDate !== -1 && colDate < row.length) {
+                    dateVal = String(row[colDate] || '').trim();
+                } else {
+                    row.forEach(c => {
+                        const strC = String(c || '').trim();
+                        if (strC.includes('/') || strC.includes('-')) {
+                            const nums = strC.match(/\d+/g);
+                            if (nums && nums.length >= 3) dateVal = strC;
+                        }
+                    });
+                }
+
+                // FILTER: Strict 2026 Check
+                if (!isYear2026(dateVal)) continue;
+
+                let isResigned = false;
+                if (type === 'resign' || statusVal.toLowerCase().includes('resign') || statusVal.toLowerCase().includes('ลาออก')) {
+                    isResigned = true;
+                } else {
+                    row.forEach(c => {
+                        const cTxt = String(c || '').toLowerCase();
+                        if (cTxt.includes('resign') || cTxt.includes('ลาออก') || cTxt.includes('พ้นสภาพ')) {
+                            isResigned = true;
+                        }
+                    });
+                }
+
+                const clean = (v) => (!v || v === '-' || v.toLowerCase() === 'null' || v.toLowerCase() === 'ไม่ระบุ') ? '-' : v;
+
+                parsedList.push({
+                    empId: empId || `EMP-${1000 + r}`,
+                    name: clean(name),
+                    nickname: clean(nickname),
+                    position: clean(position),
+                    dept: clean(dept),
+                    location: clean(location) !== '-' ? clean(location) : 'Factory / โรงงาน',
+                    empType: clean(empType) !== '-' ? clean(empType) : 'VSC',
+                    date: clean(dateVal),
+                    status: isResigned ? 'Resign' : (statusVal || 'Active'),
+                    isResigned: isResigned
+                });
+            }
+            return parsedList;
+        }
+
         // Section Update Functions
         function updateSickLeaveReasonsSection() {
             const monthSelect = document.getElementById('selectSymptomMonth');
@@ -2832,10 +3188,10 @@
             if (comboCanvas) {
                 if (chartTrendMovementComboInstance) chartTrendMovementComboInstance.destroy();
 
-                let trendLabels = ['February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                let joinData = [40, 23, 30, 20, 15, 23, 3, 0, 0, 0, 0];
-                let resignData = [18, 31, 16, 14, 20, 13, 5, 0, 0, 0, 0];
-                let turnoverData = [6.8, 12.4, 6.2, 5.4, 7.3, 4.8, 1.8, 0, 0, 0, 0];
+                let trendLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                let joinData = [50, 40, 23, 30, 20, 15, 23, 7, 0, 0, 0, 0];
+                let resignData = [17, 18, 31, 16, 14, 20, 14, 7, 0, 0, 0, 0];
+                let turnoverData = [7.1, 6.8, 12.4, 6.2, 5.4, 7.3, 4.8, 2.5, 0, 0, 0, 0];
 
                 if (appData.monthlyTrendData && appData.monthlyTrendData.length > 0) {
                     trendLabels = appData.monthlyTrendData.map(d => d.month);
@@ -2854,18 +3210,103 @@
                             { type: 'line', label: 'Turnover Rate (%)', data: turnoverData, borderColor: '#f59e0b', borderWidth: 3, pointBackgroundColor: '#f59e0b', pointRadius: 4, tension: 0.3, yAxisID: 'y1' }
                         ]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#f59e0b', callback: function(val) { return val + '%'; } } }, x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } } } }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onClick: (evt, activeElements) => {
+                            if (activeElements && activeElements.length > 0) {
+                                const el = activeElements[0];
+                                const dsIdx = el.datasetIndex;
+                                const idx = el.index;
+                                const monthName = chartTrendMovementComboInstance.data.labels[idx];
+                                if (dsIdx === 0) {
+                                    openTrendDetailModal('join', monthName);
+                                } else if (dsIdx === 1) {
+                                    openTrendDetailModal('resign', monthName);
+                                }
+                            }
+                        },
+                        onHover: (evt, activeElements) => {
+                            if (evt.chart && evt.chart.canvas) {
+                                evt.chart.canvas.style.cursor = (activeElements && activeElements.length > 0) ? 'pointer' : 'default';
+                            }
+                        },
+                        scales: {
+                            y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                            y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#f59e0b', callback: function(val) { return val + '%'; } } },
+                            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                        },
+                        plugins: {
+                            legend: { labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } }
+                        }
+                    }
                 });
             }
         }
 
-        // Fetch Live Sheet Data
-        async function fetchSheetData() {
+        // BIND EVENT HANDLERS DIRECTLY TO WINDOW AT THE TOP LEVEL
+        window.switchTab = switchTab;
+        window.openLocationListModal = openLocationListModal;
+        window.openWorkforceListModal = openWorkforceListModal;
+        window.closeWorkforceListModal = closeWorkforceListModal;
+        window.setWorkforceModalFilter = setWorkforceModalFilter;
+        window.filterWorkforceListModal = filterWorkforceListModal;
+        window.renderWorkforceListTable = renderWorkforceListTable;
+        window.openLeaveListModal = openLeaveListModal;
+        window.closeLeaveListModal = closeLeaveListModal;
+        window.setLeaveModalFilter = setLeaveModalFilter;
+        window.filterLeaveListModal = filterLeaveListModal;
+        window.openStageRosterModal = openStageRosterModal;
+        window.closeStageRosterModal = closeStageRosterModal;
+        window.setStageRosterFilter = setStageRosterFilter;
+        window.filterStageRosterModal = filterStageRosterModal;
+        window.openTrendDetailModal = openTrendDetailModal;
+        window.closeTrendDetailModal = closeTrendDetailModal;
+        window.filterTrendDetailModal = filterTrendDetailModal;
+        window.renderTrendDetailTable = renderTrendDetailTable;
+        window.openConfigModal = openConfigModal;
+        window.closeConfigModal = closeConfigModal;
+        window.saveSheetConfig = saveSheetConfig;
+        window.resetToDemoData = resetToDemoData;
+        window.openInspectorModal = openInspectorModal;
+        window.closeInspectorModal = closeInspectorModal;
+
+        window.fetchSheetData = async function() {
             logInspector(`Starting Live Sync from Google Sheet ID: ${sheetConfig.sheetId}`);
             const now = new Date().toLocaleTimeString();
             setText('lastSyncTimeText', now);
 
             try {
+                // Fetch Join Detail GID 3000001
+                try {
+                    const joinUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.joinGid}`;
+                    const joinRes = await fetch(joinUrl);
+                    if (joinRes.ok) {
+                        const joinText = await joinRes.text();
+                        if (joinText && !joinText.trim().toLowerCase().startsWith('<!doctype')) {
+                            const parsed = parseTrendDetailTab(parseCSV(joinText), 'join');
+                            if (parsed.length > 0) appData.trendDetailJoin = parsed;
+                        }
+                    }
+                } catch (jErr) {
+                    logInspector(`Join detail tab notice: ${jErr.message}`);
+                }
+
+                // Fetch Resign Detail GID 3000002
+                try {
+                    const resignUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.resignGid}`;
+                    const resignRes = await fetch(resignUrl);
+                    if (resignRes.ok) {
+                        const resignText = await resignRes.text();
+                        if (resignText && !resignText.trim().toLowerCase().startsWith('<!doctype')) {
+                            const parsed = parseTrendDetailTab(parseCSV(resignText), 'resign');
+                            if (parsed.length > 0) appData.trendDetailResign = parsed;
+                        }
+                    }
+                } catch (rErr) {
+                    logInspector(`Resign detail tab notice: ${rErr.message}`);
+                }
+
                 // Executive Summary GID 121308326
                 try {
                     const execUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.execGid}`;
@@ -3041,31 +3482,7 @@
             updateDeptComparisonChart();
             renderWorkforceCharts();
             renderWorkforceListTable();
-        }
-
-        // BIND EVENT HANDLERS DIRECTLY TO WINDOW AT THE TOP LEVEL
-        window.switchTab = switchTab;
-        window.openLocationListModal = openLocationListModal;
-        window.openWorkforceListModal = openWorkforceListModal;
-        window.closeWorkforceListModal = closeWorkforceListModal;
-        window.setWorkforceModalFilter = setWorkforceModalFilter;
-        window.filterWorkforceListModal = filterWorkforceListModal;
-        window.renderWorkforceListTable = renderWorkforceListTable;
-        window.openLeaveListModal = openLeaveListModal;
-        window.closeLeaveListModal = closeLeaveListModal;
-        window.setLeaveModalFilter = setLeaveModalFilter;
-        window.filterLeaveListModal = filterLeaveListModal;
-        window.openStageRosterModal = openStageRosterModal;
-        window.closeStageRosterModal = closeStageRosterModal;
-        window.setStageRosterFilter = setStageRosterFilter;
-        window.filterStageRosterModal = filterStageRosterModal;
-        window.openConfigModal = openConfigModal;
-        window.closeConfigModal = closeConfigModal;
-        window.saveSheetConfig = saveSheetConfig;
-        window.resetToDemoData = resetToDemoData;
-        window.openInspectorModal = openInspectorModal;
-        window.closeInspectorModal = closeInspectorModal;
-        window.fetchSheetData = fetchSheetData;
+        };
 
         window.addEventListener('DOMContentLoaded', () => {
             logInspector("People Dashboard V.4 initialized. Exec Summary Feed: GID 121308326. Daily Roster Feed: GID 1001.");
@@ -3073,7 +3490,31 @@
             updateDeptComparisonChart();
             renderWorkforceCharts();
             renderWorkforceListTable();
-            fetchSheetData();
+            window.fetchSheetData();
+
+            setInterval(() => {
+                window.fetchSheetData();
+            }, 15000);
+
+            // Bind Direct Click Listener to the Trend Movement Chart Canvas Element
+            const comboCanvas = document.getElementById('chartTrendMovementCombo');
+            if (comboCanvas) {
+                comboCanvas.onclick = function(evt) {
+                    if (!chartTrendMovementComboInstance) return;
+                    const activeElements = chartTrendMovementComboInstance.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+                    if (activeElements && activeElements.length > 0) {
+                        const el = activeElements[0];
+                        const dsIdx = el.datasetIndex;
+                        const idx = el.index;
+                        const monthName = chartTrendMovementComboInstance.data.labels[idx];
+                        if (dsIdx === 0) {
+                            window.openTrendDetailModal('join', monthName);
+                        } else if (dsIdx === 1) {
+                            window.openTrendDetailModal('resign', monthName);
+                        }
+                    }
+                };
+            }
         });
     </script>
 </body>
