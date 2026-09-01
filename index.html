@@ -44,6 +44,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body {
             font-family: 'Inter', 'Kanit', sans-serif;
@@ -128,7 +129,7 @@
             <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                 <div class="px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 flex items-center gap-2 font-mono">
                     <i class="fa-regular fa-calendar text-blue-400"></i>
-                    <span id="topDateText">August 17, 2026</span>
+                    <span id="topDateText">September 1, 2026</span>
                 </div>
                 <button onclick="fetchSheetData()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition flex items-center gap-1.5 shadow-sm cursor-pointer font-medium">
                     <i class="fa-solid fa-rotate text-blue-400"></i>
@@ -177,7 +178,6 @@
             </div>
         </div>
 
-        <!-- ================= VIEW 1: WORKFORCE PULSE ================= -->
         <div id="viewWorkforce" class="space-y-6" style="display: block;">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -294,7 +294,6 @@
 
             </div>
 
-            <!-- LOCATION BREAKDOWN -->
             <div class="glass-panel rounded-3xl p-5 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                     <div class="flex items-center gap-2.5">
@@ -551,7 +550,6 @@
 
         </div>
 
-        <!-- ================= VIEW 2: LEAVE DATA DASHBOARD ================= -->
         <div id="viewLeaveDashboard" class="space-y-6" style="display: none;">
 
             <div class="glass-panel rounded-3xl p-5 sm:p-6 space-y-5 border border-slate-800/80 shadow-2xl relative overflow-hidden bg-gradient-to-b from-slate-900/95 via-slate-950 to-slate-950">
@@ -684,7 +682,7 @@
                                 <span class="text-[10px] font-mono text-slate-400">Most Frequent</span>
                             </div>
                             <div id="execTopSymptomText" class="font-bold text-xs sm:text-sm text-amber-100 leading-snug break-words pt-0.5">
-                                สุขภาพสตรี: ปวดประจำเดือน
+                                -
                             </div>
                         </div>
 
@@ -696,7 +694,7 @@
                                 <span class="text-[10px] font-mono text-slate-400">Department</span>
                             </div>
                             <div id="execTopDeptText" class="font-bold text-xs sm:text-sm text-indigo-200 leading-snug break-words pt-0.5">
-                                Production Department (4 Emps)
+                                -
                             </div>
                         </div>
                     </div>
@@ -947,7 +945,7 @@
 
     </main>
 
-    <!-- MODAL 1: Sheet Config Settings -->
+    <!-- MODAL 1: Config -->
     <div id="modalConfig" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md hidden">
         <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 mx-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -1357,7 +1355,18 @@
             },
             monthlyTrendData: [],
             trendDetailJoin: [],
-            trendDetailResign: [],
+            trendDetailResign: [
+                { empId: '9', name: 'วรีรัตน์ รุจอฬาร', nickname: 'หนุนหนิง', position: 'Chief Brand Officer', dept: '-', location: 'Factory / โรงงาน', empType: 'VSC', date: '01/01/2026', status: 'Resign', isResigned: true, resignReason: 'ย้ายกลับภูมิลำเนา' },
+                { empId: '6708226', name: 'ภคมน ดีประเสริฐ', nickname: 'โบว์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '01/01/2026', status: 'Resign', isResigned: true, resignReason: 'ได้งานใหม่' },
+                { empId: '6812380', name: 'ศิโรรัตน์ มาศยะ', nickname: 'มิ้นท์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '06/01/2026', status: 'Resign', isResigned: true, resignReason: 'ปัญหาสุขภาพ' },
+                { empId: '6901389', name: 'สุวลักษณ์ กล่ำเอม', nickname: 'ปูเป้', position: 'Production Line Cleaning Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '07/01/2026', status: 'Resign', isResigned: true, resignReason: 'ศึกษาต่อ' },
+                { empId: '6901394', name: 'ณัฐชา โพธิ์', nickname: 'บีม', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '11/01/2026', status: 'Resign', isResigned: true, resignReason: 'ประกอบธุรกิจส่วนตัว' },
+                { empId: '6901395', name: 'ณัฏฐณิชา คชเถื่อน', nickname: 'มายด์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '11/01/2026', status: 'Resign', isResigned: true, resignReason: 'ปัญหาการเดินทาง' },
+                { empId: '6708228', name: 'จตุรวิทย์ กาปลัด', nickname: 'ลีโอ', position: 'Warehouse staff', dept: 'Warehouse Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '16/01/2026', status: 'Resign', isResigned: true, resignReason: 'ได้งานใหม่' },
+                { empId: '6810338', name: 'อรยา ยีรามัน', nickname: 'ชาน', position: 'Quality Control Inspector', dept: 'Quality Control Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '19/01/2026', status: 'Resign', isResigned: true, resignReason: 'ย้ายกลับภูมิลำเนา' },
+                { empId: '6903412', name: 'กิตติศักดิ์ พรหมดี', nickname: 'ต๊อบ', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '05/03/2026', status: 'Resign', isResigned: true, resignReason: 'ได้งานใหม่' },
+                { empId: '6903415', name: 'วิภาดา วงศ์ษา', nickname: 'แอน', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'VSC', date: '12/03/2026', status: 'Resign', isResigned: true, resignReason: 'ปัญหาสุขภาพ' }
+            ],
             deptComparisonData: [],
             employeeLeaveList: [],
             stageRoster: [],
@@ -1513,41 +1522,37 @@
 
             const parts = str.split(/[\/\-\.]/);
             if (parts.length >= 2) {
-                const mNum = parseInt(parts[1] || parts[0], 10);
+                let mNum = parseInt(parts[1], 10);
+                let dayNum = parseInt(parts[0], 10);
+                if (parts[0].length === 4) {
+                    mNum = parseInt(parts[1], 10);
+                } else if (parts[2] && parts[2].length === 4) {
+                    if (mNum > 12 && dayNum <= 12) {
+                        mNum = dayNum;
+                    }
+                }
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                 if (mNum >= 1 && mNum <= 12) return monthNames[mNum - 1];
             }
             return '';
         }
 
-        // STRICT YEAR 2026 FILTER FUNCTION
+        // FLEXIBLE YEAR 2026 FILTER FUNCTION
         function isYear2026(dateStr) {
             if (!dateStr || dateStr === '-' || dateStr === 'null' || dateStr === 'undefined') return false;
             const str = String(dateStr).trim();
             if (!str) return false;
 
-            if (str.includes('2026') || str.includes('2569')) return true;
+            if (str.includes('2026') || str.includes('2569') || str.includes('/26') || str.includes('-26') || str.endsWith('26')) return true;
 
             const nums = str.match(/\d+/g);
             if (!nums) return false;
 
-            if (nums.includes('2026') || nums.includes('2569')) return true;
-
-            if (nums.length >= 3) {
-                const yearNum = nums[nums.length - 1];
-                const firstNum = nums[0];
-
-                if (yearNum === '26' || yearNum === '69') return true;
-                if (firstNum === '26' && nums[0].length === 2 && nums[2].length === 2) return true;
-
-                if (yearNum.length === 4 || yearNum.length === 2) return false;
-                if (firstNum.length === 4 || firstNum.length === 2) return false;
-            }
+            if (nums.includes('2026') || nums.includes('2569') || nums.includes('26') || nums.includes('69')) return true;
 
             return false;
         }
 
-        // Navigation & Tab Switching
         function switchTab(tabName) {
             activeTab = tabName;
             const viewLeave = document.getElementById('viewLeaveDashboard');
@@ -1569,7 +1574,6 @@
             }
         }
 
-        // Modal triggers
         function openLocationListModal(locKey) {
             currentLocationFilter = locKey;
             currentWorkforceFilter = 'location';
@@ -1732,7 +1736,6 @@
             setText('cntWfNewcomer', cntNew);
         }
 
-        // Leave & Stage Modal Handlers
         function openLeaveListModal(filterType) {
             currentModalFilter = filterType || 'all';
             const modal = document.getElementById('modalLeaveList');
@@ -1890,7 +1893,6 @@
             setText('modalStageCountBadge', `${filtered.length} Cases`);
         }
 
-        // Config & Inspector Modal Triggers
         function openConfigModal() {
             const input = document.getElementById('inputSheetId');
             if (input) input.value = sheetConfig.sheetId;
@@ -1930,7 +1932,6 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        // TREND DETAIL MODAL CONTROLLERS & TABLE RENDERING WITH STRICT 2026 FILTER & RESIGNED BADGE
         function openTrendDetailModal(type, monthName) {
             currentTrendType = type;
             currentTrendMonth = monthName || 'January';
@@ -1950,21 +1951,44 @@
 
         function renderTrendDetailTable() {
             const tbody = document.getElementById('trendModalTableBody');
-            if (!tbody) return;
+            const thead = document.querySelector('#modalTrendDetail table thead');
+            if (!tbody || !thead) return;
 
             const isJoin = currentTrendType === 'join';
             const iconEl = document.getElementById('trendModalIcon');
             const titleEl = document.getElementById('trendModalTitle');
-            const dateHeadEl = document.getElementById('trendTableHeadDate');
 
             if (isJoin) {
                 if (iconEl) iconEl.className = "w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30";
                 if (titleEl) titleEl.innerText = `Monthly Join Staff Roster - ${currentTrendMonth} (2026)`;
-                if (dateHeadEl) dateHeadEl.innerText = "Start Date / วันที่เริ่มงาน";
+                thead.innerHTML = `
+                    <tr>
+                        <th class="py-3 px-3.5">Emp ID / รหัสพนักงาน</th>
+                        <th class="py-3 px-3.5">ชื่อ-นามสกุล</th>
+                        <th class="py-3 px-3.5">ชื่อเล่น</th>
+                        <th class="py-3 px-3.5">Position / ตำแหน่ง</th>
+                        <th class="py-3 px-3.5">Department / แผนก</th>
+                        <th class="py-3 px-3.5">Location / สถานที่ (Col Q)</th>
+                        <th class="py-3 px-3.5">Emp Type / ประเภท</th>
+                        <th class="py-3 px-3.5">Start Date / วันที่เริ่มงาน</th>
+                    </tr>
+                `;
             } else {
                 if (iconEl) iconEl.className = "w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30";
                 if (titleEl) titleEl.innerText = `Monthly Resigned Staff Roster - ${currentTrendMonth} (2026)`;
-                if (dateHeadEl) dateHeadEl.innerText = "Resign Date / วันที่ลาออก";
+                thead.innerHTML = `
+                    <tr>
+                        <th class="py-3 px-3.5">Emp ID / รหัสพนักงาน</th>
+                        <th class="py-3 px-3.5">ชื่อ-นามสกุล</th>
+                        <th class="py-3 px-3.5">ชื่อเล่น</th>
+                        <th class="py-3 px-3.5">Position / ตำแหน่ง</th>
+                        <th class="py-3 px-3.5">Department / แผนก</th>
+                        <th class="py-3 px-3.5">Location / สถานที่ (Col Q)</th>
+                        <th class="py-3 px-3.5">Emp Type / ประเภท</th>
+                        <th class="py-3 px-3.5">Resign Date / วันที่ลาออก</th>
+                        <th class="py-3 px-3.5 text-rose-400 font-bold">เหตุผลการลาออก (Col K)</th>
+                    </tr>
+                `;
             }
 
             const searchInput = document.getElementById('inputTrendSearch');
@@ -1992,7 +2016,8 @@
                            (item.name || '').toLowerCase().includes(query) ||
                            (item.nickname || '').toLowerCase().includes(query) ||
                            (item.dept || '').toLowerCase().includes(query) ||
-                           (item.position || '').toLowerCase().includes(query);
+                           (item.position || '').toLowerCase().includes(query) ||
+                           (!isJoin && (item.resignReason || '').toLowerCase().includes(query));
                 }
                 return true;
             });
@@ -2008,6 +2033,11 @@
                     statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold font-mono flex items-center gap-1 w-fit"><i class="fa-solid fa-user-check text-emerald-400"></i> Active</span>`;
                 }
 
+                let extraCol = '';
+                if (!isJoin) {
+                    extraCol = `<td class="py-2.5 px-3.5 text-slate-300 max-w-[150px] truncate" title="${item.resignReason || '-'}">${item.resignReason || '-'}</td>`;
+                }
+
                 return `
                     <tr class="hover:bg-slate-900/80 transition ${hasResigned && isJoin ? 'bg-rose-950/20' : ''}">
                         <td class="py-2.5 px-3.5 font-mono ${hasResigned ? 'text-rose-400' : (isJoin ? 'text-cyan-400' : 'text-rose-400')} font-bold">${item.empId}</td>
@@ -2018,11 +2048,351 @@
                         <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
                         <td class="py-2.5 px-3.5 font-mono">${statusBadge}</td>
                         <td class="py-2.5 px-3.5 font-mono font-bold ${hasResigned ? 'text-rose-400' : (isJoin ? 'text-emerald-400' : 'text-rose-400')}">${item.date || '-'}</td>
+                        ${extraCol}
                     </tr>
                 `;
             }).join('');
 
             setText('trendModalCountBadge', `${filtered.length} Emps`);
+        }
+
+        function updateSickLeaveReasonsSection() {
+            const monthSelect = document.getElementById('selectSymptomMonth');
+            const selectedVal = monthSelect ? monthSelect.value : 'all';
+            const rawList = appData.sickLeave.symptomsData || [];
+            if (rawList.length === 0) return;
+
+            let computedList = [];
+            let totalCasesSum = 0;
+            rawList.forEach(item => {
+                let cases = (selectedVal === 'all') ? (item.total || item.monthly.reduce((a, b) => a + b, 0)) : (item.monthly[parseInt(selectedVal, 10)] || 0);
+                totalCasesSum += cases;
+                computedList.push({ name: item.name, cases: cases, pct: 0 });
+            });
+            computedList.forEach(item => { item.pct = totalCasesSum > 0 ? parseFloat(((item.cases / totalCasesSum) * 100).toFixed(1)) : 0; });
+            computedList.sort((a, b) => b.cases - a.cases);
+            appData.sickLeave.symptoms = computedList;
+
+            renderExecutiveSummaryUI();
+            renderSickLeaveDonutAndLegend();
+        }
+
+        function renderExecutiveSummaryUI() {
+            if (!appData || !appData.execSummary) return;
+            const es = appData.execSummary;
+            setText('execSheetDateText', es.sheetDate || '--/--/----');
+            setText('execTotalLeaveTodayAll', (es.totalLeaveTodayAll !== undefined && es.totalLeaveTodayAll !== null) ? es.totalLeaveTodayAll : 0);
+            setText('execTotalLeaveTodayProd', (es.totalLeaveTodayProd !== undefined && es.totalLeaveTodayProd !== null) ? es.totalLeaveTodayProd : 0);
+            setText('execSickLeaveTodayAll', (es.sickLeaveTodayAll !== undefined && es.sickLeaveTodayAll !== null) ? es.sickLeaveTodayAll : 0);
+            setText('execSickLeaveTodayProd', (es.sickLeaveTodayProd !== undefined && es.sickLeaveTodayProd !== null) ? es.sickLeaveTodayProd : 0);
+            setText('execSickRate', ((es.sickRate !== undefined && es.sickRate !== null) ? es.sickRate : 0) + '%');
+            
+            if (es.topSymptomToday && es.topSymptomToday !== '-' && es.topSymptomToday !== '0') {
+                setText('execTopSymptomText', es.topSymptomToday);
+            } else {
+                setText('execTopSymptomText', '-');
+            }
+
+            if (es.topDeptToday && es.topDeptToday !== '-' && es.topDeptToday !== '0') {
+                setText('execTopDeptText', es.topDeptToday);
+            } else {
+                setText('execTopDeptText', '-');
+            }
+
+            setText('execActiveWorkforce', appData.summary ? appData.summary.totalActive : 0);
+            updateStageCounts();
+        }
+
+        function renderSickLeaveDonutAndLegend() {
+            const canvas = document.getElementById('chartSickLeaveReasonsDonut');
+            if (!canvas) return;
+
+            const symptoms = appData.sickLeave.symptoms || [];
+            const labels = symptoms.map(s => s.name);
+            const dataValues = symptoms.map(s => s.cases);
+            const colors = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#06b6d4', '#64748b', '#a855f7', '#e11d48', '#84cc16'];
+
+            const top3Container = document.getElementById('top3SymptomCardsContainer');
+            if (top3Container) {
+                const top3 = symptoms.slice(0, 3);
+                const rankBadges = [
+                    { border: 'border-amber-500/60 shadow-amber-950/40', bg: 'from-amber-950/70 via-slate-900 to-slate-950', badgeBg: 'bg-amber-500/25 text-amber-300 border-amber-400/50', rankText: '#1 TOP', icon: 'fa-trophy text-amber-400' },
+                    { border: 'border-slate-400/60 shadow-slate-950/40', bg: 'from-slate-900 via-slate-900 to-slate-950', badgeBg: 'bg-slate-500/25 text-slate-300 border-slate-400/50', rankText: '#2 TOP', icon: 'fa-medal text-slate-300' },
+                    { border: 'border-amber-700/60 shadow-amber-950/40', bg: 'from-amber-950/40 via-slate-900 to-slate-950', badgeBg: 'bg-amber-700/25 text-amber-400 border-amber-600/50', rankText: '#3 TOP', icon: 'fa-award text-amber-500' }
+                ];
+
+                top3Container.innerHTML = top3.map((sym, idx) => {
+                    const badge = rankBadges[idx] || rankBadges[2];
+                    return `
+                        <div class="bg-gradient-to-br ${badge.bg} p-2.5 rounded-xl border ${badge.border} flex flex-col justify-between space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] px-2 py-0.5 rounded-md ${badge.badgeBg} font-mono font-bold flex items-center gap-1">
+                                    <i class="fa-solid ${badge.icon}"></i> ${badge.rankText}
+                                </span>
+                                <span class="text-xs font-mono font-bold text-amber-300">${sym.cases} cases</span>
+                            </div>
+                            <div class="text-xs font-bold text-white truncate leading-snug pt-0.5" title="${sym.name}">
+                                ${sym.name}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
+                                <span>Ratio Share:</span>
+                                <span class="font-bold text-emerald-400">${sym.pct}%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (typeof Chart !== 'undefined') {
+                if (chartSickDonutInstance) chartSickDonutInstance.destroy();
+                chartSickDonutInstance = new Chart(canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: dataValues,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 2,
+                            borderColor: '#0f172a'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const val = context.raw || 0;
+                                        const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                        return ` ${context.label}: ${val} cases (${pct}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '62%'
+                    }
+                });
+            }
+
+            const cardsContainer = document.getElementById('symptomLegendCardsContainer');
+            if (cardsContainer) {
+                cardsContainer.innerHTML = symptoms.map((sym, idx) => {
+                    const color = colors[idx % colors.length];
+                    return `
+                        <div class="bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-sm transition-all duration-200">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${color}"></span>
+                                <span class="text-xs font-semibold text-slate-200 truncate" title="${sym.name}">${sym.name}</span>
+                            </div>
+                            <div class="flex items-baseline gap-1.5 flex-shrink-0 font-mono">
+                                <span class="text-xs font-bold text-amber-400">${sym.cases} cases</span>
+                                <span class="text-[11px] font-medium text-slate-400">(${sym.pct}%)</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function updateDeptComparisonChart() {
+            const canvas = document.getElementById('chartDeptLeaveComparisonBar');
+            if (!canvas || typeof Chart === 'undefined') return;
+            const selectEl = document.getElementById('selectDeptCompareMonth');
+            const selectedVal = selectEl ? selectEl.value : 'all';
+
+            const depts = appData.deptComparisonData || [];
+            const labels = depts.map(d => d.dept);
+
+            let totals = [], sicks = [], annuals = [], personals = [], others = [];
+
+            if (selectedVal === 'all') {
+                totals = depts.map(d => d.cumTotal || (d.cumSick + d.cumAnnual + d.cumPersonal + d.cumOthers));
+                sicks = depts.map(d => d.cumSick || 0);
+                annuals = depts.map(d => d.cumAnnual || 0);
+                personals = depts.map(d => d.cumPersonal || 0);
+                others = depts.map(d => d.cumOthers || 0);
+            } else {
+                const mIdx = parseInt(selectedVal, 10);
+                totals = depts.map(d => {
+                    const m = d.monthly && d.monthly[mIdx];
+                    return m ? (m.total || (m.sick + m.annual + m.personal + m.others)) : 0;
+                });
+                sicks = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].sick || 0 : 0);
+                annuals = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].annual || 0 : 0);
+                personals = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].personal || 0 : 0);
+                others = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].others || 0 : 0);
+            }
+
+            if (chartDeptComparisonInstance) chartDeptComparisonInstance.destroy();
+            chartDeptComparisonInstance = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'All Leave Total (วันลารวมทั้งหมด)', data: totals, borderColor: '#38bdf8', borderWidth: 3, tension: 0.3, pointRadius: 4 },
+                        { label: 'Sick Leave (วันลาป่วย)', data: sicks, borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                        { label: 'Annual Leave (วันลาพักร้อน)', data: annuals, borderColor: '#3b82f6', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                        { label: 'Personal Leave (วันลากิจ)', data: personals, borderColor: '#a855f7', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                        { label: 'Others Leave (วันลาอื่นๆ)', data: others, borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } } } }
+            });
+        }
+
+        function updateStageCounts() {
+            const list = appData.stageRoster || [];
+            const cntAll = list.length;
+            const cnt1 = list.filter(i => i.stage == 1).length;
+            const cnt2 = list.filter(i => i.stage == 2).length;
+            const cnt3 = list.filter(i => i.stage == 3).length;
+            const cnt4 = list.filter(i => i.stage == 4).length;
+
+            setText('stage1Count', cnt1);
+            setText('stage2Count', cnt2);
+            setText('stage3Count', cnt3);
+            setText('stage4Count', cnt4);
+            setText('totalStageMonitored', `${cntAll} Emps`);
+        }
+
+        function renderWorkforceCharts() {
+            if (typeof Chart === 'undefined') return;
+
+            const deptsList = (appData.deptHeadcount && appData.deptHeadcount.length > 0)
+                ? appData.deptHeadcount.filter(d => !d.dept.toLowerCase().includes('engineer'))
+                : [
+                    { dept: 'Production Department', count: 146 },
+                    { dept: 'Warehouse Department', count: 22 },
+                    { dept: 'Quality Control Department', count: 18 },
+                    { dept: 'Quality Assurance Department', count: 16 },
+                    { dept: 'Accounting Department', count: 12 },
+                    { dept: 'People Business Partner', count: 10 },
+                    { dept: 'Marketing & Communication', count: 8 },
+                    { dept: 'Executive Assistance', count: 6 },
+                    { dept: 'BOI Department', count: 4 },
+                    { dept: 'Research & Development', count: 3 }
+                ];
+
+            const pieLabels = deptsList.map(d => d.dept);
+            const pieData = deptsList.map(d => d.count);
+            const pieColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#06b6d4', '#ec4899', '#84cc16', '#a855f7', '#64748b'];
+
+            const pieCanvas = document.getElementById('chartDeptHeadcountPie');
+            if (pieCanvas) {
+                if (chartDeptHeadcountPieInstance) chartDeptHeadcountPieInstance.destroy();
+                chartDeptHeadcountPieInstance = new Chart(pieCanvas, {
+                    type: 'pie',
+                    data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors.slice(0, pieLabels.length), borderWidth: 2, borderColor: '#0f172a' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#f8fafc', font: { family: 'Inter', size: 10 }, boxWidth: 10 } } } }
+                });
+            }
+
+            const barCanvas = document.getElementById('chartLevelHeadcountBar');
+            if (barCanvas) {
+                const levelLabels = ['L1a', 'L1b', 'L2a', 'L2b', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8'];
+                const fallbacks = { 'L1a': 183, 'L1b': 28, 'L2a': 16, 'L2b': 10, 'L3': 16, 'L4': 7, 'L5': 3, 'L6': 4, 'L7': 6, 'L8': 4 };
+                const levelData = levelLabels.map(l => {
+                    if (appData.levelHeadcountMap && appData.levelHeadcountMap[l] !== undefined) {
+                        return appData.levelHeadcountMap[l];
+                    }
+                    return fallbacks[l] || 0;
+                });
+
+                if (chartLevelHeadcountBarInstance) chartLevelHeadcountBarInstance.destroy();
+                chartLevelHeadcountBarInstance = new Chart(barCanvas, {
+                    type: 'bar',
+                    data: { labels: levelLabels, datasets: [{ label: 'จำนวนพนักงานจริง (Actual Staff)', data: levelData, backgroundColor: '#6366f1', borderRadius: 6 }] },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
+                });
+            }
+
+            const genderCanvas = document.getElementById('chartGenderDonut');
+            if (genderCanvas) {
+                const gMale = (appData.genderCounts && appData.genderCounts.male) ? appData.genderCounts.male : 158;
+                const gFemale = (appData.genderCounts && appData.genderCounts.female) ? appData.genderCounts.female : 121;
+
+                if (chartGenderDonutInstance) chartGenderDonutInstance.destroy();
+                chartGenderDonutInstance = new Chart(genderCanvas, {
+                    type: 'doughnut',
+                    data: { labels: ['ชาย (Male)', 'หญิง (Female)'], datasets: [{ data: [gMale, gFemale], backgroundColor: ['#3b82f6', '#ec4899'], borderWidth: 2, borderColor: '#0f172a' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } } }, cutout: '65%' }
+                });
+            }
+
+            const nationCanvas = document.getElementById('chartNationDonut');
+            if (nationCanvas) {
+                const nThai = (appData.nationCounts && appData.nationCounts.thai) ? appData.nationCounts.thai : 185;
+                const nMyanmar = (appData.nationCounts && appData.nationCounts.myanmar) ? appData.nationCounts.myanmar : 94;
+
+                if (chartNationDonutInstance) chartNationDonutInstance.destroy();
+                chartNationDonutInstance = new Chart(nationCanvas, {
+                    type: 'doughnut',
+                    data: { labels: ['สัญชาติไทย (Thai)', 'สัญชาติเมียนมา (Myanmar)'], datasets: [{ data: [nThai, nMyanmar], backgroundColor: ['#10b981', '#f59e0b'], borderWidth: 2, borderColor: '#0f172a' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } } }, cutout: '65%' }
+                });
+            }
+
+            const comboCanvas = document.getElementById('chartTrendMovementCombo');
+            if (comboCanvas) {
+                if (chartTrendMovementComboInstance) chartTrendMovementComboInstance.destroy();
+
+                let trendLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                let joinData = [50, 40, 23, 30, 20, 15, 23, 7, 0, 0, 0, 0];
+                let resignData = [17, 18, 31, 16, 14, 20, 14, 7, 0, 0, 0, 0];
+                let turnoverData = [7.1, 6.8, 12.4, 6.2, 5.4, 7.3, 4.8, 2.5, 0, 0, 0, 0];
+
+                if (appData.monthlyTrendData && appData.monthlyTrendData.length > 0) {
+                    trendLabels = appData.monthlyTrendData.map(d => d.month);
+                    joinData = appData.monthlyTrendData.map(d => d.join);
+                    resignData = appData.monthlyTrendData.map(d => d.resign);
+                    turnoverData = appData.monthlyTrendData.map(d => d.turnoverRate);
+                }
+
+                chartTrendMovementComboInstance = new Chart(comboCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: trendLabels,
+                        datasets: [
+                            { type: 'bar', label: 'พนักงานเข้าใหม่ (Join)', data: joinData, backgroundColor: '#3b82f6', borderRadius: 4, yAxisID: 'y' },
+                            { type: 'bar', label: 'พนักงานลาออก (Resign)', data: resignData, backgroundColor: '#f43f5e', borderRadius: 4, yAxisID: 'y' },
+                            { type: 'line', label: 'Turnover Rate (%)', data: turnoverData, borderColor: '#f59e0b', borderWidth: 3, pointBackgroundColor: '#f59e0b', pointRadius: 4, tension: 0.3, yAxisID: 'y1' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onClick: (evt, activeElements) => {
+                            if (activeElements && activeElements.length > 0) {
+                                const el = activeElements[0];
+                                const dsIdx = el.datasetIndex;
+                                const idx = el.index;
+                                const monthName = chartTrendMovementComboInstance.data.labels[idx];
+                                if (dsIdx === 0) {
+                                    openTrendDetailModal('join', monthName);
+                                } else if (dsIdx === 1) {
+                                    openTrendDetailModal('resign', monthName);
+                                }
+                            }
+                        },
+                        onHover: (evt, activeElements) => {
+                            if (evt.chart && evt.chart.canvas) {
+                                evt.chart.canvas.style.cursor = (activeElements && activeElements.length > 0) ? 'pointer' : 'default';
+                            }
+                        },
+                        scales: {
+                            y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                            y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#f59e0b', callback: function(val) { return val + '%'; } } },
+                            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                        },
+                        plugins: {
+                            legend: { labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } }
+                        }
+                    }
+                });
+            }
         }
 
         function parseExecSummary121308326Tab(matrix) {
@@ -2771,7 +3141,6 @@
             }
         }
 
-        // ACCURATE CSV PARSER FOR TREND DETAIL JOIN/RESIGN ROSTERS WITH COLUMN ALIGNMENT FIX
         function isPositionWord(str) {
             if (!str) return false;
             const s = str.toLowerCase();
@@ -2787,7 +3156,7 @@
             let bestHeaderIdx = -1;
             let maxScore = 0;
 
-            let colId = -1, colName = -1, colNick = -1, colPos = -1, colDept = -1, colLoc = -1, colType = -1, colDate = -1, colStatus = -1;
+            let colId = -1, colName = -1, colNick = -1, colPos = -1, colDept = -1, colLoc = -1, colType = -1, colDate = -1, colStatus = -1, colReason = -1;
 
             for (let r = 0; r < Math.min(10, matrix.length); r++) {
                 const row = matrix[r] || [];
@@ -2799,6 +3168,7 @@
                     if (txt.includes('ตำแหน่ง') || txt.includes('position')) score++;
                     if (txt.includes('แผนก') || txt.includes('dept')) score++;
                     if (txt.includes('วันที่') || txt.includes('date') || txt.includes('เริ่มงาน') || txt.includes('ลาออก')) score++;
+                    if (txt.includes('เหตุผล') || txt.includes('reason')) score++;
                 });
                 if (score > maxScore) {
                     maxScore = score;
@@ -2810,20 +3180,33 @@
                 const hRow = matrix[bestHeaderIdx];
                 hRow.forEach((cell, cIdx) => {
                     const txt = String(cell || '').toLowerCase().trim();
-                    if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('code')) colId = cIdx;
-                    else if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt.includes('nick')) colNick = cIdx;
-                    else if ((txt.includes('ชื่อ-นามสกุล') || txt.includes('ชื่อนามสกุล') || txt.includes('full name') || txt.includes('ชื่อ')) && colName === -1) colName = cIdx;
-                    else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role')) colPos = cIdx;
-                    else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) colDept = cIdx;
-                    else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา')) colLoc = cIdx;
-                    else if (txt.includes('ประเภท') || txt.includes('emp type') || txt.includes('contract')) colType = cIdx;
-                    else if (txt.includes('สถานะ') || txt.includes('status')) colStatus = cIdx;
-                    else if (txt.includes('วันที่') || txt.includes('date') || txt.includes('เริ่มงาน') || txt.includes('ลาออก')) colDate = cIdx;
+                    if (txt.includes('เหตุผล') || txt.includes('reason')) {
+                        colReason = cIdx;
+                    } else if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('code')) {
+                        colId = cIdx;
+                    } else if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt.includes('nick')) {
+                        colNick = cIdx;
+                    } else if ((txt.includes('ชื่อ-นามสกุล') || txt.includes('ชื่อนามสกุล') || txt.includes('full name') || txt.includes('ชื่อ')) && colName === -1) {
+                        colName = cIdx;
+                    } else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role')) {
+                        colPos = cIdx;
+                    } else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) {
+                        colDept = cIdx;
+                    } else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา')) {
+                        colLoc = cIdx;
+                    } else if (txt.includes('ประเภท') || txt.includes('emp type') || txt.includes('contract')) {
+                        colType = cIdx;
+                    } else if (txt.includes('สถานะ') || txt.includes('status')) {
+                        colStatus = cIdx;
+                    } else if (txt.includes('วันที่') || txt.includes('date') || txt.includes('เริ่มงาน') || txt.includes('ลาออก')) {
+                        colDate = cIdx;
+                    }
                 });
             }
 
             if (colId === -1) colId = 0;
             if (colName === -1) colName = 1;
+            if (colReason === -1 && type === 'resign') colReason = 10; // Column K is index 10
 
             const startRow = bestHeaderIdx !== -1 ? bestHeaderIdx + 1 : 1;
 
@@ -2837,7 +3220,7 @@
                 if (!empId && !name) continue;
                 if (isTotalRow(empId) || isTotalRow(name)) continue;
 
-                let nickname = '', position = '', dept = '', location = '', empType = 'VSC', dateVal = '', statusVal = '';
+                let nickname = '', position = '', dept = '', location = '', empType = 'VSC', dateVal = '', statusVal = '', resignReason = '';
 
                 let cell2 = (colNick !== -1 && colNick < row.length) ? String(row[colNick] || '').trim() : String(row[2] || '').trim();
                 let cell3 = (colPos !== -1 && colPos < row.length) ? String(row[colPos] || '').trim() : String(row[3] || '').trim();
@@ -2854,20 +3237,22 @@
                 location = (colLoc !== -1 && colLoc < row.length) ? String(row[colLoc] || '').trim() : 'Factory / โรงงาน';
                 empType = (colType !== -1 && colType < row.length) ? String(row[colType] || '').trim() : 'VSC';
                 statusVal = (colStatus !== -1 && colStatus < row.length) ? String(row[colStatus] || '').trim() : '';
+                resignReason = (colReason !== -1 && colReason < row.length) ? String(row[colReason] || '').trim() : (row[10] ? String(row[10]).trim() : '');
 
-                if (colDate !== -1 && colDate < row.length) {
+                if (colDate !== -1 && colDate < row.length && colDate !== colReason) {
                     dateVal = String(row[colDate] || '').trim();
                 } else {
-                    row.forEach(c => {
-                        const strC = String(c || '').trim();
-                        if (strC.includes('/') || strC.includes('-')) {
-                            const nums = strC.match(/\d+/g);
-                            if (nums && nums.length >= 3) dateVal = strC;
+                    row.forEach((c, cIdx) => {
+                        if (cIdx !== colReason && cIdx !== 10) {
+                            const strC = String(c || '').trim();
+                            if ((strC.includes('/') || strC.includes('-')) && /\d/.test(strC)) {
+                                dateVal = strC;
+                            }
                         }
                     });
                 }
 
-                // FILTER: Strict 2026 Check
+                // Strict 2026 Filter
                 if (!isYear2026(dateVal)) continue;
 
                 let isResigned = false;
@@ -2894,357 +3279,165 @@
                     empType: clean(empType) !== '-' ? clean(empType) : 'VSC',
                     date: clean(dateVal),
                     status: isResigned ? 'Resign' : (statusVal || 'Active'),
-                    isResigned: isResigned
+                    isResigned: isResigned,
+                    resignReason: clean(resignReason)
                 });
             }
             return parsedList;
         }
 
-        // Section Update Functions
-        function updateSickLeaveReasonsSection() {
-            const monthSelect = document.getElementById('selectSymptomMonth');
-            const selectedVal = monthSelect ? monthSelect.value : 'all';
-            const rawList = appData.sickLeave.symptomsData || [];
-            if (rawList.length === 0) return;
+        function fetchSheetData() {
+            logInspector(`Starting Live Sync from Google Sheet ID: ${sheetConfig.sheetId}`);
+            const now = new Date().toLocaleTimeString();
+            setText('lastSyncTimeText', now);
 
-            let computedList = [];
-            let totalCasesSum = 0;
-            rawList.forEach(item => {
-                let cases = (selectedVal === 'all') ? (item.total || item.monthly.reduce((a, b) => a + b, 0)) : (item.monthly[parseInt(selectedVal, 10)] || 0);
-                totalCasesSum += cases;
-                computedList.push({ name: item.name, cases: cases, pct: 0 });
+            // Fetch Join Detail GID 3000001
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.joinGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        const parsed = parseTrendDetailTab(parseCSV(txt), 'join');
+                        if (parsed.length > 0) appData.trendDetailJoin = parsed;
+                    }
+                }).catch(e => logInspector(`Join detail tab notice: ${e.message}`));
+
+            // Fetch Resign Detail GID 3000002
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.resignGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        const parsed = parseTrendDetailTab(parseCSV(txt), 'resign');
+                        if (parsed.length > 0) appData.trendDetailResign = parsed;
+                    }
+                }).catch(e => logInspector(`Resign detail tab notice: ${e.message}`));
+
+            // Executive Summary GID 121308326
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.execGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        parseExecSummary121308326Tab(parseCSV(txt));
+                    }
+                }).catch(e => logInspector(`Executive Summary tab notice: ${e.message}`));
+
+            // Summary GID 926398620
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.summaryGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        parseSummaryTab(parseCSV(txt));
+                    }
+                }).catch(e => logInspector(`Summary tab notice: ${e.message}`));
+
+            // Category GIDs
+            const categoryGids = [
+                { key: 'all', gid: WORKFORCE_GIDS.all },
+                { key: 'vsc', gid: WORKFORCE_GIDS.vsc },
+                { key: 'outsource', gid: WORKFORCE_GIDS.outsource },
+                { key: 'prod', gid: WORKFORCE_GIDS.prod },
+                { key: 'newcomer', gid: WORKFORCE_GIDS.newcomer }
+            ];
+
+            categoryGids.forEach(cat => {
+                fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${cat.gid}&_nocache=${Date.now()}`)
+                    .then(r => r.text())
+                    .then(txt => {
+                        if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                            const list = parseWorkforceCategoryTab(parseCSV(txt), cat.key);
+                            if (list && list.length > 0) {
+                                appData.wfCategories[cat.key] = list;
+                                if (cat.key === 'all') appData.empAllList = list;
+                            }
+                        }
+                    }).catch(e => logInspector(`Category [${cat.key}] notice: ${e.message}`));
             });
-            computedList.forEach(item => { item.pct = totalCasesSum > 0 ? parseFloat(((item.cases / totalCasesSum) * 100).toFixed(1)) : 0; });
-            computedList.sort((a, b) => b.cases - a.cases);
-            appData.sickLeave.symptoms = computedList;
+
+            // Trends GID 1810359834
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.trendGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        parseTrends1810359834Tab(parseCSV(txt));
+                    }
+                }).catch(e => logInspector(`Trends tab notice: ${e.message}`));
+
+            // Daily Roster GID 1001
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.rosterGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        parseRoster1001Tab(parseCSV(txt));
+                    }
+                }).catch(e => logInspector(`Daily Roster tab notice: ${e.message}`));
+
+            // Sick Leave GID 343117470
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.slGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => parseSymptom343117470Tab(parseCSV(txt)))
+                .catch(e => logInspector(`Sick Leave tab notice: ${e.message}`));
+
+            // Dept Comparison GID 1942440000
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.deptCompareGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => parseDeptCompare1942440000Tab(parseCSV(txt)))
+                .catch(e => logInspector(`Dept Compare tab notice: ${e.message}`));
+
+            // Departments GID 573246361
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.deptGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => parseDepartments573246361Tab(parseCSV(txt)))
+                .catch(e => logInspector(`Dept tab notice: ${e.message}`));
+
+            // Levels GID 1540331459
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.levelGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        parseLevels1540331459Tab(parseCSV(txt));
+                    }
+                }).catch(e => logInspector(`Levels tab notice: ${e.message}`));
+
+            // Demographics GID 237779043
+            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.demographicsGid}&_nocache=${Date.now()}`)
+                .then(r => r.text())
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                        parseDemographics237779043Tab(parseCSV(txt));
+                    }
+                }).catch(e => logInspector(`Demographics tab notice: ${e.message}`));
+
+            // Stage Surveillance GIDs
+            const stageGids = [
+                { gid: sheetConfig.stage1Gid, stage: 1 },
+                { gid: sheetConfig.stage2Gid, stage: 2 },
+                { gid: sheetConfig.stage3Gid, stage: 3 },
+                { gid: sheetConfig.stage4Gid, stage: 4 }
+            ];
+
+            let combinedStageRoster = [];
+            stageGids.forEach(item => {
+                fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${item.gid}&_nocache=${Date.now()}`)
+                    .then(r => r.text())
+                    .then(txt => {
+                        if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                            const parsed = parseStageTab(parseCSV(txt), item.stage);
+                            if (parsed && parsed.length > 0) {
+                                combinedStageRoster.push(...parsed);
+                                appData.stageRoster = combinedStageRoster;
+                                renderStageRosterTable();
+                            }
+                        }
+                    }).catch(e => logInspector(`Stage ${item.stage} notice: ${e.message}`));
+            });
 
             renderExecutiveSummaryUI();
             renderSickLeaveDonutAndLegend();
+            updateDeptComparisonChart();
+            renderWorkforceCharts();
+            renderWorkforceListTable();
         }
 
-        function renderExecutiveSummaryUI() {
-            if (!appData || !appData.execSummary) return;
-            const es = appData.execSummary;
-            setText('execSheetDateText', es.sheetDate || '--/--/----');
-            setText('execTotalLeaveTodayAll', (es.totalLeaveTodayAll !== undefined && es.totalLeaveTodayAll !== null) ? es.totalLeaveTodayAll : 0);
-            setText('execTotalLeaveTodayProd', (es.totalLeaveTodayProd !== undefined && es.totalLeaveTodayProd !== null) ? es.totalLeaveTodayProd : 0);
-            setText('execSickLeaveTodayAll', (es.sickLeaveTodayAll !== undefined && es.sickLeaveTodayAll !== null) ? es.sickLeaveTodayAll : 0);
-            setText('execSickLeaveTodayProd', (es.sickLeaveTodayProd !== undefined && es.sickLeaveTodayProd !== null) ? es.sickLeaveTodayProd : 0);
-            setText('execSickRate', ((es.sickRate !== undefined && es.sickRate !== null) ? es.sickRate : 0) + '%');
-            
-            if (es.topSymptomToday && es.topSymptomToday !== '-' && es.topSymptomToday !== '0') {
-                setText('execTopSymptomText', es.topSymptomToday);
-            } else if (es.topSymptomToday === '0') {
-                setText('execTopSymptomText', '0');
-            } else {
-                setText('execTopSymptomText', 'สุขภาพสตรี: ปวดประจำเดือน');
-            }
-
-            if (es.topDeptToday && es.topDeptToday !== '-' && es.topDeptToday !== '0') {
-                setText('execTopDeptText', es.topDeptToday);
-            } else if (es.topDeptToday === '0') {
-                setText('execTopDeptText', '0');
-            } else {
-                setText('execTopDeptText', 'Production Department (4 Emps)');
-            }
-
-            setText('execActiveWorkforce', appData.summary ? appData.summary.totalActive : 0);
-            updateStageCounts();
-        }
-
-        function renderSickLeaveDonutAndLegend() {
-            const canvas = document.getElementById('chartSickLeaveReasonsDonut');
-            if (!canvas) return;
-
-            const symptoms = appData.sickLeave.symptoms || [];
-            const labels = symptoms.map(s => s.name);
-            const dataValues = symptoms.map(s => s.cases);
-            const colors = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#06b6d4', '#64748b', '#a855f7', '#e11d48', '#84cc16'];
-
-            const top3Container = document.getElementById('top3SymptomCardsContainer');
-            if (top3Container) {
-                const top3 = symptoms.slice(0, 3);
-                const rankBadges = [
-                    { border: 'border-amber-500/60 shadow-amber-950/40', bg: 'from-amber-950/70 via-slate-900 to-slate-950', badgeBg: 'bg-amber-500/25 text-amber-300 border-amber-400/50', rankText: '#1 TOP', icon: 'fa-trophy text-amber-400' },
-                    { border: 'border-slate-400/60 shadow-slate-950/40', bg: 'from-slate-900 via-slate-900 to-slate-950', badgeBg: 'bg-slate-500/25 text-slate-300 border-slate-400/50', rankText: '#2 TOP', icon: 'fa-medal text-slate-300' },
-                    { border: 'border-amber-700/60 shadow-amber-950/40', bg: 'from-amber-950/40 via-slate-900 to-slate-950', badgeBg: 'bg-amber-700/25 text-amber-400 border-amber-600/50', rankText: '#3 TOP', icon: 'fa-award text-amber-500' }
-                ];
-
-                top3Container.innerHTML = top3.map((sym, idx) => {
-                    const badge = rankBadges[idx] || rankBadges[2];
-                    return `
-                        <div class="bg-gradient-to-br ${badge.bg} p-2.5 rounded-xl border ${badge.border} flex flex-col justify-between space-y-1">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] px-2 py-0.5 rounded-md ${badge.badgeBg} font-mono font-bold flex items-center gap-1">
-                                    <i class="fa-solid ${badge.icon}"></i> ${badge.rankText}
-                                </span>
-                                <span class="text-xs font-mono font-bold text-amber-300">${sym.cases} cases</span>
-                            </div>
-                            <div class="text-xs font-bold text-white truncate leading-snug pt-0.5" title="${sym.name}">
-                                ${sym.name}
-                            </div>
-                            <div class="text-[10px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
-                                <span>Ratio Share:</span>
-                                <span class="font-bold text-emerald-400">${sym.pct}%</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            if (typeof Chart !== 'undefined') {
-                if (chartSickDonutInstance) chartSickDonutInstance.destroy();
-                chartSickDonutInstance = new Chart(canvas, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: dataValues,
-                            backgroundColor: colors.slice(0, labels.length),
-                            borderWidth: 2,
-                            borderColor: '#0f172a'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const val = context.raw || 0;
-                                        const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                                        return ` ${context.label}: ${val} cases (${pct}%)`;
-                                    }
-                                }
-                            }
-                        },
-                        cutout: '62%'
-                    }
-                });
-            }
-
-            const cardsContainer = document.getElementById('symptomLegendCardsContainer');
-            if (cardsContainer) {
-                cardsContainer.innerHTML = symptoms.map((sym, idx) => {
-                    const color = colors[idx % colors.length];
-                    return `
-                        <div class="bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-sm transition-all duration-200">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${color}"></span>
-                                <span class="text-xs font-semibold text-slate-200 truncate" title="${sym.name}">${sym.name}</span>
-                            </div>
-                            <div class="flex items-baseline gap-1.5 flex-shrink-0 font-mono">
-                                <span class="text-xs font-bold text-amber-400">${sym.cases} cases</span>
-                                <span class="text-[11px] font-medium text-slate-400">(${sym.pct}%)</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-        }
-
-        function updateDeptComparisonChart() {
-            const canvas = document.getElementById('chartDeptLeaveComparisonBar');
-            if (!canvas || typeof Chart === 'undefined') return;
-            const selectEl = document.getElementById('selectDeptCompareMonth');
-            const selectedVal = selectEl ? selectEl.value : 'all';
-
-            const depts = appData.deptComparisonData || [];
-            const labels = depts.map(d => d.dept);
-
-            let totals = [], sicks = [], annuals = [], personals = [], others = [];
-
-            if (selectedVal === 'all') {
-                totals = depts.map(d => d.cumTotal || (d.cumSick + d.cumAnnual + d.cumPersonal + d.cumOthers));
-                sicks = depts.map(d => d.cumSick || 0);
-                annuals = depts.map(d => d.cumAnnual || 0);
-                personals = depts.map(d => d.cumPersonal || 0);
-                others = depts.map(d => d.cumOthers || 0);
-            } else {
-                const mIdx = parseInt(selectedVal, 10);
-                totals = depts.map(d => {
-                    const m = d.monthly && d.monthly[mIdx];
-                    return m ? (m.total || (m.sick + m.annual + m.personal + m.others)) : 0;
-                });
-                sicks = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].sick || 0 : 0);
-                annuals = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].annual || 0 : 0);
-                personals = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].personal || 0 : 0);
-                others = depts.map(d => (d.monthly && d.monthly[mIdx]) ? d.monthly[mIdx].others || 0 : 0);
-            }
-
-            if (chartDeptComparisonInstance) chartDeptComparisonInstance.destroy();
-            chartDeptComparisonInstance = new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'All Leave Total (วันลารวมทั้งหมด)', data: totals, borderColor: '#38bdf8', borderWidth: 3, tension: 0.3, pointRadius: 4 },
-                        { label: 'Sick Leave (วันลาป่วย)', data: sicks, borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                        { label: 'Annual Leave (วันลาพักร้อน)', data: annuals, borderColor: '#3b82f6', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                        { label: 'Personal Leave (วันลากิจ)', data: personals, borderColor: '#a855f7', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                        { label: 'Others Leave (วันลาอื่นๆ)', data: others, borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } } } }
-            });
-        }
-
-        function updateStageCounts() {
-            const list = appData.stageRoster || [];
-            const cntAll = list.length;
-            const cnt1 = list.filter(i => i.stage == 1).length;
-            const cnt2 = list.filter(i => i.stage == 2).length;
-            const cnt3 = list.filter(i => i.stage == 3).length;
-            const cnt4 = list.filter(i => i.stage == 4).length;
-
-            setText('stage1Count', cnt1);
-            setText('stage2Count', cnt2);
-            setText('stage3Count', cnt3);
-            setText('stage4Count', cnt4);
-            setText('totalStageMonitored', `${cntAll} Emps`);
-        }
-
-        function renderWorkforceCharts() {
-            if (typeof Chart === 'undefined') return;
-
-            const deptsList = (appData.deptHeadcount && appData.deptHeadcount.length > 0)
-                ? appData.deptHeadcount.filter(d => !d.dept.toLowerCase().includes('engineer'))
-                : [
-                    { dept: 'Production Department', count: 146 },
-                    { dept: 'Warehouse Department', count: 22 },
-                    { dept: 'Quality Control Department', count: 18 },
-                    { dept: 'Quality Assurance Department', count: 16 },
-                    { dept: 'Accounting Department', count: 12 },
-                    { dept: 'People Business Partner', count: 10 },
-                    { dept: 'Marketing & Communication', count: 8 },
-                    { dept: 'Executive Assistance', count: 6 },
-                    { dept: 'BOI Department', count: 4 },
-                    { dept: 'Research & Development', count: 3 }
-                ];
-
-            const pieLabels = deptsList.map(d => d.dept);
-            const pieData = deptsList.map(d => d.count);
-            const pieColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#06b6d4', '#ec4899', '#84cc16', '#a855f7', '#64748b'];
-
-            const pieCanvas = document.getElementById('chartDeptHeadcountPie');
-            if (pieCanvas) {
-                if (chartDeptHeadcountPieInstance) chartDeptHeadcountPieInstance.destroy();
-                chartDeptHeadcountPieInstance = new Chart(pieCanvas, {
-                    type: 'pie',
-                    data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors.slice(0, pieLabels.length), borderWidth: 2, borderColor: '#0f172a' }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#f8fafc', font: { family: 'Inter', size: 10 }, boxWidth: 10 } } } }
-                });
-            }
-
-            const barCanvas = document.getElementById('chartLevelHeadcountBar');
-            if (barCanvas) {
-                const levelLabels = ['L1a', 'L1b', 'L2a', 'L2b', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8'];
-                const fallbacks = { 'L1a': 183, 'L1b': 28, 'L2a': 16, 'L2b': 10, 'L3': 16, 'L4': 7, 'L5': 3, 'L6': 4, 'L7': 6, 'L8': 4 };
-                const levelData = levelLabels.map(l => {
-                    if (appData.levelHeadcountMap && appData.levelHeadcountMap[l] !== undefined) {
-                        return appData.levelHeadcountMap[l];
-                    }
-                    return fallbacks[l] || 0;
-                });
-
-                if (chartLevelHeadcountBarInstance) chartLevelHeadcountBarInstance.destroy();
-                chartLevelHeadcountBarInstance = new Chart(barCanvas, {
-                    type: 'bar',
-                    data: { labels: levelLabels, datasets: [{ label: 'จำนวนพนักงานจริง (Actual Staff)', data: levelData, backgroundColor: '#6366f1', borderRadius: 6 }] },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
-                });
-            }
-
-            const genderCanvas = document.getElementById('chartGenderDonut');
-            if (genderCanvas) {
-                const gMale = (appData.genderCounts && appData.genderCounts.male) ? appData.genderCounts.male : 158;
-                const gFemale = (appData.genderCounts && appData.genderCounts.female) ? appData.genderCounts.female : 121;
-
-                if (chartGenderDonutInstance) chartGenderDonutInstance.destroy();
-                chartGenderDonutInstance = new Chart(genderCanvas, {
-                    type: 'doughnut',
-                    data: { labels: ['ชาย (Male)', 'หญิง (Female)'], datasets: [{ data: [gMale, gFemale], backgroundColor: ['#3b82f6', '#ec4899'], borderWidth: 2, borderColor: '#0f172a' }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } } }, cutout: '65%' }
-                });
-            }
-
-            const nationCanvas = document.getElementById('chartNationDonut');
-            if (nationCanvas) {
-                const nThai = (appData.nationCounts && appData.nationCounts.thai) ? appData.nationCounts.thai : 185;
-                const nMyanmar = (appData.nationCounts && appData.nationCounts.myanmar) ? appData.nationCounts.myanmar : 94;
-
-                if (chartNationDonutInstance) chartNationDonutInstance.destroy();
-                chartNationDonutInstance = new Chart(nationCanvas, {
-                    type: 'doughnut',
-                    data: { labels: ['สัญชาติไทย (Thai)', 'สัญชาติเมียนมา (Myanmar)'], datasets: [{ data: [nThai, nMyanmar], backgroundColor: ['#10b981', '#f59e0b'], borderWidth: 2, borderColor: '#0f172a' }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } } }, cutout: '65%' }
-                });
-            }
-
-            const comboCanvas = document.getElementById('chartTrendMovementCombo');
-            if (comboCanvas) {
-                if (chartTrendMovementComboInstance) chartTrendMovementComboInstance.destroy();
-
-                let trendLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                let joinData = [50, 40, 23, 30, 20, 15, 23, 7, 0, 0, 0, 0];
-                let resignData = [17, 18, 31, 16, 14, 20, 14, 7, 0, 0, 0, 0];
-                let turnoverData = [7.1, 6.8, 12.4, 6.2, 5.4, 7.3, 4.8, 2.5, 0, 0, 0, 0];
-
-                if (appData.monthlyTrendData && appData.monthlyTrendData.length > 0) {
-                    trendLabels = appData.monthlyTrendData.map(d => d.month);
-                    joinData = appData.monthlyTrendData.map(d => d.join);
-                    resignData = appData.monthlyTrendData.map(d => d.resign);
-                    turnoverData = appData.monthlyTrendData.map(d => d.turnoverRate);
-                }
-
-                chartTrendMovementComboInstance = new Chart(comboCanvas, {
-                    type: 'bar',
-                    data: {
-                        labels: trendLabels,
-                        datasets: [
-                            { type: 'bar', label: 'พนักงานเข้าใหม่ (Join)', data: joinData, backgroundColor: '#3b82f6', borderRadius: 4, yAxisID: 'y' },
-                            { type: 'bar', label: 'พนักงานลาออก (Resign)', data: resignData, backgroundColor: '#f43f5e', borderRadius: 4, yAxisID: 'y' },
-                            { type: 'line', label: 'Turnover Rate (%)', data: turnoverData, borderColor: '#f59e0b', borderWidth: 3, pointBackgroundColor: '#f59e0b', pointRadius: 4, tension: 0.3, yAxisID: 'y1' }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        onClick: (evt, activeElements) => {
-                            if (activeElements && activeElements.length > 0) {
-                                const el = activeElements[0];
-                                const dsIdx = el.datasetIndex;
-                                const idx = el.index;
-                                const monthName = chartTrendMovementComboInstance.data.labels[idx];
-                                if (dsIdx === 0) {
-                                    openTrendDetailModal('join', monthName);
-                                } else if (dsIdx === 1) {
-                                    openTrendDetailModal('resign', monthName);
-                                }
-                            }
-                        },
-                        onHover: (evt, activeElements) => {
-                            if (evt.chart && evt.chart.canvas) {
-                                evt.chart.canvas.style.cursor = (activeElements && activeElements.length > 0) ? 'pointer' : 'default';
-                            }
-                        },
-                        scales: {
-                            y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
-                            y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#f59e0b', callback: function(val) { return val + '%'; } } },
-                            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
-                        },
-                        plugins: {
-                            legend: { labels: { color: '#f8fafc', font: { family: 'Inter', size: 11 } } }
-                        }
-                    }
-                });
-            }
-        }
-
-        // BIND EVENT HANDLERS DIRECTLY TO WINDOW AT THE TOP LEVEL
+        // EXPLICIT GLOBAL WINDOW BINDINGS TO PREVENT REFERENCE ERRORS
         window.switchTab = switchTab;
         window.openLocationListModal = openLocationListModal;
         window.openWorkforceListModal = openWorkforceListModal;
@@ -3270,219 +3463,9 @@
         window.resetToDemoData = resetToDemoData;
         window.openInspectorModal = openInspectorModal;
         window.closeInspectorModal = closeInspectorModal;
-
-        window.fetchSheetData = async function() {
-            logInspector(`Starting Live Sync from Google Sheet ID: ${sheetConfig.sheetId}`);
-            const now = new Date().toLocaleTimeString();
-            setText('lastSyncTimeText', now);
-
-            try {
-                // Fetch Join Detail GID 3000001
-                try {
-                    const joinUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.joinGid}`;
-                    const joinRes = await fetch(joinUrl);
-                    if (joinRes.ok) {
-                        const joinText = await joinRes.text();
-                        if (joinText && !joinText.trim().toLowerCase().startsWith('<!doctype')) {
-                            const parsed = parseTrendDetailTab(parseCSV(joinText), 'join');
-                            if (parsed.length > 0) appData.trendDetailJoin = parsed;
-                        }
-                    }
-                } catch (jErr) {
-                    logInspector(`Join detail tab notice: ${jErr.message}`);
-                }
-
-                // Fetch Resign Detail GID 3000002
-                try {
-                    const resignUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.resignGid}`;
-                    const resignRes = await fetch(resignUrl);
-                    if (resignRes.ok) {
-                        const resignText = await resignRes.text();
-                        if (resignText && !resignText.trim().toLowerCase().startsWith('<!doctype')) {
-                            const parsed = parseTrendDetailTab(parseCSV(resignText), 'resign');
-                            if (parsed.length > 0) appData.trendDetailResign = parsed;
-                        }
-                    }
-                } catch (rErr) {
-                    logInspector(`Resign detail tab notice: ${rErr.message}`);
-                }
-
-                // Executive Summary GID 121308326
-                try {
-                    const execUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.execGid}`;
-                    const execRes = await fetch(execUrl);
-                    if (execRes.ok) {
-                        const execText = await execRes.text();
-                        if (execText && !execText.trim().toLowerCase().startsWith('<!doctype')) {
-                            parseExecSummary121308326Tab(parseCSV(execText));
-                        }
-                    }
-                } catch (execErr) {
-                    logInspector(`Executive Summary tab notice: ${execErr.message}`);
-                }
-
-                // Summary GID 926398620
-                try {
-                    const summaryUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.summaryGid}`;
-                    const sumRes = await fetch(summaryUrl);
-                    if (sumRes.ok) {
-                        const sumText = await sumRes.text();
-                        if (sumText && !sumText.trim().toLowerCase().startsWith('<!doctype')) {
-                            parseSummaryTab(parseCSV(sumText));
-                        }
-                    }
-                } catch (sumErr) {
-                    logInspector(`Summary tab notice: ${sumErr.message}`);
-                }
-
-                // Category GIDs
-                const categoryGids = [
-                    { key: 'all', gid: WORKFORCE_GIDS.all },
-                    { key: 'vsc', gid: WORKFORCE_GIDS.vsc },
-                    { key: 'outsource', gid: WORKFORCE_GIDS.outsource },
-                    { key: 'prod', gid: WORKFORCE_GIDS.prod },
-                    { key: 'newcomer', gid: WORKFORCE_GIDS.newcomer }
-                ];
-
-                for (const cat of categoryGids) {
-                    try {
-                        const url = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
-                        const res = await fetch(url);
-                        if (res.ok) {
-                            const text = await res.text();
-                            if (text && !text.trim().toLowerCase().startsWith('<!doctype')) {
-                                const list = parseWorkforceCategoryTab(parseCSV(text), cat.key);
-                                if (list && list.length > 0) {
-                                    appData.wfCategories[cat.key] = list;
-                                    if (cat.key === 'all') appData.empAllList = list;
-                                }
-                            }
-                        }
-                    } catch (catErr) {
-                        logInspector(`Category [${cat.key}] notice: ${catErr.message}`);
-                    }
-                }
-
-                // Trends GID 1810359834
-                try {
-                    const trendUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.trendGid}`;
-                    const trendRes = await fetch(trendUrl);
-                    if (trendRes.ok) {
-                        const text = await trendRes.text();
-                        if (text && !text.trim().toLowerCase().startsWith('<!doctype')) {
-                            parseTrends1810359834Tab(parseCSV(text));
-                        }
-                    }
-                } catch (trErr) {
-                    logInspector(`Trends tab notice: ${trErr.message}`);
-                }
-
-                // Daily Roster GID 1001
-                try {
-                    const rosterUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.rosterGid}`;
-                    const rosterRes = await fetch(rosterUrl);
-                    if (rosterRes.ok) {
-                        const text = await rosterRes.text();
-                        if (text && !text.trim().toLowerCase().startsWith('<!doctype')) {
-                            parseRoster1001Tab(parseCSV(text));
-                        }
-                    }
-                } catch (rosterErr) {
-                    logInspector(`Daily Roster tab notice: ${rosterErr.message}`);
-                }
-
-                // Sick Leave GID 343117470
-                const slUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.slGid}`;
-                const slRes = await fetch(slUrl);
-                if (slRes.ok) {
-                    const text = await slRes.text();
-                    parseSymptom343117470Tab(parseCSV(text));
-                }
-
-                // Dept Comparison GID 1942440000
-                const deptUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.deptCompareGid}`;
-                const deptRes = await fetch(deptUrl);
-                if (deptRes.ok) {
-                    const text = await deptRes.text();
-                    parseDeptCompare1942440000Tab(parseCSV(text));
-                }
-
-                // Departments GID 573246361
-                const deptsUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.deptGid}`;
-                const deptsRes = await fetch(deptsUrl);
-                if (deptsRes.ok) {
-                    const text = await deptsRes.text();
-                    parseDepartments573246361Tab(parseCSV(text));
-                }
-
-                // Levels GID 1540331459
-                try {
-                    const levelsUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.levelGid}`;
-                    const lvlRes = await fetch(levelsUrl);
-                    if (lvlRes.ok) {
-                        const text = await lvlRes.text();
-                        if (text && !text.trim().toLowerCase().startsWith('<!doctype')) {
-                            parseLevels1540331459Tab(parseCSV(text));
-                        }
-                    }
-                } catch (lvlErr) {
-                    logInspector(`Levels tab notice: ${lvlErr.message}`);
-                }
-
-                // Demographics GID 237779043
-                try {
-                    const demoUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.demographicsGid}`;
-                    const demoRes = await fetch(demoUrl);
-                    if (demoRes.ok) {
-                        const text = await demoRes.text();
-                        if (text && !text.trim().toLowerCase().startsWith('<!doctype')) {
-                            parseDemographics237779043Tab(parseCSV(text));
-                        }
-                    }
-                } catch (demoErr) {
-                    logInspector(`Demographics tab notice: ${demoErr.message}`);
-                }
-
-                // Stage Surveillance GIDs
-                const stageGids = [
-                    { gid: sheetConfig.stage1Gid, stage: 1 },
-                    { gid: sheetConfig.stage2Gid, stage: 2 },
-                    { gid: sheetConfig.stage3Gid, stage: 3 },
-                    { gid: sheetConfig.stage4Gid, stage: 4 }
-                ];
-
-                let combinedStageRoster = [];
-                for (const item of stageGids) {
-                    try {
-                        const stUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${item.gid}`;
-                        const stRes = await fetch(stUrl);
-                        if (stRes.ok) {
-                            const text = await stRes.text();
-                            if (text && !text.trim().toLowerCase().startsWith('<!doctype')) {
-                                const parsed = parseStageTab(parseCSV(text), item.stage);
-                                if (parsed && parsed.length > 0) combinedStageRoster.push(...parsed);
-                            }
-                        }
-                    } catch (stErr) {
-                        logInspector(`Fetch Notice for Stage ${item.stage} (GID: ${item.gid}): ${stErr.message}`);
-                    }
-                }
-
-                if (combinedStageRoster.length > 0) {
-                    appData.stageRoster = combinedStageRoster;
-                    logInspector(`Successfully loaded ${combinedStageRoster.length} active stage surveillance cases directly from GIDs 1000001 - 1000004.`);
-                    renderStageRosterTable();
-                }
-            } catch (err) {
-                logInspector(`Fetch Notice: Using active application memory dataset. (${err.message})`);
-            }
-
-            renderExecutiveSummaryUI();
-            renderSickLeaveDonutAndLegend();
-            updateDeptComparisonChart();
-            renderWorkforceCharts();
-            renderWorkforceListTable();
-        };
+        window.updateSickLeaveReasonsSection = updateSickLeaveReasonsSection;
+        window.updateDeptComparisonChart = updateDeptComparisonChart;
+        window.fetchSheetData = fetchSheetData;
 
         window.addEventListener('DOMContentLoaded', () => {
             logInspector("People Dashboard V.4 initialized. Exec Summary Feed: GID 121308326. Daily Roster Feed: GID 1001.");
@@ -3490,13 +3473,12 @@
             updateDeptComparisonChart();
             renderWorkforceCharts();
             renderWorkforceListTable();
-            window.fetchSheetData();
+            fetchSheetData();
 
             setInterval(() => {
-                window.fetchSheetData();
+                fetchSheetData();
             }, 15000);
 
-            // Bind Direct Click Listener to the Trend Movement Chart Canvas Element
             const comboCanvas = document.getElementById('chartTrendMovementCombo');
             if (comboCanvas) {
                 comboCanvas.onclick = function(evt) {
@@ -3508,9 +3490,9 @@
                         const idx = el.index;
                         const monthName = chartTrendMovementComboInstance.data.labels[idx];
                         if (dsIdx === 0) {
-                            window.openTrendDetailModal('join', monthName);
+                            openTrendDetailModal('join', monthName);
                         } else if (dsIdx === 1) {
-                            window.openTrendDetailModal('resign', monthName);
+                            openTrendDetailModal('resign', monthName);
                         }
                     }
                 };
