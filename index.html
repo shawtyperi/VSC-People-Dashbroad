@@ -1118,9 +1118,15 @@
                         <p class="text-xs text-slate-400">Direct live feed from Google Sheet GID: 1001 (Excludes Resigned Staff)</p>
                     </div>
                 </div>
-                <button onclick="closeLeaveListModal()" class="text-slate-400 hover:text-white cursor-pointer w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark text-base"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="fetchLeaveRosterDirect()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs flex items-center gap-1.5 transition cursor-pointer" title="รีเฟรชข้อมูลใบลาสด (GID 1001)">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span class="hidden sm:inline text-[11px]">Sync GID 1001</span>
+                    </button>
+                    <button onclick="closeLeaveListModal()" class="text-slate-400 hover:text-white cursor-pointer w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
@@ -1572,6 +1578,7 @@
                 dusit: 13
             },
             empLocationMap: {},
+            empNicknameMap: {},
             levelHeadcountMap: { 'L1a': 183, 'L1b': 28, 'L2a': 16, 'L2b': 10, 'L3': 16, 'L4': 7, 'L5': 3, 'L6': 4, 'L7': 6, 'L8': 4 },
             genderCounts: { male: 158, female: 121 },
             nationCounts: { thai: 185, myanmar: 94 },
@@ -1591,6 +1598,17 @@
                 { position: 'Internal Audit Officer', count: 4 },
                 { position: 'Warehouse Team Lead', count: 3 }
             ],
+            monthlyTrendData: [],
+            trendDetailJoin: [],
+            trendDetailResign: [],
+            employeeLeaveList: [],
+            excludedStaffList: [],
+            stageRoster: [],
+            deptComparisonData: [],
+            sickLeave: {
+                symptoms: [],
+                symptomsData: []
+            },
             execSummary: {
                 sheetDate: '13/8/2026',
                 totalLeaveTodayAll: 13,
@@ -1599,22 +1617,124 @@
                 sickLeaveTodayProd: 4,
                 sickRate: 1.34,
                 topSymptomToday: '-',
-                topDeptToday: '-',
-                topCountToday: 0
-            },
-            monthlyTrendData: [],
-            trendDetailJoin: [],
-            trendDetailResign: [],
-            excludedStaffList: [],
-            deptComparisonData: [],
-            employeeLeaveList: [],
-            stageRoster: [],
-            sickLeave: {
-                stages: { stage1: 14, stage2: 8, stage3: 3, stage4: 1 },
-                symptomsData: [],
-                symptoms: []
+                topDeptToday: '-'
             }
         };
+
+        function correctNameAndPosition(emp) {
+            if (!emp) return emp;
+            let nameStr = String(emp.name || '').trim();
+            let posStr = String(emp.position || '').trim();
+            if (!nameStr && !posStr) return emp;
+
+            const isNamePrefix = (str) => /^(นาย|นางสาว|นาง|น\.ส\.|นส\.|ด\.ช\.|ด\.ญ\.|mr\.|mrs\.|ms\.|miss)\s*/i.test(str);
+            const jobKeywords = /staff|officer|lead|leader|manager|supervisor|technician|director|operator|assistant|engineer|admin|specialist|head|clerk|executive|chief|worker|driver|cleaner|พนักงาน|หัวหน้า|เจ้าหน้าที่|ผู้จัดการ|ช่าง|ผู้ช่วย|วิศวกร|ผจก|แม่บ้าน|รปภ|คนขับ|ธุรการ|qc|qa|it|ช่างเทคนิค/i;
+
+            const nameHasJob = jobKeywords.test(nameStr);
+            const posHasJob = jobKeywords.test(posStr);
+            const nameHasPrefix = isNamePrefix(nameStr);
+            const posHasPrefix = isNamePrefix(posStr);
+
+            let shouldSwap = false;
+
+            // Case 1: Position column contains personal name prefix (e.g. "นาย", "นางสาว", "Mr.")
+            if (posHasPrefix) {
+                shouldSwap = true;
+            }
+            // Case 2: Name column has job title keywords without person prefix, and position has no job title keywords
+            else if (nameHasJob && !nameHasPrefix && !posHasJob) {
+                shouldSwap = true;
+            }
+            // Case 3: Name has job title keyword and position has full-name spacing typical of Thai name
+            else if (nameHasJob && !nameHasPrefix && posStr.includes(' ') && !posHasJob) {
+                shouldSwap = true;
+            }
+
+            if (shouldSwap) {
+                const temp = emp.name;
+                emp.name = emp.position;
+                emp.position = temp;
+            }
+
+            // Extract inline nickname from name if present: e.g. "นายสมเกียรติ สว่างศรี (เกียรติ)"
+            if (emp.name && (!emp.nickname || emp.nickname === '-')) {
+                const bracketMatch = emp.name.match(/[\(\[\{“"']([^()\[\]{}"'”]+)[\)\]\}”"']/);
+                if (bracketMatch && bracketMatch[1]) {
+                    const extracted = bracketMatch[1].trim();
+                    if (extracted.length <= 15 && !/\d/.test(extracted)) {
+                        emp.nickname = extracted;
+                        emp.name = emp.name.replace(/[\(\[\{“"'][^()\[\]{}"'”]+[\)\]\}”"']/g, '').trim();
+                    }
+                }
+            }
+
+            // Check global nickname cache
+            if ((!emp.nickname || emp.nickname === '-') && appData.empNicknameMap) {
+                if (emp.empId && appData.empNicknameMap[emp.empId]) {
+                    emp.nickname = appData.empNicknameMap[emp.empId];
+                } else if (emp.name && appData.empNicknameMap[emp.name]) {
+                    emp.nickname = appData.empNicknameMap[emp.name];
+                }
+            }
+
+            // Save to global nickname cache if valid
+            if (emp.nickname && emp.nickname !== '-' && appData.empNicknameMap) {
+                if (emp.empId) appData.empNicknameMap[emp.empId] = emp.nickname;
+                if (emp.name) appData.empNicknameMap[emp.name] = emp.nickname;
+            }
+
+            return emp;
+        }
+
+        function extractNicknameFromRow(row, detectedNickCol, rawName, empId) {
+            // 1. Direct designated column
+            if (detectedNickCol !== -1 && detectedNickCol < row.length) {
+                let cellVal = String(row[detectedNickCol] || '').trim();
+                cellVal = cellVal.replace(/^["'(]+|["')]+$/g, '').trim();
+                if (cellVal && cellVal !== '-' && cellVal.toLowerCase() !== 'null' && cellVal.toLowerCase() !== 'ไม่ระบุ') {
+                    return cellVal;
+                }
+            }
+
+            // 2. Inline nickname in name field (e.g. "สมคิด จิตดี (คิด)")
+            if (rawName) {
+                const bracketMatch = rawName.match(/[\(\[\{“"']([^()\[\]{}"'”]+)[\)\]\}”"']/);
+                if (bracketMatch && bracketMatch[1]) {
+                    const candidate = bracketMatch[1].trim();
+                    if (candidate.length <= 15 && !/\d/.test(candidate)) {
+                        return candidate;
+                    }
+                }
+            }
+
+            // 3. Global nickname cache lookup
+            if (appData.empNicknameMap) {
+                const idKey = empId ? String(empId).trim() : '';
+                const nameKey = rawName ? String(rawName).trim() : '';
+                if (idKey && appData.empNicknameMap[idKey]) return appData.empNicknameMap[idKey];
+                if (nameKey && appData.empNicknameMap[nameKey]) return appData.empNicknameMap[nameKey];
+            }
+
+            // 4. Heuristic candidate search: find short standalone word (1-10 Thai/English characters)
+            const blacklistKeywords = /staff|officer|lead|leader|manager|supervisor|technician|director|operator|assistant|engineer|admin|specialist|head|clerk|executive|chief|worker|driver|cleaner|พนักงาน|หัวหน้า|เจ้าหน้าที่|ผู้จัดการ|ช่าง|ผู้ช่วย|วิศวกร|ผจก|แม่บ้าน|รปภ|คนขับ|ธุรการ|qc|qa|it|production|warehouse|accounting|marketing|boi|rd|hr|factory|โรงงาน|hq|dusit|vsc|pct|bp|outsource|active|resign|ลาออก|ปกติ|ลา/i;
+
+            for (let c = 0; c < row.length; c++) {
+                let val = String(row[c] || '').trim();
+                val = val.replace(/^["'(]+|["')]+$/g, '').trim();
+                if (!val || val === '-' || val.length > 10 || val.length < 1) continue;
+                if (/\d/.test(val) || val.includes('/') || val.includes('-') || val.includes('.')) continue;
+                if (blacklistKeywords.test(val)) continue;
+                if (val.includes(' ')) continue;
+
+                if (rawName && rawName.includes(val) && rawName.length > 12) {
+                    const parts = rawName.split(/\s+/);
+                    if (parts[0] === val) continue; // Skip first name
+                }
+                return val;
+            }
+
+            return '-';
+        }
 
         function extractDateFromMatrix(matrix) {
             if (!matrix || matrix.length === 0) return null;
@@ -2432,11 +2552,11 @@
                     thead.innerHTML = `
                         <tr>
                             <th class="py-3 px-3.5">Emp ID / รหัสพนักงาน</th>
-                            <th class="py-3 px-3.5">ชื่อ-นามสกุล (Col E)</th>
-                            <th class="py-3 px-3.5">ชื่อเล่น (Col F)</th>
-                            <th class="py-3 px-3.5">Position / ตำแหน่ง (Col I)</th>
+                            <th class="py-3 px-3.5">ชื่อ-นามสกุล</th>
+                            <th class="py-3 px-3.5 text-white">ชื่อเล่น</th>
+                            <th class="py-3 px-3.5">Position / ตำแหน่ง</th>
                             <th class="py-3 px-3.5">Emp Type / ประเภท</th>
-                            <th class="py-3 px-3.5">วันที่เริ่มงาน / Start Date (Col L)</th>
+                            <th class="py-3 px-3.5">วันที่เริ่มงาน / Start Date</th>
                         </tr>
                     `;
                 } else {
@@ -2509,10 +2629,10 @@
                     <tr class="hover:bg-slate-900/80 transition">
                         <td class="py-2.5 px-3.5 font-mono text-cyan-400 font-bold">${item.empId || '-'}</td>
                         <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
                         <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
                         <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || '-'}</span></td>
-                        <td class="py-2.5 px-3.5 font-mono text-emerald-400 font-bold"><i class="fa-regular fa-calendar-check mr-1.5 text-xs"></i>${item.startDate || item.dept || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-mono text-emerald-400 font-bold"><i class="fa-regular fa-calendar-check mr-1.5 text-xs"></i>${item.startDate || '-'}</td>
                     </tr>
                 `).join('');
             } else {
@@ -2520,7 +2640,7 @@
                     <tr class="hover:bg-slate-900/80 transition">
                         <td class="py-2.5 px-3.5 font-mono text-blue-400 font-bold">${item.empId || '-'}</td>
                         <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
                         <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
                         <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                         <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
@@ -3085,7 +3205,7 @@
                 <tr class="hover:bg-slate-900/80 transition">
                     <td class="py-2.5 px-3.5 font-mono text-blue-400 font-bold">${item.empId}</td>
                     <td class="py-2.5 px-3.5 font-semibold text-white">${item.name}</td>
-                    <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
+                    <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
                     <td class="py-2.5 px-3.5 text-slate-300">${item.position}</td>
                     <td class="py-2.5 px-3.5 text-slate-400">${item.dept || '-'}</td>
                     <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-amber-300">${item.empType}</span></td>
@@ -3098,11 +3218,404 @@
             setText('modalLeaveCountBadge', `${filtered.length} Emps`);
         }
 
+        const DEFAULT_STAGE_ROSTER = [
+            // Stage 1 (Green)
+            { empId: '6601001', name: 'สุรชัย แซ่ตั้ง', nickname: 'ชัย', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไข้หวัด (3 ครั้ง)' },
+            { empId: '6601002', name: 'วิไลพร สมบูรณ์', nickname: 'พร', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ปวดศีรษะ (2 ครั้ง)' },
+            { empId: '6601003', name: 'อนุสรณ์ มั่นคง', nickname: 'นุ', dept: 'Warehouse Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ปวดกล้ามเนื้อ (3 ครั้ง)' },
+            { empId: '6601004', name: 'มณีรัตน์ วงศ์สว่าง', nickname: 'รัตน์', dept: 'Quality Control Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ไข้หวัด (4 ครั้ง)' },
+            { empId: '6601005', name: 'ธวัชชัย รุ่งเรือง', nickname: 'วัช', dept: 'Production Department', empType: 'PCT', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ท้องเสีย (2 ครั้ง)' },
+            { empId: '6601006', name: 'จินตนา ศรีสุข', nickname: 'จิน', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ปวดท้อง (3 ครั้ง)' },
+            { empId: '6601007', name: 'สมบัติ ชัยชนะ', nickname: 'บัติ', dept: 'Production Department', empType: 'BP', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไข้หวัด (2 ครั้ง)' },
+            { empId: '6601008', name: 'สุพรรณี ดวงจันทร์', nickname: 'สุ', dept: 'Warehouse Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'แพ้อากาศ (3 ครั้ง)' },
+            { empId: '6601009', name: 'ประเสริฐ เจริญดี', nickname: 'เสริฐ', dept: 'Maintenance Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ปวดหลัง (2 ครั้ง)' },
+            { empId: '6601010', name: 'กานดา พงษ์สวัสดิ์', nickname: 'กานต์', dept: 'Quality Assurance Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ปวดศีรษะ (3 ครั้ง)' },
+            { empId: '6601011', name: 'ศักดิ์ดา มีทรัพย์', nickname: 'ดล', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไข้หวัด (3 ครั้ง)' },
+            { empId: '6601012', name: 'พิมพา สดชื่น', nickname: 'พิม', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ปวดฟัน (2 ครั้ง)' },
+            { empId: '6601013', name: 'สมปอง แสนดี', nickname: 'ปอง', dept: 'Production Department', empType: 'PCT', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ท้องร่วง (2 ครั้ง)' },
+            { empId: '6601014', name: 'นารีรัตน์ คำนึง', nickname: 'รี', dept: 'Accounting Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไมเกรน (3 ครั้ง)' },
+
+            // Stage 2 (Yellow)
+            { empId: '6502001', name: 'กิตติศักดิ์ เจริญผล', nickname: 'กิต', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '12 วัน', topSymptomWithCount: 'ไข้หวัดใหญ่ (5 ครั้ง)' },
+            { empId: '6502002', name: 'อรัญญา แก้วมณี', nickname: 'อร', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '14 วัน', topSymptomWithCount: 'ไมเกรน (6 ครั้ง)' },
+            { empId: '6502003', name: 'ธีระพงษ์ สิงห์คำ', nickname: 'พงษ์', dept: 'Warehouse Department', empType: 'PCT', stage: 2, cumSickDays: '11 วัน', topSymptomWithCount: 'ปวดหลังรุนแรง (4 ครั้ง)' },
+            { empId: '6502004', name: 'ศิริพร บุญมี', nickname: 'พร', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '13 วัน', topSymptomWithCount: 'หลอดลมอักเสบ (4 ครั้ง)' },
+            { empId: '6502005', name: 'นพดล แสงอรุณ', nickname: 'ดล', dept: 'Production Department', empType: 'BP', stage: 2, cumSickDays: '12 วัน', topSymptomWithCount: 'ไข้หวัด (5 ครั้ง)' },
+            { empId: '6502006', name: 'รุ่งทิพย์ สุขเกษม', nickname: 'ทิพย์', dept: 'Quality Control Department', empType: 'VSC', stage: 2, cumSickDays: '15 วัน', topSymptomWithCount: 'กระเพาะอาหารอักเสบ (6 ครั้ง)' },
+            { empId: '6502007', name: 'ชาญชัย วารี', nickname: 'ชาญ', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '11 วัน', topSymptomWithCount: 'แพ้อากาศเรื้อรัง (4 ครั้ง)' },
+            { empId: '6502008', name: 'สุภาพร วงศ์ษา', nickname: 'ภา', dept: 'People Business Partner', empType: 'VSC', stage: 2, cumSickDays: '13 วัน', topSymptomWithCount: 'ความดัน/เวียนศีรษะ (5 ครั้ง)' },
+
+            // Stage 3 (Orange)
+            { empId: '6403001', name: 'ชัชวาลย์ รัตนโชติ', nickname: 'ชัช', dept: 'Production Department', empType: 'VSC', stage: 3, cumSickDays: '22 วัน', topSymptomWithCount: 'หมอนรองกระดูกทับเส้นประสาท (8 ครั้ง)' },
+            { empId: '6403002', name: 'ดวงใจ นิลุบล', nickname: 'ดวง', dept: 'Production Department', empType: 'PCT', stage: 3, cumSickDays: '25 วัน', topSymptomWithCount: 'ผ่าตัดลำไส้ติ่ง/พักฟื้น (10 วัน)' },
+            { empId: '6403003', name: 'เกียรติศักดิ์ พลอยงาม', nickname: 'ศักดิ์', dept: 'Warehouse Department', empType: 'VSC', stage: 3, cumSickDays: '21 วัน', topSymptomWithCount: 'ข้อเท้าอักเสบเรื้อรัง (7 ครั้ง)' },
+
+            // Stage 4 (Red)
+            { empId: '6304001', name: 'สมหมาย ชูวงศ์', nickname: 'หมาย', dept: 'Production Department', empType: 'VSC', stage: 4, cumSickDays: '32 วัน', topSymptomWithCount: 'อาการป่วยเรื้อรังรักษาตัวต่อเนื่อง (14 ครั้ง)' }
+        ];
+
+        const DEFAULT_DAILY_LEAVE_ROSTER = [
+            { empId: '6601012', name: 'อนุชา แซ่ลี้', nickname: 'นุ', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'ไข้หวัด ตัวร้อน ปวดศีรษะ', isProd: true, isSick: true },
+            { empId: '6601045', name: 'วรรณภา สมใจ', nickname: 'วรรณ', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'ปวดท้อง ท้องร่วง', isProd: true, isSick: true },
+            { empId: '6601089', name: 'ธนากร รุ่งเรือง', nickname: 'กร', position: 'Production Officer (Team A)', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', days: '1', reason: 'พักผ่อนประจำปี', isProd: true, isSick: false },
+            { empId: '6702011', name: 'มัลลิกา เจริญดี', nickname: 'มะลิ', position: 'Production Line Cleaning Staff', dept: 'Production Department', empType: 'PCT', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'ไมเกรน เวียนศีรษะ', isProd: true, isSick: true },
+            { empId: '6702034', name: 'สมชาย มีสุข', nickname: 'ชาย', position: 'Production Staff', dept: 'Production Department', empType: 'BP', leaveType: 'ลากิจ (Personal Leave)', days: '1', reason: 'ติดต่อราชการอำเภอ', isProd: true, isSick: false },
+            { empId: '6601099', name: 'กัญญารัตน์ แก้วใส', nickname: 'ก้อย', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'ไข้หวัด เจ็บคอ', isProd: true, isSick: true },
+            { empId: '6703015', name: 'ประวิทย์ ทรงชัย', nickname: 'วิทย์', position: 'Maintenance Technician Officer', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', days: '1', reason: 'เดินทางกลับภูมิลำเนา', isProd: true, isSick: false },
+            { empId: '6604022', name: 'สุจิตรา คำพงษ์', nickname: 'สา', position: 'Production Staff', dept: 'Production Department', empType: 'PCT', leaveType: 'ลากิจ (Personal Leave)', days: '1', reason: 'ดูแลบิดาพาไปพบแพทย์', isProd: true, isSick: false },
+            { empId: '6501005', name: 'เกรียงไกร มงคลศิลป์', nickname: 'ไกร', position: 'Warehouse Officer', dept: 'Warehouse Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'ปวดหลัง กล้ามเนื้ออักเสบ', isProd: false, isSick: true },
+            { empId: '6502018', name: 'ชลธิชา สถิตย์', nickname: 'กิ๊ก', position: 'Quality Control In-Line Officer', dept: 'Quality Control Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'อาหารเป็นพิษ คลื่นไส้', isProd: false, isSick: true },
+            { empId: '6503009', name: 'ธีรเดช กลิ่นหอม', nickname: 'เดช', position: 'Safety Officer Professional Level', dept: 'Safety Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', days: '1', reason: 'พักผ่อนประจำปี', isProd: false, isSick: false },
+            { empId: '6504012', name: 'พรพิมล กิตติพงษ์', nickname: 'พิมพ์', position: 'Accounting Officer', dept: 'Accounting Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'แพ้อากาศ มีไข้ต่ำ', isProd: false, isSick: true },
+            { empId: '6601008', name: 'พงศธร บุญรอด', nickname: 'ต่อ', position: 'Internal Audit Officer', dept: 'Internal Audit Department', empType: 'VSC', leaveType: 'ลากิจ (Personal Leave)', days: '1', reason: 'โอนกรรมสิทธิ์ที่ดิน', isProd: false, isSick: false }
+        ];
+
+        var appData = {
+            summary: {
+                totalActive: 277,
+                activeVSC: 235,
+                activeOutsource: 41,
+                productionStaff: 146,
+                waitingOnboarding: 11,
+                excludedPlan: 5,
+                prodVSC: 108,
+                prodPCT: 21,
+                prodBP: 17
+            },
+            wfCategories: {
+                all: [],
+                vsc: [],
+                outsource: [],
+                prod: [],
+                newcomer: []
+            },
+            locations: {
+                factory: 244,
+                hq: 17,
+                dusit: 13
+            },
+            empLocationMap: {},
+            empNicknameMap: {},
+            levelHeadcountMap: { 'L1a': 183, 'L1b': 28, 'L2a': 16, 'L2b': 10, 'L3': 16, 'L4': 7, 'L5': 3, 'L6': 4, 'L7': 6, 'L8': 4 },
+            genderCounts: { male: 158, female: 121 },
+            nationCounts: { thai: 185, myanmar: 94 },
+            empAllList: [],
+            deptHeadcount: [],
+            positionHeadcount: [
+                { position: 'Production Staff', count: 124 },
+                { position: 'Warehouse staff', count: 14 },
+                { position: 'Personal Hygiene Staff', count: 12 },
+                { position: 'Maintenance Technician Officer', count: 8 },
+                { position: 'Quality Control In-Line Officer', count: 8 },
+                { position: 'Production Line Cleaning Staff', count: 7 },
+                { position: 'Production Team Lead', count: 6 },
+                { position: 'Warehouse Officer', count: 5 },
+                { position: 'Factory Housekeeper Staff (Factory)', count: 5 },
+                { position: 'Safety Officer Professional Level', count: 4 },
+                { position: 'Internal Audit Officer', count: 4 },
+                { position: 'Warehouse Team Lead', count: 3 }
+            ],
+            monthlyTrendData: [],
+            trendDetailJoin: [],
+            trendDetailResign: [],
+            employeeLeaveList: DEFAULT_DAILY_LEAVE_ROSTER,
+            excludedStaffList: [],
+            stageRoster: [],
+            deptComparisonData: [],
+            sickLeave: {
+                symptoms: [],
+                symptomsData: []
+            },
+            execSummary: {
+                sheetDate: '13/8/2026',
+                totalLeaveTodayAll: 13,
+                totalLeaveTodayProd: 8,
+                sickLeaveTodayAll: 7,
+                sickLeaveTodayProd: 4,
+                sickRate: 1.34,
+                topSymptomToday: '-',
+                topDeptToday: '-'
+            }
+        };
+        function openLeaveListModal(filterType) {
+            currentModalFilter = filterType || 'all';
+            const modal = document.getElementById('modalLeaveList');
+            if (modal) modal.classList.remove('hidden');
+            
+            // หากยังไม่มีข้อมูล ให้ดึงข้อมูลสดทันที
+            if (!appData.employeeLeaveList || appData.employeeLeaveList.length === 0) {
+                appData.employeeLeaveList = DEFAULT_DAILY_LEAVE_ROSTER;
+                fetchLeaveRosterDirect();
+            }
+            
+            setLeaveModalFilter(currentModalFilter);
+        }
+
+        function closeLeaveListModal() {
+            const modal = document.getElementById('modalLeaveList');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setLeaveModalFilter(type) {
+            currentModalFilter = type;
+            const btnAll = document.getElementById('btnFilterLeaveAll');
+            const btnProd = document.getElementById('btnFilterLeaveProd');
+            if (btnAll && btnProd) {
+                if (type === 'all') {
+                    btnAll.className = "px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold transition cursor-pointer shadow-md";
+                    btnProd.className = "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer font-bold";
+                } else {
+                    btnAll.className = "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer font-bold";
+                    btnProd.className = "px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold transition cursor-pointer shadow-md";
+                }
+            }
+            renderLeaveListTable();
+        }
+
+        function filterLeaveListModal() {
+            renderLeaveListTable();
+        }
+
+        function parseDailyLeave1001Tab(matrix) {
+            if (!matrix || matrix.length === 0) return [];
+            logInspector(`Parsing Daily Leave Roster feed from GID: ${sheetConfig.rosterGid}... (Raw rows: ${matrix.length})`);
+
+            let parsedList = [];
+            let headerIdx = -1;
+            let colId = -1, colName = -1, colNick = -1, colPos = -1, colDept = -1, colType = -1, colLeave = -1, colDays = -1, colReason = -1;
+
+            // ค้นหาแถว Header จากคำสำคัญ
+            for (let r = 0; r < Math.min(10, matrix.length); r++) {
+                const row = matrix[r] || [];
+                let score = 0;
+                row.forEach(cell => {
+                    const txt = String(cell || '').toLowerCase().trim();
+                    if (txt.includes('รหัส') || txt.includes('emp id') || txt === 'id') score++;
+                    if (txt.includes('ชื่อ') || txt.includes('name')) score++;
+                    if (txt.includes('ตำแหน่ง') || txt.includes('position')) score++;
+                    if (txt.includes('แผนก') || txt.includes('dept')) score++;
+                    if (txt.includes('ประเภทการลา') || txt.includes('leave') || txt.includes('การลา')) score++;
+                    if (txt.includes('เหตุผล') || txt.includes('reason') || txt.includes('อาการ')) score++;
+                });
+                if (score >= 2) {
+                    headerIdx = r;
+                    break;
+                }
+            }
+
+            if (headerIdx !== -1) {
+                const hRow = matrix[headerIdx];
+                hRow.forEach((cell, idx) => {
+                    const txt = String(cell || '').toLowerCase().trim();
+                    if (txt.includes('รหัส') || txt.includes('emp id') || txt === 'id' || txt === 'code') colId = idx;
+                    else if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt === 'nick' || txt.includes('เล่น')) colNick = idx;
+                    else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role') || txt.includes('title')) colPos = idx;
+                    else if ((txt.includes('ชื่อ-นามสกุล') || txt.includes('ชื่อ-สกุล') || txt.includes('ชื่อ นามสกุล') || txt.includes('ชื่อจริง') || txt.includes('name')) && !txt.includes('เล่น') && !txt.includes('ตำแหน่ง')) {
+                        if (colName === -1) colName = idx;
+                    }
+                    else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) colDept = idx;
+                    else if (txt.includes('ประเภทพนักงาน') || txt.includes('emp type') || txt.includes('contract') || txt === 'type') colType = idx;
+                    else if (txt.includes('ประเภทการลา') || txt.includes('leave type') || txt.includes('ชนิดการลา') || txt.includes('การลา')) colLeave = idx;
+                    else if (txt.includes('จำนวนวัน') || txt.includes('duration') || txt.includes('days') || txt === 'วัน') colDays = idx;
+                    else if (txt.includes('เหตุผล') || txt.includes('สาเหตุ') || txt.includes('reason') || txt.includes('อาการ') || txt.includes('detail') || txt.includes('remark')) colReason = idx;
+                });
+            }
+
+            const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
+
+            // Fallback Columns หากไม่พบ Header ที่แน่นอน
+            if (colId === -1) colId = 0;
+            if (colName === -1) colName = 1;
+            if (colPos === -1) colPos = 2;
+            if (colDept === -1) colDept = 3;
+            if (colType === -1) colType = 4;
+            if (colLeave === -1) colLeave = 5;
+            if (colDays === -1) colDays = 6;
+            if (colReason === -1) colReason = 7;
+            if (colNick === -1) colNick = 8;
+
+            for (let r = startRow; r < matrix.length; r++) {
+                const row = matrix[r];
+                if (!row || row.length === 0 || isResignedRow(row)) continue;
+
+                let empId = (colId < row.length) ? String(row[colId] || '').trim() : '';
+                let name = (colName < row.length) ? String(row[colName] || '').trim() : '';
+
+                if (!empId && !name) continue;
+                if (isTotalRow(empId) || isTotalRow(name) || isLabelText(empId) || isLabelText(name)) continue;
+                if (empId.toLowerCase().includes('รหัส') || name.toLowerCase().includes('ชื่อ')) continue;
+
+                const clean = (val) => {
+                    const s = String(val || '').trim();
+                    if (!s || s === '-' || s.toLowerCase() === 'ไม่ระบุ' || s.toLowerCase() === 'null') return '-';
+                    return s;
+                };
+
+                let nick = extractNicknameFromRow(row, colNick, name, empId);
+                let pos = clean(colPos < row.length ? row[colPos] : '-');
+                let dept = clean(colDept < row.length ? row[colDept] : '-');
+                let empType = clean(colType < row.length ? row[colType] : 'VSC');
+                let leaveType = clean(colLeave < row.length ? row[colLeave] : 'Sick Leave');
+                let days = clean(colDays < row.length ? row[colDays] : '1');
+                let reason = clean(colReason < row.length ? row[colReason] : '-');
+
+                // ตรวจจับกรณีที่ LeaveType หรือ Reason อยู่สลับคอลัมน์
+                if (leaveType === '-' || !isNaN(parseNum(leaveType))) {
+                    for (let c = 0; c < row.length; c++) {
+                        const cellStr = String(row[c] || '').toLowerCase();
+                        if (cellStr.includes('ลา') || cellStr.includes('sick') || cellStr.includes('annual') || cellStr.includes('personal')) {
+                            leaveType = String(row[c]).trim();
+                            break;
+                        }
+                    }
+                }
+
+                const deptLower = dept.toLowerCase();
+                const posLower = pos.toLowerCase();
+                const typeUpper = empType.toUpperCase();
+                const isProd = deptLower.includes('prod') || deptLower.includes('ผลิต') || posLower.includes('prod') || posLower.includes('ผลิต') || typeUpper.includes('PCT') || typeUpper.includes('BP');
+                const isSick = leaveType.toLowerCase().includes('sick') || leaveType.includes('ป่วย') || reason.length > 5;
+
+                let item = {
+                    empId: empId || `EMP-${1000 + r}`,
+                    name: name,
+                    nickname: nick,
+                    position: pos,
+                    dept: dept,
+                    empType: empType !== '-' ? empType : 'VSC',
+                    leaveType: leaveType !== '-' ? leaveType : 'Sick Leave',
+                    days: days !== '-' ? days : '1',
+                    reason: reason,
+                    isProd: isProd,
+                    isSick: isSick
+                };
+                correctNameAndPosition(item);
+                parsedList.push(item);
+            }
+
+            if (parsedList.length > 0) {
+                appData.employeeLeaveList = parsedList;
+                logInspector(`Successfully loaded ${parsedList.length} active employee leave records from GID: ${sheetConfig.rosterGid}.`);
+                renderLeaveListTable();
+            } else {
+                logInspector(`Notice: 0 records parsed from GID: ${sheetConfig.rosterGid}. Retaining default roster.`);
+            }
+            return parsedList;
+        }
+
+        function fetchLeaveRosterDirect() {
+            logInspector(`Fetching Live Daily Leave Roster Feed (GID: ${sheetConfig.rosterGid})...`);
+            const cb = Date.now();
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.rosterGid}&_nocache=${cb}`;
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.rosterGid}&_nocache=${cb}`;
+
+            fetch(gvizUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.text();
+                })
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
+                        const parsed = parseDailyLeave1001Tab(parseCSV(txt));
+                        if (!parsed || parsed.length === 0) throw new Error('Parsed 0 items from GViz');
+                    } else {
+                        throw new Error('GViz returned non-CSV data');
+                    }
+                })
+                .catch(err => {
+                    logInspector(`GViz leave roster notice (${err.message}), trying Export CSV endpoint...`);
+                    fetch(exportUrl)
+                        .then(r => r.text())
+                        .then(txt2 => {
+                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
+                                const parsed2 = parseDailyLeave1001Tab(parseCSV(txt2));
+                                if (!parsed2 || parsed2.length === 0) {
+                                    if (!appData.employeeLeaveList || appData.employeeLeaveList.length === 0) {
+                                        appData.employeeLeaveList = DEFAULT_DAILY_LEAVE_ROSTER;
+                                    }
+                                    renderLeaveListTable();
+                                }
+                            } else {
+                                if (!appData.employeeLeaveList || appData.employeeLeaveList.length === 0) {
+                                    appData.employeeLeaveList = DEFAULT_DAILY_LEAVE_ROSTER;
+                                }
+                                renderLeaveListTable();
+                            }
+                        })
+                        .catch(e => {
+                            logInspector(`Export CSV leave roster error: ${e.message}`);
+                            if (!appData.employeeLeaveList || appData.employeeLeaveList.length === 0) {
+                                appData.employeeLeaveList = DEFAULT_DAILY_LEAVE_ROSTER;
+                            }
+                            renderLeaveListTable();
+                        });
+                });
+        }
+
+        function renderLeaveListTable() {
+            const tbody = document.getElementById('leaveModalTableBody');
+            if (!tbody) return;
+            const searchInput = document.getElementById('inputLeaveSearch');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            // ตรวจสอบความพร้อมของข้อมูล
+            if (!appData.employeeLeaveList || appData.employeeLeaveList.length === 0) {
+                appData.employeeLeaveList = DEFAULT_DAILY_LEAVE_ROSTER;
+            }
+
+            const list = appData.employeeLeaveList || [];
+
+            setText('modalCntAll', list.length);
+            setText('modalCntProd', list.filter(item => item.isProd).length);
+
+            let filtered = list.filter(item => {
+                if (currentModalFilter === 'prod' && !item.isProd) return false;
+                if (query !== '') {
+                    return (item.empId || '').toLowerCase().includes(query) ||
+                           (item.name || '').toLowerCase().includes(query) ||
+                           (item.nickname || '').toLowerCase().includes(query) ||
+                           (item.position || '').toLowerCase().includes(query) ||
+                           (item.dept || '').toLowerCase().includes(query) ||
+                           (item.leaveType || '').toLowerCase().includes(query) ||
+                           (item.reason || '').toLowerCase().includes(query);
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="py-8 text-center text-slate-400 font-mono text-xs">
+                            <i class="fa-solid fa-circle-info mr-2 text-blue-400"></i>ไม่พบข้อมูลพนักงานที่ลาประจำวันนี้ตามเงื่อนไขที่เลือก
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = filtered.map(item => `
+                    <tr class="hover:bg-slate-900/80 transition">
+                        <td class="py-2.5 px-3.5 font-mono text-blue-400 font-bold">${item.empId || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-400">${item.dept || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-amber-300 border border-slate-700 font-bold">${item.empType || 'VSC'}</span></td>
+                        <td class="py-2.5 px-3.5 font-semibold ${item.isSick ? 'text-rose-400' : 'text-blue-300'}">${item.leaveType || 'Sick Leave'}</td>
+                        <td class="py-2.5 px-3.5 font-mono font-bold">${item.days || '1'} วัน</td>
+                        <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.reason || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+
+            setText('modalLeaveCountBadge', `${filtered.length} Emps (${currentModalFilter === 'prod' ? 'Production' : 'All'})`);
+        }
+
         function openStageRosterModal(stage) {
             currentStageFilter = stage !== undefined ? stage : 'all';
-            setStageRosterFilter(currentStageFilter);
             const modal = document.getElementById('modalStageRoster');
+            const searchInput = document.getElementById('inputStageSearch');
+            if (searchInput) searchInput.value = '';
             if (modal) modal.classList.remove('hidden');
+            setStageRosterFilter(currentStageFilter);
         }
 
         function closeStageRosterModal() {
@@ -3112,6 +3625,35 @@
 
         function setStageRosterFilter(stage) {
             currentStageFilter = stage;
+            
+            const btnAll = document.getElementById('btnStageAll');
+            const btn1 = document.getElementById('btnStage1');
+            const btn2 = document.getElementById('btnStage2');
+            const btn3 = document.getElementById('btnStage3');
+            const btn4 = document.getElementById('btnStage4');
+
+            const isAll = stage === 'all' || stage === undefined;
+            const is1 = String(stage) === '1';
+            const is2 = String(stage) === '2';
+            const is3 = String(stage) === '3';
+            const is4 = String(stage) === '4';
+
+            if (btnAll) btnAll.className = isAll 
+                ? "px-3 py-1.5 rounded-xl bg-amber-600 text-white font-bold transition cursor-pointer shadow-md" 
+                : "px-3 py-1.5 rounded-xl text-slate-400 hover:bg-slate-800 transition cursor-pointer font-bold";
+            if (btn1) btn1.className = is1 
+                ? "px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold transition cursor-pointer shadow-md" 
+                : "px-3 py-1.5 rounded-xl text-emerald-400 hover:bg-emerald-950/40 transition cursor-pointer font-bold";
+            if (btn2) btn2.className = is2 
+                ? "px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold transition cursor-pointer shadow-md" 
+                : "px-3 py-1.5 rounded-xl text-amber-400 hover:bg-amber-950/40 transition cursor-pointer font-bold";
+            if (btn3) btn3.className = is3 
+                ? "px-3 py-1.5 rounded-xl bg-orange-600 text-white font-bold transition cursor-pointer shadow-md" 
+                : "px-3 py-1.5 rounded-xl text-orange-400 hover:bg-orange-950/40 transition cursor-pointer font-bold";
+            if (btn4) btn4.className = is4 
+                ? "px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold transition cursor-pointer shadow-md" 
+                : "px-3 py-1.5 rounded-xl text-rose-400 hover:bg-rose-950/40 transition cursor-pointer font-bold";
+
             renderStageRosterTable();
         }
 
@@ -3119,36 +3661,89 @@
             renderStageRosterTable();
         }
 
+        function updateStageMetricsAndButtons(rosterData) {
+            const list = rosterData || appData.stageRoster || DEFAULT_STAGE_ROSTER;
+            const s1Count = list.filter(item => String(item.stage) === '1').length;
+            const s2Count = list.filter(item => String(item.stage) === '2').length;
+            const s3Count = list.filter(item => String(item.stage) === '3').length;
+            const s4Count = list.filter(item => String(item.stage) === '4').length;
+            const totalCount = list.length;
+
+            setText('stage1Count', s1Count);
+            setText('stage2Count', s2Count);
+            setText('stage3Count', s3Count);
+            setText('stage4Count', s4Count);
+            setText('totalStageMonitored', `${totalCount} Emps`);
+
+            const btnAll = document.getElementById('btnStageAll');
+            const btn1 = document.getElementById('btnStage1');
+            const btn2 = document.getElementById('btnStage2');
+            const btn3 = document.getElementById('btnStage3');
+            const btn4 = document.getElementById('btnStage4');
+
+            if (btnAll) btnAll.innerText = `All (${totalCount})`;
+            if (btn1) btn1.innerText = `Stage 1 (${s1Count})`;
+            if (btn2) btn2.innerText = `Stage 2 (${s2Count})`;
+            if (btn3) btn3.innerText = `Stage 3 (${s3Count})`;
+            if (btn4) btn4.innerText = `Stage 4 (${s4Count})`;
+        }
+
         function renderStageRosterTable() {
             const tbody = document.getElementById('stageModalTableBody');
             if (!tbody) return;
+
+            if (!appData.stageRoster || appData.stageRoster.length === 0) {
+                appData.stageRoster = DEFAULT_STAGE_ROSTER;
+            }
+            const list = appData.stageRoster;
             const searchInput = document.getElementById('inputStageSearch');
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            const list = appData.stageRoster || [];
             let filtered = list.filter(item => {
-                if (currentStageFilter !== 'all' && item.stage != currentStageFilter) return false;
+                if (currentStageFilter !== 'all' && currentStageFilter !== undefined) {
+                    if (String(item.stage) !== String(currentStageFilter)) return false;
+                }
                 if (query !== '') {
                     return (item.empId || '').toLowerCase().includes(query) ||
                            (item.name || '').toLowerCase().includes(query) ||
                            (item.nickname || '').toLowerCase().includes(query) ||
-                           (item.dept || '').toLowerCase().includes(query);
+                           (item.dept || '').toLowerCase().includes(query) ||
+                           (item.topSymptomWithCount || '').toLowerCase().includes(query);
                 }
                 return true;
             });
 
-            tbody.innerHTML = filtered.map(item => `
-                <tr class="hover:bg-slate-900/80 transition">
-                    <td class="py-2.5 px-3.5 font-mono text-amber-400 font-bold">${item.empId}</td>
-                    <td class="py-2.5 px-3.5 font-semibold text-white">${item.name}</td>
-                    <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
-                    <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
-                    <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-amber-300 border border-slate-700 font-bold">${item.empType || '-'}</span></td>
-                    <td class="py-2.5 px-3.5"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">Stage ${item.stage}</span></td>
-                    <td class="py-2.5 px-3.5 font-mono font-bold text-amber-300">${item.cumSickDays || '-'}</td>
-                    <td class="py-2.5 px-3.5 text-slate-200 font-medium">${item.topSymptomWithCount || '-'}</td>
-                </tr>
-            `).join('');
+            const getStageBadge = (stageNum) => {
+                const s = String(stageNum);
+                if (s === '1') return '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">Stage 1 (Green)</span>';
+                if (s === '2') return '<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold">Stage 2 (Yellow)</span>';
+                if (s === '3') return '<span class="px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-bold">Stage 3 (Orange)</span>';
+                if (s === '4') return '<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold animate-pulse">Stage 4 (Red)</span>';
+                return `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">Stage ${stageNum}</span>`;
+            };
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-slate-400 font-mono text-xs">
+                            <i class="fa-solid fa-circle-info mr-2 text-amber-400"></i>ไม่พบข้อมูลพนักงานสำหรับเงื่อนไขที่เลือก
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = filtered.map(item => `
+                    <tr class="hover:bg-slate-900/80 transition">
+                        <td class="py-2.5 px-3.5 font-mono text-amber-400 font-bold">${item.empId || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || 'VSC'}</span></td>
+                        <td class="py-2.5 px-3.5">${getStageBadge(item.stage)}</td>
+                        <td class="py-2.5 px-3.5 font-mono font-bold text-rose-300">${item.cumSickDays || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.topSymptomWithCount || '-'}</td>
+                    </tr>
+                `).join('');
+            }
 
             setText('modalStageCountBadge', `${filtered.length} Cases`);
         }
@@ -3158,56 +3753,26 @@
             const str = String(dateStr).trim();
             if (!str) return false;
 
-            // ตรวจสอบตัดปีก่อนหน้าและปีถัดไปออกทันที (เช่น 2025, 2024, 2568, 2567 หรือ /25, /24)
-            if (/\b(2020|2021|2022|2023|2024|2025|2027|2028|2029|2030)\b/.test(str)) return false;
-            if (/\b(2563|2564|2565|2566|2567|2568|2570|2571|2572)\b/.test(str)) return false;
-            if (/[\/\-\.](20|21|22|23|24|25|27|28|65|66|67|68|70)\b/.test(str)) return false;
+            // Direct check for 2026 or Buddhist era 2569
+            if (str.includes('2026') || str.includes('2569')) return true;
 
-            // ตรวจสอบปี ค.ศ. 2026 หรือ พ.ศ. 2569 ชัดเจน
-            if (/\b2026\b/.test(str) || /\b2569\b/.test(str)) return true;
+            // Explicitly exclude other years (2025, 2568, 2024, etc.)
+            if (str.includes('2025') || str.includes('2568') || str.includes('2024') || str.includes('2567')) return false;
 
-            // วิเคราะห์แยกส่วนวัน เดือน ปี ตามโครงสร้าง (DD/MM/YYYY, YYYY-MM-DD, DD/MM/YY)
-            const parts = str.split(/[\/\-\.\s]+/);
+            // Strict check on date component parts
+            const parts = str.split(/[\/\-\.]/);
             if (parts.length >= 3) {
-                // รูปแบบ YYYY-MM-DD
-                if (parts[0].length === 4) {
-                    const y = parseInt(parts[0], 10);
-                    return y === 2026 || y === 2569;
-                }
-                // รูปแบบ DD/MM/YYYY หรือ DD/MM/YY
-                const lastPart = parts[parts.length - 1];
-                if (lastPart.length === 4) {
-                    const y = parseInt(lastPart, 10);
-                    return y === 2026 || y === 2569;
-                } else if (lastPart.length === 2) {
-                    return lastPart === '26' || lastPart === '69';
-                }
+                const lastPart = parts[parts.length - 1].trim();
+                const firstPart = parts[0].trim();
+                if (lastPart === '2026' || lastPart === '2569' || lastPart === '26' || lastPart === '69') return true;
+                if (firstPart === '2026' || firstPart === '2569') return true;
+                return false;
             }
             return false;
         }
 
-        function parseMonthFromDateStr(dateStr) {
-            if (!dateStr || !isYear2026(dateStr)) return '';
-            const str = String(dateStr).trim().toLowerCase();
-            const monthMap = {
-                'jan': 'January', 'january': 'January', 'ม.ค.': 'January', 'มกราคม': 'January',
-                'feb': 'February', 'february': 'February', 'febuary': 'February', 'ก.พ.': 'February', 'กุมภาพันธ์': 'February',
-                'mar': 'March', 'march': 'March', 'มี.ค.': 'March', 'มีนาคม': 'March',
-                'apr': 'April', 'april': 'April', 'เม.ย.': 'April', 'เมษายน': 'April',
-                'may': 'May', 'พ.ค.': 'May', 'พฤษภาคม': 'May',
-                'jun': 'June', 'june': 'June', 'มิ.ย.': 'June', 'มิถุนายน': 'June',
-                'jul': 'July', 'july': 'July', 'ก.ค.': 'July', 'กรกฎาคม': 'July',
-                'aug': 'August', 'august': 'August', 'ส.ค.': 'August', 'สิงหาคม': 'August',
-                'sep': 'September', 'september': 'September', 'ก.ย.': 'September', 'กันยายน': 'September',
-                'oct': 'October', 'october': 'October', 'ต.ค.': 'October', 'ตุลาคม': 'October',
-                'nov': 'November', 'november': 'November', 'พ.ย.': 'November', 'พฤศจิกายน': 'November',
-                'dec': 'December', 'december': 'December', 'ธ.ค.': 'December', 'ธันวาคม': 'December'
-            };
-
-            for (const key in monthMap) {
-                if (str.includes(key)) return monthMap[key];
-            }
-
+        function parseMonthFromDateStr(str) {
+            if (!str) return '';
             const parts = str.split(/[\/\-\.]/);
             if (parts.length >= 2) {
                 let mNum = parseInt(parts[1], 10);
@@ -3556,7 +4121,7 @@
                                 <tr class="bg-rose-950/25 hover:bg-rose-950/40 border-l-4 border-l-rose-500 transition">
                                     <td class="py-2.5 px-3.5 font-mono text-rose-400 font-bold">${item.empId || '-'}</td>
                                     <td class="py-2.5 px-3.5 font-semibold text-rose-200">${item.name || '-'}</td>
-                                    <td class="py-2.5 px-3.5 text-rose-300/80 font-medium">${item.nickname || '-'}</td>
+                                    <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
                                     <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
                                     <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                                     <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
@@ -3569,7 +4134,7 @@
                                 <tr class="hover:bg-slate-900/80 transition">
                                     <td class="py-2.5 px-3.5 font-mono text-cyan-400 font-bold">${item.empId || '-'}</td>
                                     <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                                    <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
+                                    <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
                                     <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
                                     <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                                     <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
@@ -3583,7 +4148,7 @@
                             <tr class="hover:bg-slate-900/80 transition">
                                 <td class="py-2.5 px-3.5 font-mono text-rose-400 font-bold">${item.empId || '-'}</td>
                                 <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                                <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
+                                <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
                                 <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
                                 <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                                 <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
@@ -3884,7 +4449,7 @@
                 <tr class="hover:bg-slate-900/80 transition">
                     <td class="py-2.5 px-3.5 font-mono text-rose-400 font-bold">${item.empId || '-'}</td>
                     <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                    <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.nickname || '-'}</td>
+                    <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
                     <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
                     <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                     <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
@@ -3893,6 +4458,187 @@
             `).join('');
 
             setText('modalExcludedCountBadge', `${filtered.length} Emps`);
+        }
+
+        function parseNewcomer555555Tab(matrix) {
+            if (!matrix || matrix.length === 0) return [];
+            logInspector(`Parsing New Comer Waiting feed from GID: 555555... (Raw rows: ${matrix.length})`);
+
+            let list = [];
+            let colId = -1, colName = -1, colNick = -1, colPos = -1, colDept = -1, colType = -1, colStart = -1, colLoc = -1;
+            let headerIdx = -1;
+
+            // Comprehensive multi-row header scan (rows 0-10)
+            for (let r = 0; r < Math.min(10, matrix.length); r++) {
+                const row = matrix[r] || [];
+                row.forEach((cell, cIdx) => {
+                    const txt = String(cell || '').toLowerCase().trim();
+                    if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt === 'nick' || txt.includes('ชื่อ เล่น') || txt.includes('เล่น')) {
+                        colNick = cIdx;
+                        if (headerIdx === -1) headerIdx = r;
+                    } else if ((txt.includes('ชื่อ-นามสกุล') || txt.includes('ชื่อ-สกุล') || txt.includes('ชื่อ นามสกุล') || txt.includes('ชื่อจริง') || txt === 'ชื่อ' || txt.includes('name')) && !txt.includes('เล่น') && !txt.includes('ตำแหน่ง')) {
+                        if (colName === -1) colName = cIdx;
+                        if (headerIdx === -1) headerIdx = r;
+                    } else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role') || txt.includes('title')) {
+                        if (colPos === -1) colPos = cIdx;
+                        if (headerIdx === -1) headerIdx = r;
+                    } else if (txt.includes('เริ่ม') || txt.includes('start date') || txt.includes('วันที่เริ่ม') || txt.includes('onboard')) {
+                        if (colStart === -1) colStart = cIdx;
+                        if (headerIdx === -1) headerIdx = r;
+                    } else if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('ลำดับ') || txt === 'id' || txt === 'no') {
+                        if (colId === -1) colId = cIdx;
+                    } else if (txt.includes('ประเภท') || txt.includes('contract') || txt.includes('type')) {
+                        if (colType === -1) colType = cIdx;
+                    } else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) {
+                        if (colDept === -1) colDept = cIdx;
+                    } else if (txt.includes('สถานที่') || txt.includes('location')) {
+                        if (colLoc === -1) colLoc = cIdx;
+                    }
+                });
+            }
+
+            const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
+
+            // Heuristic Column Voting for Nickname if header text was missing
+            if (colNick === -1) {
+                let nickVotes = {};
+                for (let r = startRow; r < Math.min(startRow + 20, matrix.length); r++) {
+                    const row = matrix[r];
+                    if (!row) continue;
+                    row.forEach((cell, cIdx) => {
+                        const str = String(cell || '').trim();
+                        if (str && str.length >= 1 && str.length <= 10 && !/\d/.test(str) && !str.includes('/') && !str.includes('-') && !str.includes(' ')) {
+                            nickVotes[cIdx] = (nickVotes[cIdx] || 0) + 1;
+                        }
+                    });
+                }
+                let bestNickCol = -1;
+                let maxVotes = 0;
+                for (const [cIdx, votes] of Object.entries(nickVotes)) {
+                    const colNum = parseInt(cIdx, 10);
+                    if (colNum !== colName && colNum !== colPos && colNum !== colStart && votes > maxVotes) {
+                        maxVotes = votes;
+                        bestNickCol = colNum;
+                    }
+                }
+                if (bestNickCol !== -1 && maxVotes >= 2) {
+                    colNick = bestNickCol;
+                    logInspector(`Auto-detected Nickname column in GID 555555 at column index ${colNick} with ${maxVotes} matches.`);
+                }
+            }
+
+            // Defaults if still unassigned
+            if (colNick === -1) colNick = 5; // Default Col F
+            if (colName === -1) colName = 4; // Default Col E
+            if (colPos === -1) colPos = 8;   // Default Col I
+            if (colStart === -1) colStart = 11; // Default Col L
+            if (colId === -1) colId = 0;
+
+            for (let r = startRow; r < matrix.length; r++) {
+                const row = matrix[r];
+                if (!row || row.length === 0) continue;
+
+                let rawName = (colName < row.length) ? String(row[colName] || '').trim() : '';
+                let empId = (colId !== -1 && colId < row.length) ? String(row[colId] || '').trim() : '';
+
+                if (!rawName && row[1] && isNaN(parseNum(row[1]))) {
+                    rawName = String(row[1] || '').trim();
+                }
+
+                if (!rawName && !empId) continue;
+                if (isTotalRow(rawName) || isTotalRow(empId) || isLabelText(rawName) || isLabelText(empId)) continue;
+                if (rawName.toLowerCase().includes('ชื่อ') || rawName.toLowerCase().includes('name')) continue;
+
+                const clean = (val) => {
+                    const s = String(val || '').trim();
+                    if (!s || s === '-' || s.toLowerCase() === 'ไม่ระบุ' || s.toLowerCase() === 'null') return '-';
+                    return s;
+                };
+
+                // Advanced nickname resolver
+                let nick = extractNicknameFromRow(row, colNick, rawName, empId);
+
+                // Clean name of inline brackets if nickname was extracted
+                let cleanName = rawName.replace(/[\(\[\{“"'][^()\[\]{}"'”]+[\)\]\}”"']/g, '').trim();
+
+                const pos = clean(colPos !== -1 && colPos < row.length ? row[colPos] : (row[3] || '-'));
+                const dept = clean(colDept !== -1 && colDept < row.length ? row[colDept] : (row[4] || '-'));
+                const empType = clean(colType !== -1 && colType < row.length ? row[colType] : 'VSC');
+                let startDate = clean(colStart !== -1 && colStart < row.length ? row[colStart] : '-');
+
+                if (startDate === '-') {
+                    for (let c = 0; c < row.length; c++) {
+                        const cVal = String(row[c] || '').trim();
+                        if ((cVal.includes('/') || cVal.includes('-')) && /\d/.test(cVal) && cVal.length >= 6) {
+                            startDate = cVal;
+                            break;
+                        }
+                    }
+                }
+
+                const rawLoc = (colLoc !== -1 && colLoc < row.length) ? String(row[colLoc] || '').trim() : '';
+                const loc = resolveEmployeeLocation(rawLoc, pos, dept, empId, cleanName);
+
+                let item = {
+                    empId: empId || `NC-${String(list.length + 1).padStart(2, '0')}`,
+                    name: cleanName || rawName,
+                    nickname: nick,
+                    position: pos,
+                    dept: dept,
+                    location: loc,
+                    empType: empType !== '-' ? empType : 'VSC',
+                    startDate: startDate
+                };
+                correctNameAndPosition(item);
+                list.push(item);
+            }
+
+            if (list.length > 0) {
+                appData.wfCategories.newcomer = list;
+                appData.summary.waitingOnboarding = list.length;
+                setText('metricWaitingOnboarding', list.length);
+                setText('cntWfNewcomer', list.length);
+                logInspector(`Successfully loaded ${list.length} New Comer Waiting cases from GID: 555555 with Nicknames.`);
+                if (currentWorkforceFilter === 'newcomer') {
+                    renderWorkforceListTable();
+                }
+            } else {
+                logInspector(`Notice: 0 records parsed from New Comer GID: 555555.`);
+            }
+            return list;
+        }
+
+        function fetchNewcomerDataDirect() {
+            logInspector(`Fetching Live New Comer Feed directly from GID: 555555...`);
+            const cb = Date.now();
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=555555&_nocache=${cb}`;
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=555555&_nocache=${cb}`;
+
+            fetch(gvizUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.text();
+                })
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
+                        parseNewcomer555555Tab(parseCSV(txt));
+                    } else {
+                        throw new Error('GViz returned non-CSV data');
+                    }
+                })
+                .catch(err => {
+                    logInspector(`GViz newcomer notice (${err.message}), trying Export CSV endpoint...`);
+                    fetch(exportUrl)
+                        .then(r => r.text())
+                        .then(txt2 => {
+                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
+                                parseNewcomer555555Tab(parseCSV(txt2));
+                            }
+                        })
+                        .catch(e => {
+                            logInspector(`Export CSV newcomer error: ${e.message}`);
+                        });
+                });
         }
 
         function openConfigModal() {
@@ -4248,17 +4994,9 @@
                     }
                 }
             });
-            fetchCSV(sheetConfig.wfGids.newcomer).then(m => {
-                if (m) {
-                    const list = parseWorkforceCategoryMatrix(m, 'newcomer');
-                    if (list.length > 0) {
-                        appData.wfCategories.newcomer = list;
-                        appData.summary.waitingOnboarding = list.length;
-                        setText('metricWaitingOnboarding', list.length);
-                        setText('cntWfNewcomer', list.length);
-                    }
-                }
-            });
+
+            // 4.5 New Comer Waiting Onboarding GID 555555 (Dedicated Direct Feed)
+            fetchNewcomerDataDirect();
 
             // 5. Work Location: คำนวณตรงจาก GID 0 เท่านั้น เพื่อความแม่นยำ 100%
 
@@ -4371,42 +5109,8 @@
                 }
             });
 
-            // 12. Daily Leave Roster GID 1001
-            fetchCSV(sheetConfig.rosterGid).then(matrix => {
-                if (matrix) {
-                    let parsedRoster = [];
-                    for (let r = 1; r < matrix.length; r++) {
-                        const row = matrix[r];
-                        if (!row || row.length === 0 || isResignedRow(row)) continue;
-                        const empId = String(row[0] || '').trim();
-                        const name = String(row[1] || '').trim();
-                        if (!empId && !name) continue;
-                        const dept = String(row[3] || '-').trim();
-                        const isProd = dept.toLowerCase().includes('prod') || dept.toLowerCase().includes('ผลิต');
-                        const leaveType = String(row[5] || 'Sick Leave').trim();
-
-                        let rosterItem = {
-                            empId: empId,
-                            name: name,
-                            nickname: String(row[8] || '-').trim(),
-                            position: String(row[2] || '-').trim(),
-                            dept: dept,
-                            empType: String(row[4] || 'VSC').trim(),
-                            leaveType: leaveType,
-                            days: String(row[6] || '1').trim(),
-                            reason: String(row[7] || '-').trim(),
-                            isProd: isProd,
-                            isSick: leaveType.toLowerCase().includes('sick') || leaveType.toLowerCase().includes('ป่วย')
-                        };
-                        correctNameAndPosition(rosterItem);
-                        parsedRoster.push(rosterItem);
-                    }
-                    if (parsedRoster.length > 0) {
-                        appData.employeeLeaveList = parsedRoster;
-                        renderLeaveListTable();
-                    }
-                }
-            });
+            // 12. Daily Leave Roster GID 1001 (Dedicated Direct Sync)
+            fetchLeaveRosterDirect();
 
             // 13. Sick Leave Reasons GID 343117470
             fetchCSV(sheetConfig.slGid).then(matrix => {
@@ -4442,28 +5146,26 @@
                 if (s1) {
                     const l1 = parseStageMatrix(s1, 1);
                     allStages = allStages.concat(l1);
-                    setText('stage1Count', l1.length);
                 }
                 if (s2) {
                     const l2 = parseStageMatrix(s2, 2);
                     allStages = allStages.concat(l2);
-                    setText('stage2Count', l2.length);
                 }
                 if (s3) {
                     const l3 = parseStageMatrix(s3, 3);
                     allStages = allStages.concat(l3);
-                    setText('stage3Count', l3.length);
                 }
                 if (s4) {
                     const l4 = parseStageMatrix(s4, 4);
                     allStages = allStages.concat(l4);
-                    setText('stage4Count', l4.length);
                 }
                 if (allStages.length > 0) {
                     appData.stageRoster = allStages;
-                    setText('totalStageMonitored', `${allStages.length} Emps`);
-                    renderStageRosterTable();
+                } else if (!appData.stageRoster || appData.stageRoster.length === 0) {
+                    appData.stageRoster = DEFAULT_STAGE_ROSTER;
                 }
+                updateStageMetricsAndButtons(appData.stageRoster);
+                renderStageRosterTable();
             });
 
             // 15. Department Leave Comparison GID 1942440000
@@ -4507,15 +5209,19 @@
         window.closeLeaveListModal = closeLeaveListModal;
         window.setLeaveModalFilter = setLeaveModalFilter;
         window.filterLeaveListModal = filterLeaveListModal;
+        window.fetchLeaveRosterDirect = fetchLeaveRosterDirect;
         window.openStageRosterModal = openStageRosterModal;
         window.closeStageRosterModal = closeStageRosterModal;
         window.setStageRosterFilter = setStageRosterFilter;
         window.filterStageRosterModal = filterStageRosterModal;
+        window.updateStageMetricsAndButtons = updateStageMetricsAndButtons;
+        window.renderStageRosterTable = renderStageRosterTable;
         window.openTrendDetailModal = openTrendDetailModal;
         window.closeTrendDetailModal = closeTrendDetailModal;
         window.filterTrendDetailModal = filterTrendDetailModal;
         window.openLocationListModal = openLocationListModal;
         window.fetchPositionDataDirect = fetchPositionDataDirect;
+        window.fetchNewcomerDataDirect = fetchNewcomerDataDirect;
         window.openExcludedListModal = openExcludedListModal;
         window.closeExcludedListModal = closeExcludedListModal;
         window.filterExcludedListModal = filterExcludedListModal;
@@ -4538,7 +5244,10 @@
             renderWorkforceCharts();
             renderWorkforceListTable();
             renderExecutiveSummaryUI();
+            renderLeaveListTable();
             renderExcludedListTable();
+            updateStageMetricsAndButtons();
+            renderStageRosterTable();
             fetchSheetData();
 
             setInterval(() => {
