@@ -567,6 +567,15 @@
                             <span id="badgePositionCount" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 whitespace-nowrap">
                                 <i class="fa-solid fa-arrows-up-down mr-1"></i> Scrollable & Clickable
                             </span>
+                            <a href="https://docs.google.com/spreadsheets/d/1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo/edit?gid=2050717232#gid=2050717232" 
+                               target="_blank" 
+                               class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/70 border border-cyan-500/40 text-cyan-300 flex items-center gap-1 transition"
+                               title="Open Source Sheet (GID 2050717232)">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> GID 2050717232
+                            </a>
+                            <button onclick="fetchPositionDataDirect()" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-slate-800 transition cursor-pointer text-xs" title="โหลดข้อมูลตำแหน่งงานสดใหม่อีกครั้ง">
+                                <i class="fa-solid fa-rotate text-[10px]"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="relative w-full overflow-y-auto max-h-[380px] pr-1 cursor-pointer">
@@ -601,7 +610,7 @@
                     <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
                         <div>
                             <h3 class="text-base font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-venus-mars text-rose-400"></i> By Gender
+                                <i class="fa-solid fa-venus-mars text-rose-400"></i> Actual Staff by Gender
                             </h3>
                             <p class="text-xs text-slate-400">สัดส่วนเพศชายและเพศหญิง</p>
                         </div>
@@ -616,7 +625,7 @@
                     <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
                         <div>
                             <h3 class="text-base font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-flag text-emerald-400"></i> By Nation
+                                <i class="fa-solid fa-flag text-emerald-400"></i> Actual Staff by Nation
                             </h3>
                             <p class="text-xs text-slate-400">สัดส่วนสัญชาติไทยและเมียนมา</p>
                         </div>
@@ -632,9 +641,9 @@
                 <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-arrow-trend-up text-cyan-400"></i> Trend Movement Monthly (อัตราพนักงานเข้าใหม่ - ลาออก รายเดือน)
+                            <i class="fa-solid fa-arrow-trend-up text-cyan-400"></i> Monthly Movement (อัตราพนักงานเข้าใหม่ - ลาออก รายเดือน ปี 2026)
                         </h3>
-                        <p class="text-xs text-slate-400">จำนวน Join (คอลัมน์ B), Resign (คอลัมน์ C) และ Turnover Rate % (คอลัมน์ S) จากแท็บ Trends (Direct Sheet Feed GID: 1810359834)</p>
+                        <p class="text-xs text-slate-400">จำนวน Join (คอลัมน์ B), Resign (คอลัมน์ C) และ Turnover Rate % (คอลัมน์ S) ประจำปี 2026 จากแท็บ Trends (Direct Sheet Feed GID: 1810359834)</p>
                     </div>
                     <span class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shadow-sm shadow-cyan-900/50">
                         <i class="fa-solid fa-hand-pointer mr-1"></i> Click Bars to View Roster (2026)
@@ -1562,6 +1571,7 @@
                 hq: 17,
                 dusit: 13
             },
+            empLocationMap: {},
             levelHeadcountMap: { 'L1a': 183, 'L1b': 28, 'L2a': 16, 'L2b': 10, 'L3': 16, 'L4': 7, 'L5': 3, 'L6': 4, 'L7': 6, 'L8': 4 },
             genderCounts: { male: 158, female: 121 },
             nationCounts: { thai: 185, myanmar: 94 },
@@ -1703,6 +1713,59 @@
             return str.includes(target);
         }
 
+        function resolveEmployeeLocation(rawLoc, posStr, deptStr, empId, name) {
+            const idKey = empId ? String(empId).trim() : '';
+            const nameKey = name ? String(name).trim() : '';
+
+            if (idKey && appData.empLocationMap && appData.empLocationMap[idKey]) {
+                return appData.empLocationMap[idKey];
+            }
+            if (nameKey && appData.empLocationMap && appData.empLocationMap[nameKey]) {
+                return appData.empLocationMap[nameKey];
+            }
+
+            const loc = String(rawLoc || '').toLowerCase().trim();
+            const pos = String(posStr || '').toLowerCase().trim();
+            const dept = String(deptStr || '').toLowerCase().trim();
+
+            const isHQMatch = (s) => s.includes('สำนักงานใหญ่') || s.includes('hq') || s.includes('head quarter') || s.includes('headquarter') || s.includes('head quater') || s.includes('สนง.ใหญ่') || s.includes('bangkok') || s.includes('bkk');
+            const isDusitMatch = (s) => s.includes('dusit') || s.includes('ดุสิต') || s.includes('central park') || s.includes('dcp');
+            const isFactoryMatch = (s) => s.includes('factory') || s.includes('โรงงาน') || s.includes('plant');
+
+            if (isHQMatch(loc)) {
+                return 'HQ (Head Quater) / สำนักงานใหญ่';
+            }
+            if (isDusitMatch(loc)) {
+                return 'Dusit Central Park';
+            }
+            if (isFactoryMatch(loc)) {
+                return 'Factory / โรงงาน';
+            }
+
+            // Clue-based fallback for C-Level, Executive and HQ roles
+            const hqJobKeywords = ['ceo', 'chief', 'executive officer', 'relationship officer', 'food innovation', 'managing director', 'director', 'c-level', 'president', 'general counsel', 'internal audit', 'corporate', 'hrbp', 'business partner', 'legal'];
+            if (hqJobKeywords.some(kw => pos.includes(kw) || dept.includes(kw))) {
+                return 'HQ (Head Quater) / สำนักงานใหญ่';
+            }
+
+            if (pos.includes('dusit') || dept.includes('dusit') || pos.includes('central park') || dept.includes('central park')) {
+                return 'Dusit Central Park';
+            }
+
+            return rawLoc && rawLoc !== '-' ? rawLoc : 'Factory / โรงงาน';
+        }
+
+        function getLocationBadgeHtml(locStr) {
+            const loc = String(locStr || '').toLowerCase();
+            if (loc.includes('hq') || loc.includes('head') || loc.includes('สำนักงานใหญ่')) {
+                return `<span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold inline-flex items-center gap-1.5"><i class="fa-solid fa-building text-[9px] text-indigo-400"></i> HQ (Head Quater) / สำนักงานใหญ่</span>`;
+            }
+            if (loc.includes('dusit') || loc.includes('ดุสิต') || loc.includes('central park')) {
+                return `<span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold inline-flex items-center gap-1.5"><i class="fa-solid fa-city text-[9px] text-amber-400"></i> Dusit Central Park</span>`;
+            }
+            return `<span class="px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold inline-flex items-center gap-1.5"><i class="fa-solid fa-industry text-[9px] text-cyan-400"></i> Factory / โรงงาน</span>`;
+        }
+
         var inspectorLogs = [];
         function logInspector(msg) {
             console.log(msg);
@@ -1841,6 +1904,7 @@
             const isFactoryText = (s) => s.includes('factory') || s.includes('โรงงาน') || s.includes('plant');
 
             let locCounts = { factory: 0, hq: 0, dusit: 0 };
+            if (!appData.empLocationMap) appData.empLocationMap = {};
 
             for (let r = startRow; r < matrix.length; r++) {
                 const row = matrix[r];
@@ -1874,20 +1938,18 @@
                     rawLoc = String(row[colLoc] || '').trim();
                 }
 
-                // จำแนกเฉพาะสถานที่ที่ตรงตามจริงเท่านั้น ไม่เดาแผนก และไม่เหมารวมเข้าโรงงาน
-                let locDisplay = rawLoc && rawLoc !== '-' ? rawLoc : '-';
-                const lLower = rawLoc.toLowerCase();
+                let locDisplay = resolveEmployeeLocation(rawLoc, pos, dept, empId, name);
 
-                if (isHQText(lLower)) {
-                    locDisplay = 'HQ (Head Quater) / สำนักงานใหญ่';
+                if (isHQText(locDisplay.toLowerCase())) {
                     locCounts.hq++;
-                } else if (isDusitText(lLower)) {
-                    locDisplay = 'Dusit Central Park';
+                } else if (isDusitText(locDisplay.toLowerCase())) {
                     locCounts.dusit++;
-                } else if (isFactoryText(lLower)) {
-                    locDisplay = 'Factory / โรงงาน';
+                } else {
                     locCounts.factory++;
                 }
+
+                if (empId) appData.empLocationMap[empId] = locDisplay;
+                if (name) appData.empLocationMap[name] = locDisplay;
 
                 const empType = clean(colType < row.length ? row[colType] : 'VSC');
 
@@ -1915,59 +1977,144 @@
 
         function parsePosition2050717232Tab(matrix) {
             if (!matrix || matrix.length === 0) return [];
-            logInspector(`Parsing Position Headcount feed from GID: ${sheetConfig.positionGid}...`);
+            logInspector(`Parsing Position Headcount feed from GID: ${sheetConfig.positionGid}... (Raw rows: ${matrix.length})`);
 
             let posCounts = {};
             let isAggregatedTable = false;
-            let colPos = 0, colCount = 1;
+            let colPos = -1;
+            let colCount = -1;
+            let headerIdx = -1;
 
-            for (let r = 0; r < Math.min(5, matrix.length); r++) {
+            const isPosHeader = (txt) => {
+                const s = String(txt || '').toLowerCase().trim();
+                return s.includes('ตำแหน่ง') || s.includes('position') || s.includes('job title') || s.includes('role') || s.includes('title') || s.includes('row labels') || s.includes('ป้ายชื่อแถว');
+            };
+
+            const isCountHeader = (txt) => {
+                const s = String(txt || '').toLowerCase().trim();
+                return s.includes('จำนวน') || s.includes('count') || s.includes('headcount') || s.includes('คน') || s.includes('total') || s.includes('รวม') || s.includes('grand total') || s.includes('ยอดรวม') || s.includes('actual') || s.includes('staff');
+            };
+
+            const isPosTotalRow = (str) => {
+                if (!str) return false;
+                const s = String(str).toLowerCase().trim();
+                return s === 'total' || s === 'grand total' || s === 'รวม' || s === 'ผลรวม' || s === 'ยอดรวม' || s === 'sum' || s.startsWith('total ') || s.startsWith('grand total') || s.startsWith('รวมทั้งสิ้น') || s.startsWith('ยอดรวม');
+            };
+
+            // 1. ตรวจจับแถว Header จาก 10 แถวแรก
+            for (let r = 0; r < Math.min(10, matrix.length); r++) {
                 const row = matrix[r] || [];
+                let foundPos = -1;
+                let foundCount = -1;
                 row.forEach((cell, idx) => {
-                    const txt = String(cell || '').toLowerCase().trim();
-                    if (txt.includes('ตำแหน่ง') || txt.includes('position')) colPos = idx;
-                    if (txt.includes('จำนวน') || txt.includes('count') || txt.includes('headcount') || txt.includes('คน')) {
-                        colCount = idx;
+                    if (foundPos === -1 && isPosHeader(cell)) foundPos = idx;
+                    if (foundCount === -1 && isCountHeader(cell)) foundCount = idx;
+                });
+                if (foundPos !== -1) {
+                    headerIdx = r;
+                    colPos = foundPos;
+                    if (foundCount !== -1 && foundCount !== foundPos) {
+                        colCount = foundCount;
                         isAggregatedTable = true;
                     }
-                });
+                    break;
+                }
             }
 
-            if (isAggregatedTable) {
-                for (let r = 1; r < matrix.length; r++) {
+            // 2. ถ้าไม่พบ Header ที่ระบุชัดเจน ให้วิเคราะห์จากชนิดของข้อมูลในคอลัมน์
+            const startRow = headerIdx !== -1 ? headerIdx + 1 : 0;
+            if (colPos === -1 || colCount === -1) {
+                let textScoreByCol = {};
+                let numScoreByCol = {};
+
+                for (let r = startRow; r < Math.min(startRow + 25, matrix.length); r++) {
+                    const row = matrix[r];
+                    if (!row) continue;
+                    row.forEach((cell, cIdx) => {
+                        const str = String(cell || '').trim();
+                        const num = parseNum(str);
+                        const jobRegex = /staff|officer|lead|leader|manager|supervisor|technician|director|operator|assistant|engineer|admin|specialist|head|clerk|executive|chief|worker|driver|cleaner|พนักงาน|หัวหน้า|เจ้าหน้าที่|ผู้จัดการ|ช่าง|ผู้ช่วย|วิศวกร|ผจก|แม่บ้าน|รปภ|คนขับ|ธุรการ|qc|qa|it/i;
+                        if (jobRegex.test(str)) {
+                            textScoreByCol[cIdx] = (textScoreByCol[cIdx] || 0) + 3;
+                        } else if (str.length > 3 && isNaN(num)) {
+                            textScoreByCol[cIdx] = (textScoreByCol[cIdx] || 0) + 1;
+                        }
+                        if (!isNaN(num) && num > 0 && num < 1000 && !str.includes('/') && !str.includes('-') && str.length <= 4) {
+                            numScoreByCol[cIdx] = (numScoreByCol[cIdx] || 0) + 1;
+                        }
+                    });
+                }
+
+                // ค้นหาคอลัมน์ชื่อตำแหน่ง
+                let maxTextScore = 0;
+                for (const [cIdx, sc] of Object.entries(textScoreByCol)) {
+                    if (sc > maxTextScore) {
+                        maxTextScore = sc;
+                        colPos = parseInt(cIdx, 10);
+                    }
+                }
+                if (colPos === -1) colPos = 0;
+
+                // ค้นหาคอลัมน์ตัวเลขจำนวนคน
+                let maxNumScore = 0;
+                for (const [cIdx, sc] of Object.entries(numScoreByCol)) {
+                    const idxInt = parseInt(cIdx, 10);
+                    if (idxInt !== colPos && sc > maxNumScore) {
+                        maxNumScore = sc;
+                        colCount = idxInt;
+                    }
+                }
+
+                if (colCount !== -1 && maxNumScore >= 2) {
+                    isAggregatedTable = true;
+                }
+            }
+
+            // 3. ประมวลผลดึงข้อมูลตำแหน่งงานทั้งหมด
+            if (isAggregatedTable && colCount !== -1) {
+                logInspector(`Position sheet detected as AGGREGATED TABLE (Pos Col: ${colPos}, Count Col: ${colCount}, Start Row: ${startRow})`);
+                for (let r = startRow; r < matrix.length; r++) {
                     const row = matrix[r];
                     if (!row || row.length === 0) continue;
-                    const pos = String(row[colPos] || '').trim();
-                    const cnt = parseNum(row[colCount]);
-                    if (pos && !isTotalRow(pos) && !isLabelText(pos) && cnt > 0) {
-                        posCounts[pos] = (posCounts[pos] || 0) + cnt;
+                    const posRaw = String(row[colPos] || '').trim();
+                    if (!posRaw) continue;
+                    if (isPosTotalRow(posRaw) || isLabelText(posRaw)) continue;
+
+                    const lowerPos = posRaw.toLowerCase();
+                    if (lowerPos === '(blank)' || lowerPos === 'blank' || lowerPos === '(ว่าง)' || lowerPos === 'ว่าง' || lowerPos === '-' || lowerPos === 'null' || lowerPos === 'undefined') continue;
+
+                    let cnt = parseNum(row[colCount]);
+                    // หากค่าใน colCount เป็น 0 ให้ตรวจหาคอลัมน์ตัวเลขอื่นๆ ในแถวนั้น
+                    if (cnt === 0) {
+                        for (let c = row.length - 1; c >= 0; c--) {
+                            if (c !== colPos) {
+                                const n = parseNum(row[c]);
+                                if (n > 0 && n < 1000) {
+                                    cnt = n;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (cnt > 0) {
+                        posCounts[posRaw] = (posCounts[posRaw] || 0) + cnt;
                     }
                 }
             } else {
-                let headerIdx = 0;
-                for (let r = 0; r < Math.min(5, matrix.length); r++) {
-                    const rStr = (matrix[r] || []).join(' ').toLowerCase();
-                    if (rStr.includes('ตำแหน่ง') || rStr.includes('position')) {
-                        headerIdx = r;
-                        break;
-                    }
-                }
-                const hRow = matrix[headerIdx] || [];
-                hRow.forEach((c, idx) => {
-                    const txt = String(c || '').toLowerCase();
-                    if (txt.includes('ตำแหน่ง') || txt.includes('position')) colPos = idx;
-                });
-
-                for (let r = headerIdx + 1; r < matrix.length; r++) {
+                logInspector(`Position sheet detected as ROSTER TABLE (Pos Col: ${colPos}, Start Row: ${startRow})`);
+                for (let r = startRow; r < matrix.length; r++) {
                     const row = matrix[r];
                     if (!row || row.length === 0 || isResignedRow(row)) continue;
-                    const pos = String(row[colPos] || '').trim();
-                    if (pos && pos !== '-' && !isTotalRow(pos) && !isLabelText(pos)) {
-                        posCounts[pos] = (posCounts[pos] || 0) + 1;
-                    }
+                    const posRaw = String(row[colPos] || '').trim();
+                    if (!posRaw || posRaw === '-' || isPosTotalRow(posRaw) || isLabelText(posRaw)) continue;
+                    const lowerPos = posRaw.toLowerCase();
+                    if (lowerPos === '(blank)' || lowerPos === 'blank' || lowerPos === '(ว่าง)' || lowerPos === 'ว่าง') continue;
+                    posCounts[posRaw] = (posCounts[posRaw] || 0) + 1;
                 }
             }
 
+            // แปลงเป็น Array และเรียงลำดับจากจำนวนมากไปหาน้อย
             let result = Object.keys(posCounts).map(pos => ({
                 position: pos,
                 count: posCounts[pos]
@@ -1975,10 +2122,73 @@
 
             if (result.length > 0) {
                 appData.positionHeadcount = result;
-                logInspector(`Loaded ${result.length} unique positions from GID 2050717232.`);
+                const totalPosStaff = result.reduce((acc, curr) => acc + curr.count, 0);
+                logInspector(`Loaded ALL ${result.length} positions from GID: ${sheetConfig.positionGid} (Total Staff: ${totalPosStaff}).`);
                 renderPositionHeadcountBarChart();
+            } else {
+                logInspector(`Notice: 0 positions parsed from GID: ${sheetConfig.positionGid}.`);
             }
             return result;
+        }
+
+        function fetchPositionDataDirect() {
+            logInspector(`Fetching Live Position Feed directly from GID: ${sheetConfig.positionGid}...`);
+            const cb = Date.now();
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.positionGid}&_nocache=${cb}`;
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.positionGid}&_nocache=${cb}`;
+
+            fetch(gvizUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.text();
+                })
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
+                        const parsed = parsePosition2050717232Tab(parseCSV(txt));
+                        if (!parsed || parsed.length === 0) throw new Error('Empty parsed position result');
+                    } else {
+                        throw new Error('GViz returned non-CSV data');
+                    }
+                })
+                .catch(err => {
+                    logInspector(`GViz feed notice (${err.message}), trying Export CSV endpoint for Positions...`);
+                    fetch(exportUrl)
+                        .then(r => r.text())
+                        .then(txt2 => {
+                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
+                                parsePosition2050717232Tab(parseCSV(txt2));
+                            } else {
+                                fallbackPositionsFromMasterRoster();
+                            }
+                        })
+                        .catch(e => {
+                            logInspector(`Export CSV error (${e.message}), calculating positions from Master Roster (GID 0)...`);
+                            fallbackPositionsFromMasterRoster();
+                        });
+                });
+        }
+
+        function fallbackPositionsFromMasterRoster() {
+            const masterList = appData.empAllList.length > 0 ? appData.empAllList : (appData.wfCategories.all || []);
+            if (masterList.length > 0) {
+                let dynamicPosMap = {};
+                masterList.forEach(emp => {
+                    const pos = String(emp.position || '').trim();
+                    if (pos && pos !== '-' && !isTotalRow(pos) && !isLabelText(pos)) {
+                        dynamicPosMap[pos] = (dynamicPosMap[pos] || 0) + 1;
+                    }
+                });
+                let result = Object.keys(dynamicPosMap).map(pos => ({
+                    position: pos,
+                    count: dynamicPosMap[pos]
+                })).sort((a, b) => b.count - a.count);
+
+                if (result.length > 0) {
+                    appData.positionHeadcount = result;
+                    logInspector(`Successfully compiled ${result.length} positions dynamically from Master Roster (GID 0).`);
+                    renderPositionHeadcountBarChart();
+                }
+            }
         }
 
         function openDepartmentRosterModal(deptName) {
@@ -2404,12 +2614,16 @@
             const backgroundColors = posList.map(p => {
                 const name = p.position.toLowerCase();
                 if (name.includes('prod') || name.includes('ผลิต')) return '#f59e0b';
+                if (name.includes('ware') || name.includes('คลัง')) return '#38bdf8';
+                if (name.includes('lead') || name.includes('หัวหน้า') || name.includes('mgr') || name.includes('manager')) return '#818cf8';
                 return '#06b6d4';
             });
 
             const container = document.getElementById('posCanvasContainer');
             if (container) {
-                container.style.height = `${Math.max(340, posList.length * 36)}px`;
+                const calculatedHeight = Math.max(340, posList.length * 36);
+                container.style.height = `${calculatedHeight}px`;
+                canvas.style.height = `${calculatedHeight}px`;
             }
 
             const isDark = isDarkMode();
@@ -2479,7 +2693,7 @@
                 }
             });
 
-            setText('badgePositionCount', `${posList.length} ตำแหน่ง • เลื่อน & คลิกดูได้`);
+            setText('badgePositionCount', `${posList.length} ตำแหน่ง (${totalStaff} คน) • เลื่อน & คลิกดูได้`);
         }
 
         function renderWorkforceCharts() {
@@ -2869,14 +3083,37 @@
             if (!dateStr || dateStr === '-' || dateStr === 'null' || dateStr === 'undefined') return false;
             const str = String(dateStr).trim();
             if (!str) return false;
-            if (str.includes('2026') || str.includes('2569') || str.includes('/26') || str.includes('-26') || str.endsWith('26')) return true;
-            const nums = str.match(/\d+/g);
-            if (!nums) return false;
-            return nums.includes('2026') || nums.includes('2569') || nums.includes('26') || nums.includes('69');
+
+            // ตรวจสอบตัดปีก่อนหน้าและปีถัดไปออกทันที (เช่น 2025, 2024, 2568, 2567 หรือ /25, /24)
+            if (/\b(2020|2021|2022|2023|2024|2025|2027|2028|2029|2030)\b/.test(str)) return false;
+            if (/\b(2563|2564|2565|2566|2567|2568|2570|2571|2572)\b/.test(str)) return false;
+            if (/[\/\-\.](20|21|22|23|24|25|27|28|65|66|67|68|70)\b/.test(str)) return false;
+
+            // ตรวจสอบปี ค.ศ. 2026 หรือ พ.ศ. 2569 ชัดเจน
+            if (/\b2026\b/.test(str) || /\b2569\b/.test(str)) return true;
+
+            // วิเคราะห์แยกส่วนวัน เดือน ปี ตามโครงสร้าง (DD/MM/YYYY, YYYY-MM-DD, DD/MM/YY)
+            const parts = str.split(/[\/\-\.\s]+/);
+            if (parts.length >= 3) {
+                // รูปแบบ YYYY-MM-DD
+                if (parts[0].length === 4) {
+                    const y = parseInt(parts[0], 10);
+                    return y === 2026 || y === 2569;
+                }
+                // รูปแบบ DD/MM/YYYY หรือ DD/MM/YY
+                const lastPart = parts[parts.length - 1];
+                if (lastPart.length === 4) {
+                    const y = parseInt(lastPart, 10);
+                    return y === 2026 || y === 2569;
+                } else if (lastPart.length === 2) {
+                    return lastPart === '26' || lastPart === '69';
+                }
+            }
+            return false;
         }
 
         function parseMonthFromDateStr(dateStr) {
-            if (!dateStr) return '';
+            if (!dateStr || !isYear2026(dateStr)) return '';
             const str = String(dateStr).trim().toLowerCase();
             const monthMap = {
                 'jan': 'January', 'january': 'January', 'ม.ค.': 'January', 'มกราคม': 'January',
@@ -2914,7 +3151,7 @@
 
         function parseTrends1810359834Tab(matrix) {
             if (!matrix || matrix.length < 2) return;
-            logInspector("Parsing Trends tab (GID: " + sheetConfig.trendGid + ") for Monthly Trend Movement chart...");
+            logInspector("Parsing Trends tab (GID: " + sheetConfig.trendGid + ") for Monthly Movement chart (Year 2026 Only)...");
 
             const colMonth = 0;
             const colJoin = 1;   // Column B: Join
@@ -2954,6 +3191,15 @@
                 let monthRaw = String(row[colMonth] || '').trim();
                 if (!monthRaw || isTotalRow(monthRaw) || isLabelText(monthRaw)) continue;
 
+                // กรองเฉพาะปี 2026 (หากมีแถวระบุปี หรือแถวเดือนของปีก่อนหน้า ให้คัดเฉพาะของปี 2026)
+                const rowJoined = row.join(' ').toLowerCase();
+                if (rowJoined.includes('2025') || rowJoined.includes('2568') || rowJoined.includes('2024') || rowJoined.includes('2567')) {
+                    // หากทั้งแถวระบุเป็นปีก่อนหน้า ให้ข้าม
+                    if (!rowJoined.includes('2026') && !rowJoined.includes('2569')) {
+                        continue;
+                    }
+                }
+
                 let mKey = monthRaw.toLowerCase().replace('.', '');
                 let monthName = monthMap[mKey] || monthRaw;
 
@@ -2976,8 +3222,9 @@
             }
 
             if (parsedTrend.length > 0) {
-                appData.monthlyTrendData = parsedTrend;
-                logInspector("Successfully parsed " + parsedTrend.length + " monthly trend movement records from Col B & Col C.");
+                // คัดเฉพาะ 12 เดือนแรกของปี 2026 หรือจำกัดชุดข้อมูลให้ตรงกับปี 2026
+                appData.monthlyTrendData = parsedTrend.slice(0, 12);
+                logInspector("Successfully parsed " + appData.monthlyTrendData.length + " monthly movement records for Year 2026.");
                 renderWorkforceCharts();
             }
         }
@@ -3188,9 +3435,10 @@
             const searchInput = document.getElementById('inputTrendSearch');
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            let baseList = currentTrendType === 'join' 
+            // กรองเฉพาะข้อมูลที่เป็นปี 2026 เท่านั้น ป้องกันข้อมูลปี 2025 หรือปีก่อนหน้าหลุดรอดเข้ามา
+            let baseList = (currentTrendType === 'join' 
                 ? (appData.trendDetailJoin || []) 
-                : (appData.trendDetailResign || []);
+                : (appData.trendDetailResign || [])).filter(item => isYear2026(item.date));
 
             let list = baseList;
             if (currentTrendMonth && currentTrendMonth !== 'all') {
@@ -3719,7 +3967,7 @@
             }
 
             const hRow = matrix[hIdx] || [];
-            let colId = 0, colName = 1, colNick = 2, colPos = 3, colDept = 4, colLoc = 16, colType = 6, colStart = -1;
+            let colId = 0, colName = 1, colNick = 2, colPos = 3, colDept = 4, colLoc = -1, colType = 6, colStart = -1;
 
             hRow.forEach((c, idx) => {
                 const txt = String(c || '').toLowerCase().trim();
@@ -3728,7 +3976,7 @@
                 else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role') || txt.includes('title')) colPos = idx;
                 else if ((txt.includes('ชื่อ') || txt.includes('name')) && !txt.includes('ตำแหน่ง') && !txt.includes('เล่น')) colName = idx;
                 else if (txt.includes('แผนก') || txt.includes('dept')) colDept = idx;
-                else if (txt.includes('สถานที่') || txt.includes('location') || idx === 16) colLoc = idx;
+                else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('ปฏิบัติงาน')) colLoc = idx;
                 else if (txt.includes('ประเภท') || txt.includes('type')) colType = idx;
                 else if (txt.includes('วันที่เริ่ม') || txt.includes('start date')) colStart = idx;
             });
@@ -3741,13 +3989,19 @@
                 if (!empId && !name) continue;
                 if (isTotalRow(empId) || isTotalRow(name)) continue;
 
+                const nick = String(row[colNick] || '-').trim();
+                const pos = String(row[colPos] || '-').trim();
+                const dept = String(row[colDept] || '-').trim();
+                const rawLoc = (colLoc !== -1 && colLoc < row.length) ? String(row[colLoc] || '').trim() : '';
+                const finalLoc = resolveEmployeeLocation(rawLoc, pos, dept, empId, name);
+
                 let item = {
                     empId: empId || `EMP-${r}`,
                     name: name,
-                    nickname: String(row[colNick] || '-').trim(),
-                    position: String(row[colPos] || '-').trim(),
-                    dept: String(row[colDept] || '-').trim(),
-                    location: String(row[colLoc] || 'Factory / โรงงาน').trim(),
+                    nickname: nick,
+                    position: pos,
+                    dept: dept,
+                    location: finalLoc,
                     empType: String(row[colType] || (key === 'vsc' ? 'VSC' : (key === 'outsource' ? 'Outsource' : 'VSC'))).trim(),
                     startDate: colStart !== -1 ? String(row[colStart] || '-').trim() : '-'
                 };
@@ -3846,10 +4100,8 @@
                 }
             });
 
-            // 2. Position Headcount GID 2050717232
-            fetchCSV(sheetConfig.positionGid).then(matrix => {
-                if (matrix) parsePosition2050717232Tab(matrix);
-            });
+            // 2. Position Headcount GID 2050717232 (Direct & Fallback)
+            fetchPositionDataDirect();
 
             // 3. Department Headcount GID 573246361
             fetchCSV(sheetConfig.deptGid).then(matrix => {
@@ -3874,6 +4126,10 @@
                 if (m) {
                     const list = parseWorkforceCategoryMatrix(m, 'all');
                     if (list.length > 0) {
+                        // Ensure each employee receives their true location mapped from Master GID 0
+                        list.forEach(item => {
+                            item.location = resolveEmployeeLocation(item.location, item.position, item.dept, item.empId, item.name);
+                        });
                         appData.wfCategories.all = list;
                         appData.summary.totalActive = list.length;
                         setText('metricTotalActive', list.length);
@@ -4170,6 +4426,7 @@
         window.closeTrendDetailModal = closeTrendDetailModal;
         window.filterTrendDetailModal = filterTrendDetailModal;
         window.openLocationListModal = openLocationListModal;
+        window.fetchPositionDataDirect = fetchPositionDataDirect;
         window.openExcludedListModal = openExcludedListModal;
         window.closeExcludedListModal = closeExcludedListModal;
         window.filterExcludedListModal = filterExcludedListModal;
