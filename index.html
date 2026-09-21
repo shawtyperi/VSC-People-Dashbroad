@@ -808,29 +808,68 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 relative z-10">
-                        <div class="bg-gradient-to-br from-amber-950/40 via-slate-950 to-slate-950 p-3.5 rounded-2xl border border-amber-500/30 shadow-md flex flex-col justify-between space-y-1.5">
-                            <div class="flex items-center justify-between border-b border-amber-900/40 pb-1.5">
-                                <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-notes-medical text-rose-400 text-xs"></i> Top Sick Leave Symptom Today:
+                    <!-- Row 3: Top Sick Leave Symptom, Top Department Leave, and Top Dept Leave Count (From GID: 121308326 B9, B10, B11) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 relative z-10 pt-1">
+                        <!-- Card 1: Top Sick Leave Symptom Today (Cell B9) -->
+                        <div class="bg-slate-950/85 hover:bg-slate-900/90 rounded-2xl p-3.5 border border-rose-500/30 hover:border-rose-400/60 shadow-md transition-all duration-200 flex flex-col justify-between space-y-2">
+                            <div class="flex items-center justify-between border-b border-rose-950/80 pb-2">
+                                <span class="text-xs font-bold text-rose-300 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <i class="fa-solid fa-head-side-cough text-rose-400 text-sm"></i> Top Sick Leave Symptom Today
                                 </span>
-                                <span class="text-[10px] font-mono text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Feed GID: 121308326 (B9)</span>
+                                <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold">
+                                    Cell B9
+                                </span>
                             </div>
-                            <div id="execTopSymptomText" class="font-bold text-xs sm:text-sm text-amber-100 leading-snug break-words pt-0.5">
-                                -
+                            <div class="pt-0.5">
+                                <span id="execTopSymptomText" class="text-xs sm:text-sm font-bold text-white block leading-snug">
+                                    โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ
+                                </span>
                             </div>
+                            <p class="text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
+                                <span>อาการป่วยที่ลามากที่สุด</span>
+                                <span class="text-rose-400/90 font-bold">GID 121308326</span>
+                            </p>
                         </div>
 
-                        <div class="bg-gradient-to-br from-indigo-950/40 via-slate-950 to-slate-950 p-3.5 rounded-2xl border border-indigo-500/30 shadow-md flex flex-col justify-between space-y-1.5">
-                            <div class="flex items-center justify-between border-b border-indigo-900/40 pb-1.5">
-                                <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-building-user text-indigo-400 text-xs"></i> Top Department Leave Today:
+                        <!-- Card 2: Top Department Leave Today (Cell B10) -->
+                        <div class="bg-slate-950/85 hover:bg-slate-900/90 rounded-2xl p-3.5 border border-indigo-500/30 hover:border-indigo-400/60 shadow-md transition-all duration-200 flex flex-col justify-between space-y-2">
+                            <div class="flex items-center justify-between border-b border-indigo-950/80 pb-2">
+                                <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <i class="fa-solid fa-building-user text-indigo-400 text-sm"></i> Top Department Leave Today
                                 </span>
-                                <span class="text-[10px] font-mono text-slate-400">Department</span>
+                                <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-bold">
+                                    Cell B10
+                                </span>
                             </div>
-                            <div id="execTopDeptText" class="font-bold text-xs sm:text-sm text-indigo-200 leading-snug break-words pt-0.5">
-                                -
+                            <div class="pt-0.5">
+                                <span id="execTopDeptText" class="text-xs sm:text-sm font-bold text-white block leading-snug">
+                                    Production Department
+                                </span>
                             </div>
+                            <p class="text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
+                                <span>แผนกที่พนักงานลามากที่สุด</span>
+                                <span class="text-indigo-400/90 font-bold">GID 121308326</span>
+                            </p>
+                        </div>
+
+                        <!-- Card 3: Leave Headcount (Cell B11) -->
+                        <div class="bg-slate-950/85 hover:bg-slate-900/90 rounded-2xl p-3.5 border border-amber-500/30 hover:border-amber-400/60 shadow-md transition-all duration-200 flex flex-col justify-between space-y-2">
+                            <div class="flex items-center justify-between border-b border-amber-950/80 pb-2">
+                                <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <i class="fa-solid fa-users-viewfinder text-amber-400 text-sm"></i> Leave Headcount
+                                </span>
+                                <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
+                                    Cell B11
+                                </span>
+                            </div>
+                            <div class="flex items-baseline gap-1.5 pt-0.5">
+                                <span id="execTopDeptCount" class="text-2xl sm:text-3xl font-black text-amber-300 font-mono">5</span>
+                                <span class="text-xs text-slate-400 font-medium font-sans">Emps</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
+                                <span>Dept Leave Headcount</span>
+                                <span class="text-amber-400/90 font-bold">GID 121308326</span>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1645,7 +1684,8 @@
                 sickLeaveTodayProd: 5,
                 sickRate: 1.84,
                 topSymptomToday: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ',
-                topDeptToday: 'Production Department (5 คน)'
+                topDeptToday: 'Production Department',
+                topDeptCount: 5
             }
         };
 
@@ -3273,13 +3313,58 @@
             }
 
             setText('execTopSymptomText', es.topSymptomToday || 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ');
-            setText('execTopDeptText', es.topDeptToday || 'Production Department (5 คน)');
+            setText('execTopDeptText', es.topDeptToday || 'Production Department');
+            setText('execTopDeptCount', es.topDeptCount !== undefined ? es.topDeptCount : 5);
             setText('execActiveWorkforce', appData.summary ? appData.summary.totalActive : 277);
+        }
+
+        // Dedicated JSONP transport to bypass CORS restrictions completely
+        function fetchGVizJSONP(gid) {
+            return new Promise((resolve, reject) => {
+                const cbName = 'gviz_jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+                const script = document.createElement('script');
+                const timeoutTimer = setTimeout(() => {
+                    cleanup();
+                    reject(new Error('GViz JSONP timeout after 8 seconds'));
+                }, 8000);
+
+                function cleanup() {
+                    clearTimeout(timeoutTimer);
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+                }
+
+                window[cbName] = function(resp) {
+                    cleanup();
+                    if (resp && resp.table && resp.table.rows) {
+                        const matrix = resp.table.rows.map(r => {
+                            if (!r || !r.c) return [];
+                            return r.c.map(cell => {
+                                if (!cell) return '';
+                                if (cell.f !== undefined && cell.f !== null) return String(cell.f).trim();
+                                if (cell.v !== undefined && cell.v !== null) return String(cell.v).trim();
+                                return '';
+                            });
+                        });
+                        resolve(matrix);
+                    } else {
+                        reject(new Error('Invalid GViz response format'));
+                    }
+                };
+
+                const cacheBuster = `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+                script.src = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=responseHandler:${cbName}&gid=${gid}&_nocache=${cacheBuster}`;
+                script.onerror = function() {
+                    cleanup();
+                    reject(new Error('GViz script network error'));
+                };
+                document.head.appendChild(script);
+            });
         }
 
         function parseExecSummary121308326Tab(matrix) {
             if (!matrix || matrix.length === 0) return;
-            logInspector("Parsing Executive Summary directly from GID: 121308326 (Key-Value mode)...");
+            logInspector("Parsing Live Executive Summary from GID: 121308326 (Key-Value & Coordinate Parser)...");
 
             let rawDate = '';
             let valTotalAll = null;
@@ -3291,7 +3376,7 @@
             let valTopDept = '';
             let valTopDeptCount = '';
 
-            // ตรวจสอบค่าวันที่ใน Row 1 (B1 หรือ A1)
+            // 1. Check Date in Row 1 (B1 or A1)
             if (matrix[0]) {
                 const cellB1 = String(matrix[0][1] || '').trim();
                 const cellA1 = String(matrix[0][0] || '').trim();
@@ -3302,7 +3387,33 @@
                 }
             }
 
-            // อ่านทีละแถวแบบ Key (Col A) -> Value (Col B) ตามโครงสร้างจริงของชีท
+            // 2. Direct Cell Coordinate Extraction for B9, B10, B11
+            // Row 9 (Index 8): Top Sick Leave Symptom Today -> B9
+            if (matrix.length > 8 && matrix[8] && matrix[8][1]) {
+                const candidateB9 = String(matrix[8][1] || '').trim();
+                if (candidateB9 && candidateB9 !== '-' && !candidateB9.toLowerCase().includes('department')) {
+                    valTopSymptom = candidateB9;
+                }
+            }
+
+            // Row 10 (Index 9): Top Department Leave Today -> B10
+            if (matrix.length > 9 && matrix[9] && matrix[9][1]) {
+                const candidateB10 = String(matrix[9][1] || '').trim();
+                if (candidateB10 && candidateB10 !== '-') {
+                    valTopDept = candidateB10;
+                }
+            }
+
+            // Row 11 (Index 10): Department Leave Count -> B11
+            if (matrix.length > 10 && matrix[10] && matrix[10][1]) {
+                const candidateB11 = String(matrix[10][1] || '').trim();
+                const parsedCount = parseNum(candidateB11);
+                if (!isNaN(parsedCount) && parsedCount >= 0) {
+                    valTopDeptCount = parsedCount;
+                }
+            }
+
+            // 3. Robust Semantic Keyword Scan Across All Rows
             for (let r = 0; r < matrix.length; r++) {
                 const row = matrix[r];
                 if (!row || row.length === 0) continue;
@@ -3312,72 +3423,33 @@
                 const colC = String(row[2] || '').trim();
                 const lowerA = colA.toLowerCase();
 
-                // 1. Total Leave Today (Employee all) -> Row 2
                 if (lowerA.includes('total leave') && (lowerA.includes('all') || lowerA.includes('employee all'))) {
                     valTotalAll = parseNum(colB);
-                }
-                // 2. Total Leave Today (Production Staff) -> Row 3
-                else if (lowerA.includes('total leave') && (lowerA.includes('prod') || lowerA.includes('production staff'))) {
+                } else if (lowerA.includes('total leave') && (lowerA.includes('prod') || lowerA.includes('production staff'))) {
                     valTotalProd = parseNum(colB);
-                }
-                // 3. Sick Leave today (Employee all) -> Row 4
-                else if (lowerA.includes('sick leave') && (lowerA.includes('all') || lowerA.includes('employee all'))) {
+                } else if (lowerA.includes('sick leave') && (lowerA.includes('all') || lowerA.includes('employee all'))) {
                     valSickAll = parseNum(colB);
-                }
-                // 4. Sick Leave today (Production Staff) -> Row 5
-                else if (lowerA.includes('sick leave') && (lowerA.includes('prod') || lowerA.includes('production staff'))) {
+                } else if (lowerA.includes('sick leave') && (lowerA.includes('prod') || lowerA.includes('production staff'))) {
                     valSickProd = parseNum(colB);
-                }
-                // 5. %Sick rate -> Row 8
-                else if (lowerA.includes('%sick rate') || lowerA.includes('sick rate')) {
+                } else if (lowerA.includes('%sick rate') || lowerA.includes('sick rate')) {
                     valSickRate = parseNum(colB);
-                }
-                // 6. Top Sick Leave Symptom Today -> Row 9 (Cell B9)
-                else if (lowerA.includes('top sick leave symptom') || lowerA.includes('top sick') || lowerA.includes('อาการป่วยที่ลามากที่สุด')) {
+                } else if (lowerA.includes('top sick leave symptom') || lowerA.includes('top sick') || lowerA.includes('อาการป่วยที่ลามากที่สุด')) {
                     if (colB && colB !== '-' && !colB.toLowerCase().includes('department')) {
                         valTopSymptom = colB;
-                        if (colC && (!isNaN(parseNum(colC)) || colC.includes('คน'))) {
-                            valTopSymptom += ` (${colC})`;
-                        }
                     }
-                }
-                // 7. Top Department Leave Today -> Row 10 (Cell B10)
-                else if (lowerA.includes('top department leave') || lowerA.includes('top department') || lowerA.includes('department leave')) {
+                } else if (lowerA.includes('top department leave') || lowerA.includes('top department') || lowerA.includes('department leave')) {
                     if (colB && colB !== '-') {
                         valTopDept = colB;
                     }
-                }
-                // 8. จำนวนกี่คนที่ลา -> Row 11 (Cell B11)
-                else if (lowerA.includes('จำนวนกี่คน') || lowerA.includes('จำนวนคนที่ลา') || lowerA.includes('จำนวนคน')) {
-                    if (colB && !isNaN(parseNum(colB))) {
-                        valTopDeptCount = `${parseNum(colB)} คน`;
+                } else if (lowerA.includes('จำนวนกี่คน') || lowerA.includes('จำนวนคนที่ลา') || lowerA.includes('จำนวนคน')) {
+                    const cntVal = parseNum(colB);
+                    if (!isNaN(cntVal) && cntVal >= 0) {
+                        valTopDeptCount = cntVal;
                     }
                 }
             }
 
-            // Fallback ตรงพิกัดเซลล์ B9 และ B10 หากชื่อหัวข้อมีการเปลี่ยนตัวอักษร
-            if (!valTopSymptom && matrix.length > 8 && matrix[8]) {
-                const directB9 = String(matrix[8][1] || '').trim();
-                if (directB9 && directB9 !== '-' && !directB9.toLowerCase().includes('department')) {
-                    valTopSymptom = directB9;
-                }
-            }
-
-            if (!valTopDept && matrix.length > 9 && matrix[9]) {
-                const directB10 = String(matrix[9][1] || '').trim();
-                if (directB10 && directB10 !== '-') {
-                    valTopDept = directB10;
-                }
-            }
-
-            if (!valTopDeptCount && matrix.length > 10 && matrix[10]) {
-                const directB11 = String(matrix[10][1] || '').trim();
-                if (directB11 && !isNaN(parseNum(directB11))) {
-                    valTopDeptCount = `${parseNum(directB11)} คน`;
-                }
-            }
-
-            // บันทึกค่าที่อ่านได้ลงใน appData.execSummary
+            // Commit Extracted Values to appData.execSummary
             if (rawDate) appData.execSummary.sheetDate = rawDate;
             if (valTotalAll !== null) appData.execSummary.totalLeaveTodayAll = valTotalAll;
             if (valTotalProd !== null) appData.execSummary.totalLeaveTodayProd = valTotalProd;
@@ -3387,46 +3459,67 @@
 
             if (valTopSymptom) {
                 appData.execSummary.topSymptomToday = valTopSymptom;
-                logInspector(`Live Top Sick Leave Symptom (B9): "${valTopSymptom}"`);
             }
 
             if (valTopDept) {
-                appData.execSummary.topDeptToday = valTopDeptCount ? `${valTopDept} (${valTopDeptCount})` : valTopDept;
-                logInspector(`Live Top Department Leave (B10): "${appData.execSummary.topDeptToday}"`);
+                appData.execSummary.topDeptToday = valTopDept;
+            }
+
+            if (valTopDeptCount !== null && valTopDeptCount !== '') {
+                appData.execSummary.topDeptCount = valTopDeptCount;
             }
 
             renderExecutiveSummaryUI();
+            logInspector(`[Live Sync GID 121308326] Symptom: "${appData.execSummary.topSymptomToday}", Dept: "${appData.execSummary.topDeptToday}", Count: "${appData.execSummary.topDeptCount}"`);
         }
 
         function fetchExecSummaryDirect() {
             logInspector(`Fetching Live Executive Summary Feed directly from GID: ${sheetConfig.execGid}...`);
-            const cb = Date.now();
-            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.execGid}&_nocache=${cb}`;
-            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.execGid}&_nocache=${cb}`;
+            const iconSymptom = document.getElementById('syncIconSymptom');
+            const iconDept = document.getElementById('syncIconDept');
+            if (iconSymptom) iconSymptom.classList.add('fa-spin');
+            if (iconDept) iconDept.classList.add('fa-spin');
 
-            fetch(gvizUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.text();
-                })
-                .then(txt => {
-                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
-                        parseExecSummary121308326Tab(parseCSV(txt));
-                    } else {
-                        throw new Error('GViz returned non-CSV data');
-                    }
+            // 1. Primary: JSONP (Immune to CORS and works in all browser contexts)
+            fetchGVizJSONP(sheetConfig.execGid)
+                .then(matrix => {
+                    parseExecSummary121308326Tab(matrix);
+                    if (iconSymptom) iconSymptom.classList.remove('fa-spin');
+                    if (iconDept) iconDept.classList.remove('fa-spin');
                 })
                 .catch(err => {
-                    logInspector(`GViz Exec Summary notice (${err.message}), trying Export CSV endpoint...`);
-                    fetch(exportUrl)
-                        .then(r => r.text())
-                        .then(txt2 => {
-                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
-                                parseExecSummary121308326Tab(parseCSV(txt2));
+                    logInspector(`GViz JSONP notice (${err.message}), falling back to direct fetch...`);
+                    const cb = Date.now();
+                    const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.execGid}&_nocache=${cb}`;
+                    const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.execGid}&_nocache=${cb}`;
+
+                    fetch(gvizUrl, { cache: 'no-store' })
+                        .then(res => {
+                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                            return res.text();
+                        })
+                        .then(txt => {
+                            if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
+                                parseExecSummary121308326Tab(parseCSV(txt));
+                            } else {
+                                throw new Error('GViz returned non-CSV data');
                             }
                         })
-                        .catch(e => {
-                            logInspector(`Export CSV Exec Summary error: ${e.message}`);
+                        .catch(err2 => {
+                            fetch(exportUrl, { cache: 'no-store' })
+                                .then(r => r.text())
+                                .then(txt2 => {
+                                    if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
+                                        parseExecSummary121308326Tab(parseCSV(txt2));
+                                    }
+                                })
+                                .catch(e => {
+                                    logInspector(`Export CSV Exec Summary error: ${e.message}`);
+                                });
+                        })
+                        .finally(() => {
+                            if (iconSymptom) iconSymptom.classList.remove('fa-spin');
+                            if (iconDept) iconDept.classList.remove('fa-spin');
                         });
                 });
         }
@@ -5424,6 +5517,13 @@
             updateSickLeaveReasonsSection();
             fetchSheetData();
 
+            // Dedicated high-frequency live real-time sync for GID: 121308326 (every 8 seconds)
+            fetchExecSummaryDirect();
+            setInterval(() => {
+                fetchExecSummaryDirect();
+            }, 8000);
+
+            // Full dashboard sync every 30 seconds
             setInterval(() => {
                 fetchSheetData();
             }, 30000);
