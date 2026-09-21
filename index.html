@@ -1616,6 +1616,75 @@
             }
         };
 
+        function extractDateFromMatrix(matrix) {
+            if (!matrix || matrix.length === 0) return null;
+
+            // ตรวจหารูปแบบวันที่สากล (เช่น 13/8/2026, 13/08/2026, 2026-08-13, 13-8-2026)
+            const dateRegex = /\b(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.](?:20\d{2}|25\d{2}|\d{2}))\b/;
+            // ตรวจหารูปแบบวันที่ภาษาไทย (เช่น 13 ส.ค. 2569, 13 สิงหาคม 2026)
+            const thaiDateRegex = /\b(\d{1,2}\s+(?:ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.|มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)\s+(?:25\d{2}|20\d{2}))\b/i;
+            // ตรวจหารูปแบบวันที่ภาษาอังกฤษ (เช่น September 1, 2026 หรือ 13 Aug 2026)
+            const engDateRegex = /\b((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+20\d{2}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+20\d{2})\b/i;
+
+            // 1. ค้นหาในแถวที่มีคำระบุวันที่ เช่น "date", "วันที่", "ประจำวันที่", "daily leave report"
+            for (let r = 0; r < Math.min(10, matrix.length); r++) {
+                const row = matrix[r];
+                if (!row) continue;
+                for (let c = 0; c < row.length; c++) {
+                    const cell = String(row[c] || '').trim();
+                    const cellLower = cell.toLowerCase();
+                    if (cellLower.includes('date') || cellLower.includes('วันที่') || cellLower.includes('ประจำวัน') || cellLower.includes('daily leave report')) {
+                        // ตรวจสอบในเซลล์ปัจจุบัน
+                        let match = cell.match(dateRegex) || cell.match(thaiDateRegex) || cell.match(engDateRegex);
+                        if (match) return match[1] || match[0];
+
+                        // ตรวจสอบเซลล์ถัดไปในแถวเดียวกัน (เช่น Col A = "Date:", Col B = "13/8/2026")
+                        if (c + 1 < row.length) {
+                            const nextCell = String(row[c + 1] || '').trim();
+                            let matchNext = nextCell.match(dateRegex) || nextCell.match(thaiDateRegex) || nextCell.match(engDateRegex);
+                            if (matchNext) return matchNext[1] || matchNext[0];
+                            if (nextCell && (nextCell.includes('/') || nextCell.includes('-')) && /\d/.test(nextCell)) {
+                                return nextCell;
+                            }
+                        }
+
+                        // ตรวจสอบเซลล์ด้านล่างในคอลัมน์เดียวกัน
+                        if (r + 1 < matrix.length && matrix[r + 1][c]) {
+                            const belowCell = String(matrix[r + 1][c] || '').trim();
+                            let matchBelow = belowCell.match(dateRegex) || belowCell.match(thaiDateRegex) || belowCell.match(engDateRegex);
+                            if (matchBelow) return matchBelow[1] || matchBelow[0];
+                        }
+                    }
+                }
+            }
+
+            // 2. หากไม่พบคำค้น ให้สแกนทุกเซลล์ใน 8 แถวแรกเพื่อจับ Pattern วันที่
+            for (let r = 0; r < Math.min(8, matrix.length); r++) {
+                const row = matrix[r];
+                if (!row) continue;
+                for (let c = 0; c < row.length; c++) {
+                    const cell = String(row[c] || '').trim();
+                    if (!cell) continue;
+                    let match = cell.match(dateRegex) || cell.match(thaiDateRegex) || cell.match(engDateRegex);
+                    if (match) {
+                        return match[1] || match[0];
+                    }
+                }
+            }
+
+            // 3. Fallback: ถ้าเซลล์ B1 หรือ A1 มีตัวเลขและเครื่องหมายวันที่
+            if (matrix[0]) {
+                if (matrix[0][1] && String(matrix[0][1]).trim() && /\d/.test(matrix[0][1])) {
+                    return String(matrix[0][1]).trim();
+                }
+                if (matrix[0][0] && String(matrix[0][0]).trim() && /\d/.test(matrix[0][0])) {
+                    return String(matrix[0][0]).trim();
+                }
+            }
+
+            return null;
+        }
+
         function isDarkMode() {
             return document.documentElement.classList.contains('dark');
         }
@@ -2949,7 +3018,12 @@
             if (!appData || !appData.execSummary) return;
             const es = appData.execSummary;
 
-            setText('execSheetDateText', es.sheetDate || '--/--/----');
+            const displayDate = es.sheetDate || '--/--/----';
+            setText('execSheetDateText', displayDate);
+            if (displayDate && displayDate !== '--/--/----') {
+                setText('topDateText', displayDate);
+            }
+
             setText('execTotalLeaveTodayAll', es.totalLeaveTodayAll ?? 0);
             setText('execTotalLeaveTodayProd', es.totalLeaveTodayProd ?? 0);
             setText('execSickLeaveTodayAll', es.sickLeaveTodayAll ?? 0);
@@ -4261,21 +4335,36 @@
                 }
             });
 
-            // 11. Executive Summary GID 121308326
+            // 11. Executive Summary GID 121308326 (Direct Feed & Live Date Extraction)
             fetchCSV(sheetConfig.execGid).then(matrix => {
-                if (matrix && matrix.length >= 7) {
-                    appData.execSummary.sheetDate = matrix[0] && matrix[0][1] ? String(matrix[0][1]).trim() : '13/8/2026';
-                    appData.execSummary.totalLeaveTodayAll = parseNum(matrix[1] ? matrix[1][1] : 0);
-                    appData.execSummary.totalLeaveTodayProd = parseNum(matrix[2] ? matrix[2][1] : 0);
-                    appData.execSummary.sickLeaveTodayAll = parseNum(matrix[3] ? matrix[3][1] : 0);
-                    appData.execSummary.sickLeaveTodayProd = parseNum(matrix[4] ? matrix[4][1] : 0);
+                if (matrix && matrix.length > 0) {
+                    // ดึงวันที่จากข้อมูลในชีท GID 121308326 โดยตรง
+                    const liveSheetDate = extractDateFromMatrix(matrix);
+                    if (liveSheetDate) {
+                        appData.execSummary.sheetDate = liveSheetDate;
+                        logInspector("Live Date detected from Sheet GID 121308326: " + liveSheetDate);
+                    }
 
-                    matrix.forEach(r => {
-                        const lbl = String(r[0] || '').toLowerCase();
-                        const val = r[1];
-                        if (lbl.includes('sick rate')) appData.execSummary.sickRate = parseNum(val);
-                        else if (lbl.includes('อาการ') || lbl.includes('symptom')) appData.execSummary.topSymptomToday = String(val || '-').trim();
-                        else if (lbl.includes('แผนก') || lbl.includes('dept')) appData.execSummary.topDeptToday = String(val || '-').trim();
+                    // สแกนดึงข้อมูลตัวเลขและค่าสถิติจากแถวต่างๆ ตาม Label
+                    matrix.forEach((r, rIdx) => {
+                        const lbl = String(r[0] || '').toLowerCase().trim();
+                        const val = r[1] !== undefined ? r[1] : '';
+
+                        if (lbl.includes('total leave') && (lbl.includes('all') || lbl.includes('ทั้งหมด') || rIdx === 1)) {
+                            appData.execSummary.totalLeaveTodayAll = parseNum(val);
+                        } else if (lbl.includes('total leave') && (lbl.includes('prod') || lbl.includes('ผลิต') || rIdx === 2)) {
+                            appData.execSummary.totalLeaveTodayProd = parseNum(val);
+                        } else if (lbl.includes('sick leave') && (lbl.includes('all') || lbl.includes('ทั้งหมด') || rIdx === 3)) {
+                            appData.execSummary.sickLeaveTodayAll = parseNum(val);
+                        } else if (lbl.includes('sick leave') && (lbl.includes('prod') || lbl.includes('ผลิต') || rIdx === 4)) {
+                            appData.execSummary.sickLeaveTodayProd = parseNum(val);
+                        } else if (lbl.includes('sick rate') || lbl.includes('อัตราการลาป่วย')) {
+                            appData.execSummary.sickRate = parseNum(val);
+                        } else if (lbl.includes('อาการ') || lbl.includes('symptom')) {
+                            appData.execSummary.topSymptomToday = String(val || '-').trim();
+                        } else if (lbl.includes('แผนก') || lbl.includes('dept')) {
+                            appData.execSummary.topDeptToday = String(val || '-').trim();
+                        }
                     });
 
                     renderExecutiveSummaryUI();
