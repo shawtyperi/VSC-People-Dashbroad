@@ -543,14 +543,28 @@
                             </span>
                         </div>
                     </div>
-                    <div class="relative w-full overflow-y-auto max-h-[380px] pr-1 cursor-pointer">
+
+                    <!-- Search Toolbar (Department) -->
+                    <div class="relative w-full bg-slate-950/70 p-1.5 rounded-2xl border border-slate-800/80">
+                        <div class="relative w-full">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                            <input type="text" id="inputDeptFilter" oninput="renderDeptHeadcountBarChart()" placeholder="พิมพ์ค้นหาแผนก (เช่น Production, Warehouse, Quality, Accounting, HR...)"
+                                   class="w-full pl-8 pr-8 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-sans">
+                            <button onclick="document.getElementById('inputDeptFilter').value=''; renderDeptHeadcountBarChart();" 
+                                    class="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 text-xs cursor-pointer" title="ล้างคำค้นหา">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full overflow-y-auto max-h-[360px] pr-1 cursor-pointer">
                         <div id="deptCanvasContainer" class="w-full" style="min-height: 320px;">
                             <canvas id="chartDeptHeadcountBar"></canvas>
                         </div>
                     </div>
                     <div class="text-[11px] text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between font-mono">
-                        <span><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>เรียงจากแผนกที่พนักงานมากที่สุด</span>
-                        <span class="text-blue-300 font-semibold">Feed: GID 573246361 & 0</span>
+                        <span id="deptFooterInfo"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>เรียงจากแผนกที่พนักงานมากที่สุด</span>
+                        <span class="text-blue-300 font-semibold">Feed: GID 573246361</span>
                     </div>
                 </div>
 
@@ -565,26 +579,40 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <span id="badgePositionCount" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 whitespace-nowrap">
-                                <i class="fa-solid fa-arrows-up-down mr-1"></i> Scrollable & Clickable
+                                77 ตำแหน่ง • เลื่อน & คลิกดูได้
                             </span>
                             <a href="https://docs.google.com/spreadsheets/d/1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo/edit?gid=2050717232#gid=2050717232" 
                                target="_blank" 
-                               class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/70 border border-cyan-500/40 text-cyan-300 flex items-center gap-1 transition"
-                               title="Open Source Sheet (GID 2050717232)">
-                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> GID 2050717232
+                               class="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 flex items-center gap-1 transition" title="เปิด Google Sheet ตำแหน่งงาน">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                <span class="hidden sm:inline">GID 2050717232</span>
                             </a>
-                            <button onclick="fetchPositionDataDirect()" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-slate-800 transition cursor-pointer text-xs" title="โหลดข้อมูลตำแหน่งงานสดใหม่อีกครั้ง">
-                                <i class="fa-solid fa-rotate text-[10px]"></i>
+                            <button onclick="fetchPositionDataDirect()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 border border-slate-700 flex items-center justify-center transition cursor-pointer" title="รีเฟรชข้อมูลตำแหน่งงาน">
+                                <i class="fa-solid fa-rotate text-xs"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="relative w-full overflow-y-auto max-h-[380px] pr-1 cursor-pointer">
+
+                    <!-- Search Toolbar (Position) -->
+                    <div class="relative w-full bg-slate-950/70 p-1.5 rounded-2xl border border-slate-800/80">
+                        <div class="relative w-full">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                            <input type="text" id="inputPosFilter" oninput="renderPositionHeadcountBarChart()" placeholder="พิมพ์ค้นหาตำแหน่งงาน (เช่น Officer, Staff, Manager, Lead, Specialist, Technician...)"
+                                   class="w-full pl-8 pr-8 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition font-sans">
+                            <button onclick="document.getElementById('inputPosFilter').value=''; renderPositionHeadcountBarChart();" 
+                                    class="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 text-xs cursor-pointer" title="ล้างคำค้นหา">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full overflow-y-auto max-h-[360px] pr-1 cursor-pointer">
                         <div id="posCanvasContainer" class="w-full" style="min-height: 320px;">
                             <canvas id="chartPositionHeadcountBar"></canvas>
                         </div>
                     </div>
                     <div class="text-[11px] text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between font-mono">
-                        <span><i class="fa-solid fa-circle-info text-cyan-400 mr-1"></i>เลื่อนขึ้น-ลงเพื่อดูตำแหน่งงานทั้งหมด</span>
+                        <span id="posFooterInfo"><i class="fa-solid fa-circle-info text-cyan-400 mr-1"></i>เลื่อนขึ้น-ลงเพื่อดูตำแหน่งงานทั้งหมด</span>
                         <span class="text-cyan-300 font-semibold">Feed: GID 2050717232 & 0</span>
                     </div>
                 </div>
@@ -1864,20 +1892,50 @@
 
         function matchDeptName(itemDept, targetDept) {
             if (!itemDept || !targetDept) return false;
-            const a = String(itemDept).toLowerCase().trim().replace(/department|dept|แผนก/g, '').trim();
-            const b = String(targetDept).toLowerCase().trim().replace(/department|dept|แผนก/g, '').trim();
+            const clean = (s) => String(s).toLowerCase().trim().replace(/department|dept|แผนก/g, '').replace(/\s+/g, ' ').trim();
+            const a = clean(itemDept);
+            const b = clean(targetDept);
             if (a === b) return true;
-            if (a.length >= 3 && b.includes(a)) return true;
-            if (b.length >= 3 && a.includes(b)) return true;
-            return String(itemDept).toLowerCase().trim() === String(targetDept).toLowerCase().trim();
+            return false;
+        }
+
+        function isLeadOrManager(posStr) {
+            if (!posStr) return false;
+            const s = String(posStr).toLowerCase().trim();
+            // Exclude administrative assistant roles from management
+            if (s.includes('assistance') || (s.includes('assistant') && !s.includes('assistant manager') && !s.includes('ผู้ช่วยผู้จัดการ'))) return false;
+            const leadRegex = /\b(lead|leader|team lead|supervisor|sup|manager|mgr|director|head|chief|c-level|ceo|coo|cfo|cto|president|vp|avp|foreman)\b|หัวหน้า|ผู้จัดการ|ผจก|ผู้อำนวยการ|ผอ\.|ผู้บริหาร|กรรมการผู้จัดการ|ประธาน/i;
+            return leadRegex.test(s);
+        }
+
+        function isOfficerOrSpecialist(posStr) {
+            if (!posStr) return false;
+            const s = String(posStr).toLowerCase().trim();
+            // Exclude C-Level, Directors, and Team Leads from pure officer bucket
+            if (/\b(chief|director|manager|mgr|lead|leader|supervisor)\b|หัวหน้า|ผู้จัดการ|ผจก/i.test(s)) return false;
+            const officerRegex = /\b(officer|specialist|engineer|technician|analyst|coordinator|auditor|audit|accountant|buyer|purchaser|planner|chemist|pharmacist|nurse|architect|developer|professional)\b|เจ้าหน้าที่|ผู้เชี่ยวชาญ|วิศวกร|ช่างเทคนิค|นักวิเคราะห์|นักวิจัย|ผู้ตรวจสอบ|เภสัชกร|พยาบาล/i;
+            return officerRegex.test(s);
+        }
+
+        function isStaffOrOperator(posStr) {
+            if (!posStr) return false;
+            const s = String(posStr).toLowerCase().trim();
+            // Exclude Team Leads and Managers
+            if (/\b(lead|leader|manager|mgr|supervisor|head|director)\b|หัวหน้า|ผู้จัดการ/i.test(s)) return false;
+            const staffRegex = /\b(staff|operator|worker|cleaner|housekeeper|maid|driver|guard|security|helper|clerk|packer|loader|line|hygiene)\b|พนักงาน|แม่บ้าน|รปภ|คนขับ|คนสวน|คนงาน|สายการผลิต/i;
+            return staffRegex.test(s) || (!isLeadOrManager(s) && !isOfficerOrSpecialist(s));
         }
 
         function matchPosName(itemPos, targetPos) {
             if (!itemPos || !targetPos) return false;
-            const a = String(itemPos).toLowerCase().trim();
-            const b = String(targetPos).toLowerCase().trim();
+            const rawA = String(itemPos).toLowerCase().trim();
+            const rawB = String(targetPos).toLowerCase().trim();
+            if (rawA === rawB) return true;
+            // Clean bracket notes like (Factory) or spaces
+            const clean = (s) => String(s).toLowerCase().replace(/[\(\[\{].*?[\)\]\}]/g, '').replace(/\s+/g, ' ').trim();
+            const a = clean(itemPos);
+            const b = clean(targetPos);
             if (a === b) return true;
-            if (a.includes(b) || b.includes(a)) return true;
             return false;
         }
 
@@ -2685,10 +2743,19 @@
                 ];
 
             deptsList.sort((a, b) => b.count - a.count);
+            const totalCompanyDepts = deptsList.length;
+            const totalHeadcount = deptsList.reduce((a, b) => a + b.count, 0) || appData.summary.totalActive || 276;
+
+            // Apply Search Query Filter
+            const searchInput = document.getElementById('inputDeptFilter');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            if (query) {
+                deptsList = deptsList.filter(d => d.dept.toLowerCase().includes(query));
+            }
 
             const labels = deptsList.map(d => d.dept);
             const dataValues = deptsList.map(d => d.count);
-            const totalHeadcount = dataValues.reduce((a, b) => a + b, 0) || appData.summary.totalActive || 276;
+            const displayedTotalStaff = dataValues.reduce((a, b) => a + b, 0);
 
             const backgroundColors = deptsList.map(d => {
                 const name = d.dept.toLowerCase();
@@ -2700,7 +2767,9 @@
 
             const container = document.getElementById('deptCanvasContainer');
             if (container) {
-                container.style.height = `${Math.max(300, deptsList.length * 36)}px`;
+                const calculatedHeight = Math.max(160, deptsList.length * 36);
+                container.style.height = `${calculatedHeight}px`;
+                canvas.style.height = `${calculatedHeight}px`;
             }
 
             const isDark = isDarkMode();
@@ -2708,6 +2777,15 @@
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
 
             if (chartDeptHeadcountBarInstance) chartDeptHeadcountBarInstance.destroy();
+
+            if (deptsList.length === 0) {
+                // Render placeholder on empty search
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                setText('badgeDeptCount', 'ไม่พบแผนกที่ตรงเงื่อนไข');
+                setText('deptFooterInfo', 'ลองเปลี่ยนคำค้นหาหรือตัวกรอง');
+                return;
+            }
 
             chartDeptHeadcountBarInstance = new Chart(canvas, {
                 type: 'bar',
@@ -2770,7 +2848,9 @@
                 }
             });
 
-            setText('badgeDeptCount', `${deptsList.length} แผนก • คลิกดูรายชื่อ`);
+            const isFiltered = query !== '';
+            setText('badgeDeptCount', isFiltered ? `${deptsList.length} / ${totalCompanyDepts} แผนก (${displayedTotalStaff} คน)` : `${totalCompanyDepts} แผนก • คลิกดูรายชื่อ`);
+            setText('deptFooterInfo', isFiltered ? `ผลการค้นหา: พบ ${deptsList.length} จาก ${totalCompanyDepts} แผนก (รวม ${displayedTotalStaff} คน)` : 'เรียงจากแผนกที่พนักงานมากที่สุด');
         }
 
         function renderPositionHeadcountBarChart() {
@@ -2778,7 +2858,7 @@
             if (!canvas || typeof Chart === 'undefined') return;
 
             let posList = (appData.positionHeadcount && appData.positionHeadcount.length > 0)
-                ? appData.positionHeadcount
+                ? [...appData.positionHeadcount]
                 : [
                     { position: 'Production Staff', count: 124 },
                     { position: 'Warehouse staff', count: 14 },
@@ -2795,22 +2875,32 @@
                 ];
 
             posList.sort((a, b) => b.count - a.count);
+            const totalCompanyPositions = posList.length;
+            const totalCompanyStaff = posList.reduce((a, b) => a + b.count, 0) || appData.summary.totalActive || 276;
+
+            // Apply Search Query Filter
+            const searchInput = document.getElementById('inputPosFilter');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            if (query) {
+                posList = posList.filter(p => p.position.toLowerCase().includes(query));
+            }
 
             const labels = posList.map(p => p.position);
             const dataValues = posList.map(p => p.count);
-            const totalStaff = dataValues.reduce((a, b) => a + b, 0) || appData.summary.totalActive || 276;
+            const displayedTotalStaff = dataValues.reduce((a, b) => a + b, 0);
 
             const backgroundColors = posList.map(p => {
                 const name = p.position.toLowerCase();
                 if (name.includes('prod') || name.includes('ผลิต')) return '#f59e0b';
                 if (name.includes('ware') || name.includes('คลัง')) return '#38bdf8';
-                if (name.includes('lead') || name.includes('หัวหน้า') || name.includes('mgr') || name.includes('manager')) return '#818cf8';
-                return '#06b6d4';
+                if (isLeadOrManager(p.position)) return '#818cf8';
+                if (isOfficerOrSpecialist(p.position)) return '#06b6d4';
+                return '#10b981';
             });
 
             const container = document.getElementById('posCanvasContainer');
             if (container) {
-                const calculatedHeight = Math.max(340, posList.length * 36);
+                const calculatedHeight = Math.max(160, posList.length * 34);
                 container.style.height = `${calculatedHeight}px`;
                 canvas.style.height = `${calculatedHeight}px`;
             }
@@ -2820,6 +2910,14 @@
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
 
             if (chartPositionHeadcountBarInstance) chartPositionHeadcountBarInstance.destroy();
+
+            if (posList.length === 0) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                setText('badgePositionCount', 'ไม่พบตำแหน่งที่ตรงกับคำค้นหา');
+                setText('posFooterInfo', 'ลองพิมพ์คำค้นหาตำแหน่งงานอื่น');
+                return;
+            }
 
             chartPositionHeadcountBarInstance = new Chart(canvas, {
                 type: 'bar',
@@ -2873,7 +2971,7 @@
                             callbacks: {
                                 label: ctx => {
                                     const val = ctx.raw || 0;
-                                    const pct = totalStaff > 0 ? ((val / totalStaff) * 100).toFixed(1) : 0;
+                                    const pct = totalCompanyStaff > 0 ? ((val / totalCompanyStaff) * 100).toFixed(1) : 0;
                                     return ` พนักงาน: ${val} คน (${pct}% ขององค์กร) • คลิกเพื่อดูรายชื่อ`;
                                 }
                             }
@@ -2882,7 +2980,9 @@
                 }
             });
 
-            setText('badgePositionCount', `${posList.length} ตำแหน่ง (${totalStaff} คน) • เลื่อน & คลิกดูได้`);
+            const isFiltered = query !== '';
+            setText('badgePositionCount', isFiltered ? `${posList.length} / ${totalCompanyPositions} ตำแหน่ง (${displayedTotalStaff} คน)` : `${totalCompanyPositions} ตำแหน่ง (${totalCompanyStaff} คน) • เลื่อน & คลิกดูได้`);
+            setText('posFooterInfo', isFiltered ? `ผลการค้นหา: พบ ${posList.length} จาก ${totalCompanyPositions} ตำแหน่ง (รวม ${displayedTotalStaff} คน)` : 'เลื่อนขึ้น-ลงเพื่อดูตำแหน่งงานทั้งหมด • คลิกแท่งกราฟเพื่อดูรายชื่อ');
         }
 
         function renderWorkforceCharts() {
@@ -3270,6 +3370,14 @@
             { empId: '6601008', name: 'พงศธร บุญรอด', nickname: 'ต่อ', position: 'Internal Audit Officer', dept: 'Internal Audit Department', empType: 'VSC', leaveType: 'ลากิจ (Personal Leave)', days: '1', reason: 'โอนกรรมสิทธิ์ที่ดิน', isProd: false, isSick: false }
         ];
 
+        const DEFAULT_EXCLUDED_STAFF_ROSTER = [
+            { empId: '6701044', name: 'นายภัทรดนัย รัตนโภคิน', nickname: 'ดนัย', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'อยู่ระหว่างทดลองงาน (Probation)' },
+            { empId: '6702019', name: 'นางสาวศิริพร บุญเจริญ', nickname: 'แนน', position: 'Production Line Cleaning Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'ลาคลอดต่อเนื่อง (Maternity Leave)' },
+            { empId: '6603088', name: 'นายกิตติศักดิ์ เจริญพร', nickname: 'กิต', position: 'Personal Hygiene Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'สัญญาจ้างชั่วคราวโครงการพิเศษ' },
+            { empId: '6604012', name: 'นางสาวสุภาภรณ์ สมบูรณ์', nickname: 'นก', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'พักงานชั่วคราวตามดุลยพินิจแพทย์' },
+            { empId: '6705003', name: 'นายธีรภัทร วัฒนกุล', nickname: 'บอล', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'ย้ายไปช่วยงานสาขาพิเศษนอกแผน' }
+        ];
+
         var appData = {
             summary: {
                 totalActive: 277,
@@ -3319,7 +3427,7 @@
             trendDetailJoin: [],
             trendDetailResign: [],
             employeeLeaveList: DEFAULT_DAILY_LEAVE_ROSTER,
-            excludedStaffList: [],
+            excludedStaffList: DEFAULT_EXCLUDED_STAFF_ROSTER,
             stageRoster: [],
             deptComparisonData: [],
             sickLeave: {
@@ -3376,6 +3484,42 @@
             renderLeaveListTable();
         }
 
+        function resolveLeaveType(rawLeave, reason, name, empId) {
+            let s = String(rawLeave || '').trim();
+            const cleanName = String(name || '').trim().toLowerCase();
+            const cleanId = String(empId || '').trim().toLowerCase();
+
+            // ตรวจสอบว่าค่าที่ได้เป็นชื่อพนักงาน รหัส หรือค่าว่างหรือไม่
+            const isInvalid = !s || s === '-' || s.toLowerCase() === 'null' || 
+                              (!isNaN(parseNum(s)) && s.length <= 3) ||
+                              (cleanName && s.toLowerCase() === cleanName) ||
+                              (cleanId && s.toLowerCase() === cleanId) ||
+                              /^(นาย|นางสาว|นาง|น\.ส\.|mr\.|mrs\.|ms\.)/i.test(s);
+
+            if (!isInvalid) {
+                const lower = s.toLowerCase();
+                if (lower.includes('ป่วย') || lower.includes('sick')) return 'ลาป่วย (Sick Leave)';
+                if (lower.includes('พักร้อน') || lower.includes('พักผ่อน') || lower.includes('annual') || lower.includes('vacation')) return 'ลาพักร้อน (Annual Leave)';
+                if (lower.includes('กิจ') || lower.includes('personal')) return 'ลากิจ (Personal Leave)';
+                if (lower.includes('คลอด') || lower.includes('maternity')) return 'ลาคลอด (Maternity Leave)';
+                if (lower.includes('บวช')) return 'ลาบวช (Ordination Leave)';
+                if (lower.includes('ขาดงาน') || lower.includes('absent')) return 'ขาดงาน (Absent)';
+                return s;
+            }
+
+            // หากไม่มีประเภทการลา ให้วิเคราะห์จากเหตุผล/อาการโดยอัตโนมัติ
+            const r = String(reason || '').toLowerCase();
+            const sickKeywords = ['ไข้', 'หวัด', 'ปวด', 'เจ็บ', 'ป่วย', 'โรค', 'หมอ', 'แพทย์', 'ยา', 'ผ่าตัด', 'คลินิก', 'รพ.', 'โรงพยาบาล', 'อาหารเป็นพิษ', 'ท้องเสีย', 'ท้องร่วง', 'อุบัติเหตุ', 'อักเสบ', 'เวียนศีรษะ', 'ไมเกรน', 'sick', 'fever', 'cold', 'headache', 'hospital', 'doctor'];
+            const annualKeywords = ['พักผ่อน', 'พักร้อน', 'เที่ยว', 'ภูมิลำเนา', 'ต่างจังหวัด', 'annual', 'vacation', 'holiday', 'trip'];
+            const personalKeywords = ['กิจ', 'ธุระ', 'ราชการ', 'อำเภอ', 'โอน', 'งานศพ', 'งานแต่ง', 'ครอบครัว', 'บิดา', 'มารดา', 'personal', 'errand', 'business'];
+
+            if (sickKeywords.some(k => r.includes(k))) return 'ลาป่วย (Sick Leave)';
+            if (annualKeywords.some(k => r.includes(k))) return 'ลาพักร้อน (Annual Leave)';
+            if (personalKeywords.some(k => r.includes(k))) return 'ลากิจ (Personal Leave)';
+
+            return 'ลาป่วย (Sick Leave)';
+        }
+
         function parseDailyLeave1001Tab(matrix) {
             if (!matrix || matrix.length === 0) return [];
             logInspector(`Parsing Daily Leave Roster feed from GID: ${sheetConfig.rosterGid}... (Raw rows: ${matrix.length})`);
@@ -3394,7 +3538,7 @@
                     if (txt.includes('ชื่อ') || txt.includes('name')) score++;
                     if (txt.includes('ตำแหน่ง') || txt.includes('position')) score++;
                     if (txt.includes('แผนก') || txt.includes('dept')) score++;
-                    if (txt.includes('ประเภทการลา') || txt.includes('leave') || txt.includes('การลา')) score++;
+                    if (txt.includes('ประเภทการลา') || txt.includes('leave') || txt.includes('ชนิดการลา')) score++;
                     if (txt.includes('เหตุผล') || txt.includes('reason') || txt.includes('อาการ')) score++;
                 });
                 if (score >= 2) {
@@ -3415,7 +3559,7 @@
                     }
                     else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) colDept = idx;
                     else if (txt.includes('ประเภทพนักงาน') || txt.includes('emp type') || txt.includes('contract') || txt === 'type') colType = idx;
-                    else if (txt.includes('ประเภทการลา') || txt.includes('leave type') || txt.includes('ชนิดการลา') || txt.includes('การลา')) colLeave = idx;
+                    else if (txt.includes('ประเภทการลา') || txt.includes('leave type') || txt.includes('ชนิดการลา') || (txt.includes('การลา') && !txt.includes('ชื่อ') && !txt.includes('เหตุผล') && !txt.includes('หมายเหตุ'))) colLeave = idx;
                     else if (txt.includes('จำนวนวัน') || txt.includes('duration') || txt.includes('days') || txt === 'วัน') colDays = idx;
                     else if (txt.includes('เหตุผล') || txt.includes('สาเหตุ') || txt.includes('reason') || txt.includes('อาการ') || txt.includes('detail') || txt.includes('remark')) colReason = idx;
                 });
@@ -3455,26 +3599,33 @@
                 let pos = clean(colPos < row.length ? row[colPos] : '-');
                 let dept = clean(colDept < row.length ? row[colDept] : '-');
                 let empType = clean(colType < row.length ? row[colType] : 'VSC');
-                let leaveType = clean(colLeave < row.length ? row[colLeave] : 'Sick Leave');
+                let rawLeave = clean(colLeave !== -1 && colLeave < row.length ? row[colLeave] : '-');
                 let days = clean(colDays < row.length ? row[colDays] : '1');
                 let reason = clean(colReason < row.length ? row[colReason] : '-');
 
-                // ตรวจจับกรณีที่ LeaveType หรือ Reason อยู่สลับคอลัมน์
-                if (leaveType === '-' || !isNaN(parseNum(leaveType))) {
+                // ค้นหาประเภทการลาที่แท้จริง โดยไม่ดึงชื่อ-นามสกุล หรือข้อความทั่วไปที่มีคำว่า 'ลา'
+                let leaveCandidate = rawLeave;
+                const specificLeaveRegex = /(ลาป่วย|ลากิจ|ลาพักร้อน|ลาพักผ่อน|ลาคลอด|ลาบวช|sick\s*leave|annual\s*leave|personal\s*leave)/i;
+
+                if (!specificLeaveRegex.test(leaveCandidate) || leaveCandidate.toLowerCase() === name.toLowerCase()) {
                     for (let c = 0; c < row.length; c++) {
-                        const cellStr = String(row[c] || '').toLowerCase();
-                        if (cellStr.includes('ลา') || cellStr.includes('sick') || cellStr.includes('annual') || cellStr.includes('personal')) {
-                            leaveType = String(row[c]).trim();
+                        if (c === colId || c === colName || c === colNick || c === colPos || c === colDept || c === colReason) continue;
+                        const cellStr = String(row[c] || '').trim();
+                        if (specificLeaveRegex.test(cellStr) && cellStr.toLowerCase() !== name.toLowerCase()) {
+                            leaveCandidate = cellStr;
                             break;
                         }
                     }
                 }
 
+                // ประมวลผลประเภทการลาขั้นสุดท้าย
+                let leaveType = resolveLeaveType(leaveCandidate, reason, name, empId);
+
                 const deptLower = dept.toLowerCase();
                 const posLower = pos.toLowerCase();
                 const typeUpper = empType.toUpperCase();
                 const isProd = deptLower.includes('prod') || deptLower.includes('ผลิต') || posLower.includes('prod') || posLower.includes('ผลิต') || typeUpper.includes('PCT') || typeUpper.includes('BP');
-                const isSick = leaveType.toLowerCase().includes('sick') || leaveType.includes('ป่วย') || reason.length > 5;
+                const isSick = leaveType.toLowerCase().includes('sick') || leaveType.includes('ป่วย');
 
                 let item = {
                     empId: empId || `EMP-${1000 + r}`,
@@ -3483,7 +3634,7 @@
                     position: pos,
                     dept: dept,
                     empType: empType !== '-' ? empType : 'VSC',
-                    leaveType: leaveType !== '-' ? leaveType : 'Sick Leave',
+                    leaveType: leaveType,
                     days: days !== '-' ? days : '1',
                     reason: reason,
                     isProd: isProd,
@@ -4222,19 +4373,19 @@
             let parsedList = [];
             let headerIdx = -1;
 
-            let colId = -1, colName = -1, colFirstName = -1, colLastName = -1, colNick = -1, colPos = -1, colDept = -1, colLoc = -1, colReason = -1;
+            let colId = -1, colName = -1, colNick = -1, colPos = -1, colDept = -1, colLoc = -1, colReason = -1;
 
-            // ตรวจจับแถว Header จากคำสำคัญภาษาไทยและอังกฤษ
+            // 1. ตรวจสอบแถว Header จากข้อความหัวตาราง
             for (let r = 0; r < Math.min(10, matrix.length); r++) {
                 const row = matrix[r] || [];
                 let score = 0;
                 row.forEach(cell => {
                     const txt = String(cell || '').toLowerCase().trim();
-                    if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('employee id') || txt === 'id' || txt === 'code') score++;
-                    if (txt.includes('ชื่อ') || txt.includes('name') || txt.includes('พนักงาน')) score++;
+                    if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('code') || txt === 'id') score++;
+                    if (txt.includes('ชื่อ') || txt.includes('name')) score++;
                     if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role')) score++;
-                    if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department') || txt.includes('ฝ่าย')) score++;
-                    if (txt.includes('เหตุผล') || txt.includes('สาเหตุ') || txt.includes('reason') || txt.includes('หมายเหตุ') || txt.includes('ไม่อยู่ในแผน') || txt.includes('remark')) score++;
+                    if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) score++;
+                    if (txt.includes('เหตุผล') || txt.includes('สาเหตุ') || txt.includes('reason') || txt.includes('หมายเหตุ') || txt.includes('remark')) score++;
                 });
                 if (score >= 2) {
                     headerIdx = r;
@@ -4246,102 +4397,177 @@
                 const hRow = matrix[headerIdx];
                 hRow.forEach((cell, idx) => {
                     const txt = String(cell || '').toLowerCase().trim();
-                    if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('employee id') || (txt.includes('id') && !txt.includes('valid')) || txt === 'code') {
-                        if (colId === -1) colId = idx;
-                    } else if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt === 'nick') {
+                    if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt === 'nick' || txt.includes('ชื่อ เล่น')) {
                         colNick = idx;
-                    } else if (txt.includes('ชื่อจริง') || txt === 'ชื่อ' || txt.includes('first name')) {
-                        colFirstName = idx;
-                    } else if (txt.includes('นามสกุล') || txt.includes('last name') || txt.includes('surname')) {
-                        colLastName = idx;
-                    } else if (txt.includes('ชื่อ-นามสกุล') || txt.includes('ชื่อ-สกุล') || txt.includes('ชื่อ นามสกุล') || txt.includes('full name') || (txt.includes('ชื่อ') && !txt.includes('เล่น') && colName === -1)) {
-                        colName = idx;
-                    } else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role')) {
+                    } else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role') || txt.includes('title')) {
                         colPos = idx;
                     } else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department') || txt.includes('ฝ่าย') || txt.includes('สังกัด')) {
                         colDept = idx;
-                    } else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา') || txt.includes('site')) {
+                    } else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา') || txt.includes('site') || txt.includes('ปฏิบัติงาน')) {
                         colLoc = idx;
-                    } else if (txt.includes('เหตุผล') || txt.includes('สาเหตุ') || txt.includes('reason') || txt.includes('หมายเหตุ') || txt.includes('remark') || txt.includes('note') || txt.includes('ไม่อยู่ในแผน') || txt.includes('เงื่อนไข')) {
+                    } else if (txt.includes('เหตุผล') || txt.includes('สาเหตุ') || txt.includes('reason') || txt.includes('หมายเหตุ') || txt.includes('remark') || txt.includes('ไม่อยู่ในแผน')) {
                         colReason = idx;
+                    } else if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('employee id') || (txt.includes('id') && !txt.includes('valid')) || txt === 'code') {
+                        if (colId === -1) colId = idx;
+                    } else if ((txt.includes('ชื่อ') || txt.includes('name') || txt.includes('พนักงาน')) && !txt.includes('เล่น') && !txt.includes('ตำแหน่ง')) {
+                        if (colName === -1) colName = idx;
                     }
                 });
             }
 
             const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
 
-            // ตรวจสอบว่า Col 0 เป็นเลขลำดับ (1, 2, 3...) หรือไม่
-            let col0IsNumber = true;
-            let sampleCount = 0;
-            for (let r = startRow; r < Math.min(startRow + 5, matrix.length); r++) {
-                if (matrix[r] && matrix[r][0] !== undefined && matrix[r][0] !== '') {
-                    sampleCount++;
-                    if (isNaN(parseInt(matrix[r][0], 10)) || String(matrix[r][0]).length > 4) {
-                        col0IsNumber = false;
-                    }
-                }
-            }
-            if (sampleCount === 0) col0IsNumber = false;
+            // Helper: ค้นหาข้อมูลพนักงานจากฐานข้อมูลหลัก Master Roster GID 0
+            const findMasterEmp = (idStr, nameStr) => {
+                const master = appData.empAllList.length > 0 ? appData.empAllList : (appData.wfCategories.all || []);
+                const cleanId = String(idStr || '').trim().toLowerCase();
+                const cleanName = String(nameStr || '').trim().toLowerCase().replace(/\s+/g, '');
+                
+                return master.find(m => {
+                    const mId = String(m.empId || '').trim().toLowerCase();
+                    const mName = String(m.name || '').trim().toLowerCase().replace(/\s+/g, '');
+                    if (cleanId && mId && cleanId !== '-' && cleanId === mId) return true;
+                    if (cleanName && mName && cleanName !== '-' && (cleanName === mName || cleanName.includes(mName) || mName.includes(cleanName))) return true;
+                    return false;
+                });
+            };
 
-            if (colId === -1) colId = col0IsNumber ? 1 : 0;
-            if (colName === -1 && colFirstName === -1) colName = col0IsNumber ? 2 : 1;
-            if (colNick === -1) colNick = col0IsNumber ? 3 : 2;
-            if (colPos === -1) colPos = col0IsNumber ? 4 : 3;
-            if (colDept === -1) colDept = col0IsNumber ? 5 : 4;
-            if (colReason === -1) colReason = matrix[startRow] ? matrix[startRow].length - 1 : (col0IsNumber ? 6 : 5);
+            const jobRegex = /staff|officer|lead|leader|manager|supervisor|technician|director|operator|assistant|engineer|admin|specialist|head|clerk|executive|chief|worker|driver|cleaner|housekeeper|hygiene|พนักงาน|หัวหน้า|เจ้าหน้าที่|ผู้จัดการ|ช่าง|ผู้ช่วย|วิศวกร|ผจก|แม่บ้าน|รปภ|คนขับ|ธุรการ|ช่างเทคนิค|qc|qa|it/i;
+            const namePrefixRegex = /^(นาย|นางสาว|นาง|น\.ส\.|นส\.|ด\.ช\.|ด\.ญ\.|mr\.|mrs\.|ms\.|miss)\s*/i;
+            const deptRegex = /department|dept|แผนก|ฝ่าย|production|warehouse|quality|accounting|maintenance|hr|marketing|boi|safety/i;
+            const locationRegex = /factory|โรงงาน|hq|สำนักงานใหญ่|dusit|central park/i;
 
             for (let r = startRow; r < matrix.length; r++) {
                 const row = matrix[r];
                 if (!row || row.length === 0) continue;
 
-                let empId = String(row[colId] || '').trim();
-                let name = '';
+                const rowStr = row.join(' ').toLowerCase();
+                if (isTotalRow(rowStr) || isLabelText(rowStr)) continue;
 
-                if (colFirstName !== -1 && colLastName !== -1) {
-                    const fn = String(row[colFirstName] || '').trim();
-                    const ln = String(row[colLastName] || '').trim();
-                    name = `${fn} ${ln}`.trim();
-                } else if (colName !== -1 && colName < row.length) {
-                    name = String(row[colName] || '').trim();
+                // 2. ดึงค่าเบื้องต้นตาม Header (ถ้ามี)
+                let rawId = colId !== -1 && colId < row.length ? String(row[colId] || '').trim() : '';
+                let rawName = colName !== -1 && colName < row.length ? String(row[colName] || '').trim() : '';
+                let rawNick = colNick !== -1 && colNick < row.length ? String(row[colNick] || '').trim() : '';
+                let rawPos = colPos !== -1 && colPos < row.length ? String(row[colPos] || '').trim() : '';
+                let rawDept = colDept !== -1 && colDept < row.length ? String(row[colDept] || '').trim() : '';
+                let rawLoc = colLoc !== -1 && colLoc < row.length ? String(row[colLoc] || '').trim() : '';
+                let rawReason = colReason !== -1 && colReason < row.length ? String(row[colReason] || '').trim() : '';
+
+                // 3. ระบบ Semantic Auto-Classifier: ตรวจสอบและสลับคอลัมน์ให้อัตโนมัติหากพบว่าข้อมูลสลับกัน
+                // สแกนทุกเซลล์ในแถวเพื่อจำแนกประเภทข้อมูล
+                let cellPool = row.map(c => String(c || '').trim()).filter(c => c && c !== '-' && c.toLowerCase() !== 'null');
+                
+                // หา Emp ID (เลข 5-8 หลัก หรือขึ้นต้นด้วย 6/9/EX)
+                if (!rawId || isNaN(parseNum(rawId)) || rawId.length < 4) {
+                    for (let c of cellPool) {
+                        if (/^\d{5,8}$/.test(c) || /^EX-\d+/i.test(c) || /^EMP-\d+/i.test(c)) {
+                            rawId = c;
+                            break;
+                        }
+                    }
                 }
 
-                if (!empId && !name) continue;
-                if (isTotalRow(empId) || isTotalRow(name)) continue;
-                if (empId.toLowerCase().includes('รหัส') || name.toLowerCase().includes('ชื่อ')) continue;
+                // ตรวจสอบกับฐานข้อมูล Master Roster GID 0
+                let matchedMaster = findMasterEmp(rawId, rawName);
 
-                const clean = (v) => (!v || v === '-' || v.toLowerCase() === 'null' || v.toLowerCase() === 'ไม่ระบุ') ? '-' : String(v).trim();
+                // หากตรวจพบชื่อ-สกุล มีคำนำหน้า หรือเป็นชื่อบุคคลชัดเจน
+                let resolvedName = rawName;
+                let resolvedNick = rawNick;
+                let resolvedPos = rawPos;
+                let resolvedDept = rawDept;
+                let resolvedLoc = rawLoc;
+                let resolvedReason = rawReason;
 
-                let nickname = (colNick !== -1 && colNick < row.length) ? clean(row[colNick]) : '-';
-                let position = (colPos !== -1 && colPos < row.length) ? clean(row[colPos]) : '-';
-                let dept = (colDept !== -1 && colDept < row.length) ? clean(row[colDept]) : '-';
-                let location = (colLoc !== -1 && colLoc < row.length) ? clean(row[colLoc]) : (row[16] ? clean(row[16]) : 'Factory / โรงงาน');
-                if (location === '-') location = 'Factory / โรงงาน';
-
-                let reason = '-';
-                if (colReason !== -1 && colReason < row.length) {
-                    reason = clean(row[colReason]);
+                // กรณีตำแหน่งไปอยู่ในช่องชื่อ หรือชื่อไปอยู่ในช่องตำแหน่ง
+                if (namePrefixRegex.test(resolvedPos) || (!jobRegex.test(resolvedPos) && resolvedPos.includes(' ') && jobRegex.test(resolvedName))) {
+                    let temp = resolvedName;
+                    resolvedName = resolvedPos;
+                    resolvedPos = temp;
                 }
-                if (reason === '-' || reason === '') {
+
+                // กรณีชื่อเล่นไปอยู่ในช่องตำแหน่ง (เช่น "ข้าวโอ๊ต" อยู่ในช่อง Position)
+                if (resolvedPos && resolvedPos.length <= 10 && !jobRegex.test(resolvedPos) && !resolvedPos.includes(' ') && !resolvedNick) {
+                    resolvedNick = resolvedPos;
+                    resolvedPos = '';
+                }
+
+                // ตรวจหาตำแหน่งงานจริงจากเซลล์ทั้งหมด
+                if (!resolvedPos || !jobRegex.test(resolvedPos)) {
+                    for (let c of cellPool) {
+                        if (jobRegex.test(c) && !namePrefixRegex.test(c)) {
+                            resolvedPos = c;
+                            break;
+                        }
+                    }
+                }
+
+                // ตรวจหาชื่อ-นามสกุลจริงจากเซลล์ทั้งหมด
+                if (!resolvedName || !namePrefixRegex.test(resolvedName)) {
+                    for (let c of cellPool) {
+                        if (namePrefixRegex.test(c)) {
+                            resolvedName = c;
+                            break;
+                        } else if (c.includes(' ') && c.length >= 8 && c.length <= 40 && !jobRegex.test(c) && !deptRegex.test(c) && !locationRegex.test(c)) {
+                            if (!resolvedName || !resolvedName.includes(' ')) {
+                                resolvedName = c;
+                            }
+                        }
+                    }
+                }
+
+                // ตรวจหาชื่อเล่น
+                if (!resolvedNick || resolvedNick === '-' || resolvedNick.length > 12 || jobRegex.test(resolvedNick)) {
+                    resolvedNick = extractNicknameFromRow(row, colNick, resolvedName, rawId);
+                }
+
+                // ตรวจหาแผนก
+                if (!resolvedDept || !deptRegex.test(resolvedDept)) {
+                    for (let c of cellPool) {
+                        if (deptRegex.test(c)) {
+                            resolvedDept = c;
+                            break;
+                        }
+                    }
+                }
+
+                // ดึงข้อมูลเสริมจาก Master Roster หากพบพนักงานคนดังกล่าวในระบบหลัก
+                if (matchedMaster) {
+                    if (!resolvedName || resolvedName === '-' || !resolvedName.includes(' ')) resolvedName = matchedMaster.name;
+                    if (!resolvedNick || resolvedNick === '-') resolvedNick = matchedMaster.nickname;
+                    if (!resolvedPos || resolvedPos === '-' || !jobRegex.test(resolvedPos)) resolvedPos = matchedMaster.position;
+                    if (!resolvedDept || resolvedDept === '-') resolvedDept = matchedMaster.dept;
+                    if (!resolvedLoc || resolvedLoc === '-') resolvedLoc = matchedMaster.location;
+                }
+
+                // ดึงเหตุผล / สาเหตุที่ไม่อยู่ในแผน
+                if (!resolvedReason || resolvedReason === '-' || resolvedReason === resolvedName || resolvedReason === resolvedPos) {
                     for (let c = row.length - 1; c >= 0; c--) {
-                        if (c !== colId && c !== colName && c !== colNick && c !== colPos && c !== colDept && c !== colLoc) {
-                            const candidate = clean(row[c]);
-                            if (candidate !== '-' && candidate.length > 2) {
-                                reason = candidate;
+                        let candidate = String(row[c] || '').trim();
+                        if (candidate && candidate !== '-' && candidate !== rawId && candidate !== resolvedName && candidate !== resolvedNick && candidate !== resolvedPos && candidate !== resolvedDept) {
+                            if (candidate.length >= 3 && !locationRegex.test(candidate)) {
+                                resolvedReason = candidate;
                                 break;
                             }
                         }
                     }
                 }
 
-                parsedList.push({
-                    empId: empId || `EX-${100 + r}`,
-                    name: clean(name) !== '-' ? clean(name) : empId,
-                    nickname: nickname,
-                    position: position,
-                    dept: dept,
-                    location: location,
-                    reason: reason !== '-' ? reason : 'ไม่อยู่ในการคำนวณแผนกำลังพล'
-                });
+                if (!rawId && !resolvedName) continue;
+
+                const clean = (v, fallback = '-') => (!v || v === '-' || v.toLowerCase() === 'null' || v.toLowerCase() === 'ไม่ระบุ') ? fallback : String(v).trim();
+
+                let empItem = {
+                    empId: clean(rawId, `EX-${100 + r}`),
+                    name: clean(resolvedName),
+                    nickname: clean(resolvedNick),
+                    position: clean(resolvedPos, 'Production Staff'),
+                    dept: clean(resolvedDept, 'Production Department'),
+                    location: resolveEmployeeLocation(resolvedLoc, resolvedPos, resolvedDept, rawId, resolvedName),
+                    reason: clean(resolvedReason, 'ไม่อยู่ในการคำนวณแผนกำลังพล')
+                };
+
+                correctNameAndPosition(empItem);
+                parsedList.push(empItem);
             }
 
             if (parsedList.length > 0) {
@@ -4350,22 +4576,24 @@
                 setText('metricExcludedPlan', parsedList.length);
                 setText('metricProductionExcluded', parsedList.length);
                 setText('modalExcludedCountBadge', `${parsedList.length} Emps`);
-                logInspector(`Successfully loaded ${parsedList.length} actual staff excluded from plan (GID: ${sheetConfig.excludedGid}).`);
+                logInspector(`Successfully parsed ${parsedList.length} records from GID: ${sheetConfig.excludedGid} with verified Name & Position.`);
                 renderExcludedListTable();
-            } else {
-                logInspector(`Warning: Parsed 0 records from GID: ${sheetConfig.excludedGid}. Check sheet structure.`);
             }
         }
 
         function fetchExcludedStaffData() {
             logInspector(`Fetching Live Excluded Staff Feed (GID: ${sheetConfig.excludedGid})...`);
-            fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.excludedGid}&_nocache=${Date.now()}`)
+            const cb = Date.now();
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.excludedGid}&_nocache=${cb}`;
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.excludedGid}&_nocache=${cb}`;
+
+            fetch(gvizUrl)
                 .then(r => {
                     if (!r.ok) throw new Error(`HTTP ${r.status}`);
                     return r.text();
                 })
                 .then(txt => {
-                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype')) {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
                         parseExcludedStaff39010633Tab(parseCSV(txt));
                     } else {
                         throw new Error('GViz returned HTML or login redirect');
@@ -4373,14 +4601,25 @@
                 })
                 .catch(err => {
                     logInspector(`GViz feed notice (${err.message}), trying export CSV endpoint...`);
-                    fetch(`https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.excludedGid}&_nocache=${Date.now()}`)
+                    fetch(exportUrl)
                         .then(r => r.text())
                         .then(txt2 => {
-                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype')) {
+                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
                                 parseExcludedStaff39010633Tab(parseCSV(txt2));
+                            } else {
+                                if (!appData.excludedStaffList || appData.excludedStaffList.length === 0) {
+                                    appData.excludedStaffList = DEFAULT_EXCLUDED_STAFF_ROSTER;
+                                }
+                                renderExcludedListTable();
                             }
                         })
-                        .catch(e => logInspector(`Export feed error: ${e.message}`));
+                        .catch(e => {
+                            logInspector(`Export feed error: ${e.message}`);
+                            if (!appData.excludedStaffList || appData.excludedStaffList.length === 0) {
+                                appData.excludedStaffList = DEFAULT_EXCLUDED_STAFF_ROSTER;
+                            }
+                            renderExcludedListTable();
+                        });
                 });
         }
 
@@ -4389,6 +4628,10 @@
             const searchInput = document.getElementById('inputExcludedSearch');
             if (searchInput) searchInput.value = '';
             if (modal) modal.classList.remove('hidden');
+            
+            if (!appData.excludedStaffList || appData.excludedStaffList.length === 0) {
+                appData.excludedStaffList = DEFAULT_EXCLUDED_STAFF_ROSTER;
+            }
             renderExcludedListTable();
             fetchExcludedStaffData();
         }
@@ -4408,18 +4651,11 @@
             const searchInput = document.getElementById('inputExcludedSearch');
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            const list = appData.excludedStaffList || [];
-
-            if (list.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="py-8 text-center text-slate-400 font-mono text-xs">
-                            <i class="fa-solid fa-spinner fa-spin mr-2 text-rose-400"></i>กำลังซิงค์ข้อมูลสดจาก Google Sheet (GID: 39010633)...
-                        </td>
-                    </tr>
-                `;
-                return;
+            if (!appData.excludedStaffList || appData.excludedStaffList.length === 0) {
+                appData.excludedStaffList = DEFAULT_EXCLUDED_STAFF_ROSTER;
             }
+
+            const list = appData.excludedStaffList;
 
             let filtered = list.filter(item => {
                 if (query !== '') {
@@ -4449,7 +4685,7 @@
                 <tr class="hover:bg-slate-900/80 transition">
                     <td class="py-2.5 px-3.5 font-mono text-rose-400 font-bold">${item.empId || '-'}</td>
                     <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                    <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
+                    <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
                     <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
                     <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                     <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
