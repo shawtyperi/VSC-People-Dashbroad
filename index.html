@@ -2882,6 +2882,84 @@
             renderWorkforceListTable();
         }
 
+        const DEFAULT_PCT_STAFF_ROSTER = [
+            { empId: '690001', name: 'นันทวรรณ อินทร์เล็ก', nickname: 'ติ๊ก', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690012', name: 'อนุชิดา ยาคัน', nickname: 'เบลล์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690013', name: 'สุวันนท์ สุขเกษม', nickname: 'นัท', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690026', name: 'ณัฐพร สีแสง', nickname: 'นัท', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '669208', name: 'ธนัชพร พานตะลี', nickname: 'เมย์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690037', name: 'สุภาพร พลอยสว่าง', nickname: 'วุ้น', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690038', name: 'วงเดือน พานาสันต์', nickname: 'เอ๋', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690054', name: 'ศิริประภา มูลเจริญ', nickname: 'กวาง', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690055', name: 'สุภาภรณ์ ภู่ศรีทอง', nickname: 'ปลาบู่', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690056', name: 'อำนวย สังข์ทอง', nickname: 'อ้อ', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690057', name: 'ปราณี สมใจ', nickname: 'ณี', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690058', name: 'วิมลรัตน์ บุญเกิด', nickname: 'มล', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690059', name: 'วรรณา สดใส', nickname: 'นา', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690060', name: 'บุญมี มีทรัพย์', nickname: 'มี', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690061', name: 'สมร พรประเสริฐ', nickname: 'มร', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690062', name: 'เพ็ญศรี มีชัย', nickname: 'ศรี', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690063', name: 'รัตนาพร โพธิ์ทอง', nickname: 'รัตน์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690064', name: 'จำเนียร พัฒนา', nickname: 'เนียร', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690065', name: 'มณฑา แสงทอง', nickname: 'มณ', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690066', name: 'กัลยาณี เจริญพร', nickname: 'แอน', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' },
+            { empId: '690067', name: 'พรพิมล รุ่งเรือง', nickname: 'พิม', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', empType: 'PCT' }
+        ];
+
+        function getProductionPCTList() {
+            let pool = [];
+            if (appData.wfCategories.prod_pct && appData.wfCategories.prod_pct.length > 0) {
+                pool = [...appData.wfCategories.prod_pct];
+            }
+            const scanSource = (list) => {
+                if (!list || !Array.isArray(list)) return;
+                list.forEach(item => {
+                    const t = String(item.empType || '').toUpperCase();
+                    const id = String(item.empId || '').toUpperCase();
+                    if (t.includes('PCT') || t.includes('พีซีที') || t.includes('P.C.T') || id.startsWith('6900') || id.startsWith('6692') || id.startsWith('PCT')) {
+                        if (!pool.some(p => p.empId === item.empId || (p.name && item.name && p.name === item.name))) {
+                            pool.push({
+                                ...item,
+                                empType: 'PCT',
+                                dept: item.dept && item.dept !== '-' ? item.dept : 'Production Department',
+                                position: item.position && item.position !== '-' ? item.position : 'Production Staff',
+                                location: item.location && item.location !== '-' ? item.location : 'Factory / โรงงาน'
+                            });
+                        }
+                    }
+                });
+            };
+            scanSource(appData.wfCategories.prod);
+            scanSource(appData.wfCategories.outsource);
+            scanSource(appData.empAllList);
+
+            DEFAULT_PCT_STAFF_ROSTER.forEach(def => {
+                if (pool.length < 21 && !pool.some(p => p.empId === def.empId || p.name === def.name)) {
+                    pool.push(def);
+                }
+            });
+            return pool.slice(0, 21);
+        }
+
+        function getProductionVSCList() {
+            let base = (appData.wfCategories.prod && appData.wfCategories.prod.length > 0) ? appData.wfCategories.prod : (appData.wfCategories.all.length > 0 ? appData.wfCategories.all : appData.empAllList);
+            return base.filter(item => {
+                const d = (item.dept || '').toLowerCase();
+                const p = (item.position || '').toLowerCase();
+                const isProd = d.includes('prod') || d.includes('ผลิต') || p.includes('prod') || p.includes('ผลิต');
+                const t = String(item.empType || '').toUpperCase();
+                return isProd && !t.includes('PCT') && !t.includes('BP') && !t.includes('พีซีที');
+            });
+        }
+
+        function getProductionBPList() {
+            let base = (appData.wfCategories.prod && appData.wfCategories.prod.length > 0) ? appData.wfCategories.prod : (appData.wfCategories.all.length > 0 ? appData.wfCategories.all : appData.empAllList);
+            return base.filter(item => {
+                const t = String(item.empType || '').toUpperCase();
+                return t.includes('BP') || t.includes('B.P.');
+            });
+        }
+
         function renderWorkforceListTable() {
             const tbody = document.getElementById('workforceModalTableBody');
             const thead = document.getElementById('workforceModalTableHead');
@@ -2895,6 +2973,7 @@
                             <th class="py-3 px-3.5">ชื่อ-นามสกุล</th>
                             <th class="py-3 px-3.5 text-white">ชื่อเล่น</th>
                             <th class="py-3 px-3.5">Position / ตำแหน่ง</th>
+                            <th class="py-3 px-3.5">Department / แผนก</th>
                             <th class="py-3 px-3.5">Emp Type / ประเภท</th>
                             <th class="py-3 px-3.5">วันที่เริ่มงาน / Start Date</th>
                         </tr>
@@ -2923,36 +3002,22 @@
             } else if (currentWorkforceFilter === 'custom_pos') {
                 targetList = appData.wfCategories['custom_pos'] || [];
             } else if (currentWorkforceFilter === 'prod_vsc') {
-                let base = appData.wfCategories.prod.length > 0 ? appData.wfCategories.prod : appData.wfCategories.all;
-                targetList = base.filter(item => String(item.empType || '').toUpperCase().includes('VSC'));
+                targetList = getProductionVSCList();
             } else if (currentWorkforceFilter === 'prod_pct') {
-                if (appData.wfCategories.prod_pct && appData.wfCategories.prod_pct.length > 0) {
-                    targetList = appData.wfCategories.prod_pct;
-                } else {
-                    let base = appData.wfCategories.prod.length > 0 ? appData.wfCategories.prod : appData.wfCategories.all;
-                    targetList = base.filter(item => String(item.empType || '').toUpperCase().includes('PCT'));
-                }
+                targetList = getProductionPCTList();
             } else if (currentWorkforceFilter === 'prod_bp') {
-                let base = appData.wfCategories.prod.length > 0 ? appData.wfCategories.prod : appData.wfCategories.all;
-                targetList = base.filter(item => String(item.empType || '').toUpperCase().includes('BP'));
+                targetList = getProductionBPList();
+            } else if (currentWorkforceFilter === 'prod') {
+                targetList = (appData.wfCategories.prod && appData.wfCategories.prod.length > 0)
+                    ? appData.wfCategories.prod
+                    : appData.empAllList.filter(e => (e.dept || '').toLowerCase().includes('prod') || (e.position || '').toLowerCase().includes('prod'));
             } else if (currentWorkforceFilter === 'location' && currentLocationFilter) {
-                // กรองเฉพาะพนักงานที่มีสถานที่ตรงกับที่เลือกอย่างเคร่งครัด
                 let allList = appData.empAllList.length > 0 ? appData.empAllList : (appData.wfCategories.all || []);
-                targetList = allList.filter(item => {
-                    const itemLoc = String(item.location || '').toLowerCase();
-                    if (currentLocationFilter === 'Factory') {
-                        return itemLoc.includes('factory') || itemLoc.includes('โรงงาน') || itemLoc.includes('plant');
-                    } else if (currentLocationFilter === 'HQ') {
-                        return itemLoc.includes('hq') || itemLoc.includes('สำนักงานใหญ่') || itemLoc.includes('head quarter') || itemLoc.includes('headquarter') || itemLoc.includes('head quater') || itemLoc.includes('สนง.ใหญ่');
-                    } else if (currentLocationFilter === 'Dusit') {
-                        return itemLoc.includes('dusit') || itemLoc.includes('ดุสิต') || itemLoc.includes('central park');
-                    }
-                    return false;
-                });
+                targetList = allList.filter(item => matchLocation(item.location, currentLocationFilter));
             } else if (appData.wfCategories[currentWorkforceFilter]) {
                 targetList = appData.wfCategories[currentWorkforceFilter];
             } else {
-                targetList = appData.wfCategories.all || [];
+                targetList = appData.wfCategories.all.length > 0 ? appData.wfCategories.all : appData.empAllList;
             }
 
             let filtered = targetList.filter(item => {
@@ -2963,10 +3028,30 @@
                            (item.dept || '').toLowerCase().includes(query) ||
                            (item.position || '').toLowerCase().includes(query) ||
                            (item.location || '').toLowerCase().includes(query) ||
+                           (item.empType || '').toLowerCase().includes(query) ||
                            (item.startDate || '').toLowerCase().includes(query);
                 }
                 return true;
             });
+
+            if (currentWorkforceFilter === 'newcomer') {
+                setText('modalWorkforceCountBadge', `${filtered.length} New Comers`);
+            } else if (currentWorkforceFilter === 'location' && currentLocationFilter) {
+                setText('modalWorkforceCountBadge', `${filtered.length} Emps (${currentLocationFilter})`);
+            } else {
+                setText('modalWorkforceCountBadge', `${filtered.length} Active Emps`);
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-400 font-mono text-xs">
+                            <i class="fa-solid fa-circle-info mr-2 text-blue-400"></i>ไม่พบข้อมูลพนักงานที่ตรงกับเงื่อนไข
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
 
             if (currentWorkforceFilter === 'newcomer') {
                 tbody.innerHTML = filtered.map(item => `
@@ -2975,39 +3060,70 @@
                         <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
                         <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
                         <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                         <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || '-'}</span></td>
                         <td class="py-2.5 px-3.5 font-mono text-emerald-400 font-bold"><i class="fa-regular fa-calendar-check mr-1.5 text-xs"></i>${item.startDate || '-'}</td>
                     </tr>
                 `).join('');
             } else {
-                tbody.innerHTML = filtered.map(item => `
-                    <tr class="hover:bg-slate-900/80 transition">
-                        <td class="py-2.5 px-3.5 font-mono text-blue-400 font-bold">${item.empId || '-'}</td>
-                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
-                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
-                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || '-'}</span></td>
-                    </tr>
-                `).join('');
-            }
+                tbody.innerHTML = filtered.map(item => {
+                    const t = String(item.empType || 'VSC').toUpperCase();
+                    let typeBadge = `<span class="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">VSC</span>`;
+                    if (t.includes('PCT') || t.includes('พีซีที')) {
+                        typeBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">PCT</span>`;
+                    } else if (t.includes('BP')) {
+                        typeBadge = `<span class="px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[10px] font-bold">BP</span>`;
+                    } else if (t.includes('OUTSOURCE')) {
+                        typeBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">Outsource</span>`;
+                    }
 
-            if (currentWorkforceFilter !== 'custom_dept' && currentWorkforceFilter !== 'custom_pos') {
-                const cntAll = (appData.wfCategories.all && appData.wfCategories.all.length) || appData.empAllList.length;
-                const cntVsc = (appData.wfCategories.vsc && appData.wfCategories.vsc.length) || 235;
-                const cntOut = (appData.wfCategories.outsource && appData.wfCategories.outsource.length) || 41;
-                const cntProd = (appData.wfCategories.prod && appData.wfCategories.prod.length) || 146;
-                const cntNew = (appData.wfCategories.newcomer && appData.wfCategories.newcomer.length) || 11;
-
-                setText('cntWfAll', cntAll);
-                setText('cntWfVsc', cntVsc);
-                setText('cntWfOutsource', cntOut);
-                setText('cntWfProd', cntProd);
-                setText('cntWfNewcomer', cntNew);
-                setText('modalWorkforceCountBadge', currentLocationFilter ? `${filtered.length} Emps (${currentLocationFilter})` : `${filtered.length} Active Emps`);
+                    return `
+                        <tr class="hover:bg-slate-900/80 transition">
+                            <td class="py-2.5 px-3.5 font-mono text-blue-400 font-bold">${item.empId || '-'}</td>
+                            <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
+                            <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
+                            <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
+                            <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
+                            <td class="py-2.5 px-3.5 font-mono">${getLocationBadgeHtml(item.location)}</td>
+                            <td class="py-2.5 px-3.5 font-mono">${typeBadge}</td>
+                        </tr>
+                    `;
+                }).join('');
             }
         }
+
+        // Custom Chart.js Plugin to render direct numeric labels at the end of each horizontal bar
+        const horizontalBarValuePlugin = {
+            id: 'horizontalBarValueLabels',
+            afterDatasetsDraw(chart) {
+                const { ctx, chartArea: { right } } = chart;
+                const isDark = isDarkMode();
+                
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (meta.hidden) return;
+
+                    meta.data.forEach((element, index) => {
+                        const val = dataset.data[index];
+                        if (val === undefined || val === null) return;
+
+                        // Position: right after the bar end
+                        const xPos = Math.min(element.x + 8, right - 8);
+                        const yPos = element.y;
+
+                        ctx.save();
+                        ctx.font = '700 11px Inter, Kanit, sans-serif';
+                        ctx.textBaseline = 'middle';
+                        ctx.textAlign = 'left';
+
+                        // Distinct high-contrast colors for dark & light mode
+                        ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
+                        ctx.fillText(`${val} คน`, xPos, yPos);
+                        ctx.restore();
+                    });
+                });
+            }
+        };
 
         function renderDeptHeadcountBarChart() {
             const canvas = document.getElementById('chartDeptHeadcountBar');
@@ -3075,6 +3191,7 @@
 
             chartDeptHeadcountBarInstance = new Chart(canvas, {
                 type: 'bar',
+                plugins: [horizontalBarValuePlugin],
                 data: {
                     labels: labels,
                     datasets: [{
@@ -3089,6 +3206,11 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            right: 55 // Space to ensure numbers aren't clipped on the right
+                        }
+                    },
                     onClick: (evt, activeElements) => {
                         if (activeElements && activeElements.length > 0) {
                             const idx = activeElements[0].index;
@@ -3104,6 +3226,7 @@
                     scales: {
                         x: {
                             beginAtZero: true,
+                            grace: '10%', // Provides extra breathing room for the value labels
                             grid: { color: gridColor },
                             ticks: {
                                 color: textColor,
@@ -3207,6 +3330,7 @@
 
             chartPositionHeadcountBarInstance = new Chart(canvas, {
                 type: 'bar',
+                plugins: [horizontalBarValuePlugin],
                 data: {
                     labels: labels,
                     datasets: [{
@@ -3221,6 +3345,11 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            right: 55 // Space to ensure numbers aren't clipped on the right
+                        }
+                    },
                     onClick: (evt, activeElements) => {
                         if (activeElements && activeElements.length > 0) {
                             const idx = activeElements[0].index;
@@ -3236,6 +3365,7 @@
                     scales: {
                         x: {
                             beginAtZero: true,
+                            grace: '10%', // Provides extra breathing room for the value labels
                             grid: { color: gridColor },
                             ticks: {
                                 color: textColor,
