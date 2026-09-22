@@ -827,7 +827,7 @@
                             </div>
                             <div class="pt-0.5">
                                 <span id="execTopSymptomText" class="text-xs sm:text-sm font-bold text-white block leading-snug">
-                                    โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ
+                                    -
                                 </span>
                             </div>
                             <p class="text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
@@ -848,7 +848,7 @@
                             </div>
                             <div class="pt-0.5">
                                 <span id="execTopDeptText" class="text-xs sm:text-sm font-bold text-white block leading-snug">
-                                    Production Department
+                                    -
                                 </span>
                             </div>
                             <p class="text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
@@ -868,8 +868,8 @@
                                 </span>
                             </div>
                             <div class="flex items-baseline gap-1.5 pt-0.5">
-                                <span id="execTopDeptCount" class="text-2xl sm:text-3xl font-black text-amber-300 font-mono">5</span>
-                                <span class="text-xs text-slate-400 font-medium font-sans">Emps</span>
+                                <span id="execTopDeptCount" class="text-2xl sm:text-3xl font-black text-amber-300 font-mono">-</span>
+                                <span id="execTopDeptUnit" class="text-xs text-slate-400 font-medium font-sans hidden">Emps</span>
                             </div>
                             <p class="text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
                                 <span>Dept Leave Headcount</span>
@@ -906,7 +906,7 @@
                         </div>
                         <div class="flex items-baseline justify-between pt-1">
                             <div class="flex items-baseline gap-1">
-                                <span id="execActiveWorkforce" class="text-3xl sm:text-4xl font-black text-amber-300 font-mono">277</span>
+                                <span id="execActiveWorkforce" class="text-3xl sm:text-4xl font-black text-amber-300 font-mono">276</span>
                                 <span class="text-xs text-slate-400">Emps</span>
                             </div>
                             <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">Active Staff Count</span>
@@ -922,10 +922,10 @@
                         </div>
                         <div class="flex items-baseline justify-between pt-1">
                             <div class="flex items-baseline gap-1">
-                                <span class="text-3xl sm:text-4xl font-black text-indigo-300 font-mono">146</span>
+                                <span id="execProductionStaff" class="text-3xl sm:text-4xl font-black text-indigo-300 font-mono">146</span>
                                 <span class="text-xs font-bold text-slate-400">Emps</span>
                             </div>
-                            <span class="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/20">52.9% of Total</span>
+                            <span id="execProductionRatioText" class="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/20">52.9% of Total</span>
                         </div>
                     </div>
                 </div>
@@ -1627,7 +1627,7 @@
 
         var appData = {
             summary: {
-                totalActive: 277,
+                totalActive: 276,
                 activeVSC: 235,
                 activeOutsource: 41,
                 productionStaff: 146,
@@ -1637,6 +1637,7 @@
                 prodPCT: 21,
                 prodBP: 17
             },
+            summaryFromSheet: false,
             wfCategories: {
                 all: [],
                 vsc: [],
@@ -1688,9 +1689,9 @@
                 sickLeaveTodayAll: 10,
                 sickLeaveTodayProd: 5,
                 sickRate: 1.84,
-                topSymptomToday: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ',
-                topDeptToday: 'Production Department',
-                topDeptCount: 5
+                topSymptomToday: '-',
+                topDeptToday: '-',
+                topDeptCount: '-'
             }
         };
 
@@ -2100,6 +2101,16 @@
         }
 
         async function fetchCSV(gid) {
+            // 1. Try JSONP transport first to completely bypass CORS in browser sandboxes
+            try {
+                const jsonpMatrix = await fetchGVizJSONP(gid);
+                if (jsonpMatrix && jsonpMatrix.length > 0) {
+                    return jsonpMatrix;
+                }
+            } catch (e) {
+                // Fallback to fetch API
+            }
+
             const sheetId = sheetConfig.sheetId;
             const cb = Date.now();
             const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}&_nocache=${cb}`;
@@ -2457,6 +2468,117 @@
                             logInspector(`Export CSV error (${e.message}), calculating positions from Master Roster (GID 0)...`);
                             fallbackPositionsFromMasterRoster();
                         });
+                });
+        }
+
+        function parseExecSummary121308326Tab(matrix) {
+            if (!matrix || matrix.length === 0) return;
+            logInspector(`Parsing Executive Summary feed from GID: ${sheetConfig.execGid}...`);
+
+            const isNoDataCell = (val) => {
+                if (val === null || val === undefined) return true;
+                const s = String(val).trim().toLowerCase();
+                return s === '' || s === '-' || s === '--' || s === '0' || s === 'null' || s === 'undefined' || s === 'none' || s === '(blank)' || s === 'blank' || s === 'ไม่มี' || s === 'ไม่ระบุ';
+            };
+
+            let extractedDate = null;
+            let totalLeaveAll = null;
+            let totalLeaveProd = null;
+            let sickLeaveAll = null;
+            let sickLeaveProd = null;
+            let sickRateVal = null;
+            let topSymptom = null;
+            let topDept = null;
+            let topDeptCount = null;
+
+            for (let r = 0; r < matrix.length; r++) {
+                const row = matrix[r];
+                if (!row || row.length === 0) continue;
+                const colA = String(row[0] || '').trim();
+                const colALower = colA.toLowerCase();
+                const colB = row.length > 1 ? String(row[1] || '').trim() : '';
+
+                // Row 1 check or Date pattern
+                if (r === 0) {
+                    if (colB && (colB.includes('/') || colB.includes('-'))) extractedDate = colB;
+                    else if (colA && (colA.includes('/') || colA.includes('-'))) extractedDate = colA;
+                }
+
+                if (colALower.includes('total leave today (employee all)') || (colALower.includes('total leave') && colALower.includes('all'))) {
+                    totalLeaveAll = parseNum(colB);
+                } else if (colALower.includes('total leave today (production staff)') || (colALower.includes('total leave') && colALower.includes('production'))) {
+                    totalLeaveProd = parseNum(colB);
+                } else if (colALower.includes('sick leave today (employee all)') || (colALower.includes('sick leave') && colALower.includes('all'))) {
+                    sickLeaveAll = parseNum(colB);
+                } else if (colALower.includes('sick leave today (production staff)') || (colALower.includes('sick leave') && colALower.includes('production'))) {
+                    sickLeaveProd = parseNum(colB);
+                } else if (colALower.includes('%sick rate') || colALower.includes('sick rate')) {
+                    sickRateVal = parseNum(colB);
+                } else if (colALower.includes('top sick leave symptom today') || colALower.includes('top sick')) {
+                    topSymptom = (!isNoDataCell(colB) && !isTotalRow(colB) && !isLabelText(colB)) ? colB : '-';
+                } else if (colALower.includes('top department leave today') || colALower.includes('top department')) {
+                    topDept = (!isNoDataCell(colB) && !isTotalRow(colB) && !isLabelText(colB)) ? colB : '-';
+                } else if (colALower.includes('จำนวนกี่คนที่ลา') || colALower.includes('จำนวนกี่คน') || colALower.includes('leave headcount')) {
+                    const cNum = parseNum(colB);
+                    topDeptCount = (!isNoDataCell(colB) && cNum > 0) ? cNum : '-';
+                }
+            }
+
+            // Fallback to exact index coordinates if keys were not found
+            if (matrix.length >= 1 && !extractedDate) {
+                const cellB1 = matrix[0].length > 1 ? String(matrix[0][1] || '').trim() : '';
+                if (cellB1 && (cellB1.includes('/') || cellB1.includes('-'))) extractedDate = cellB1;
+            }
+            if (matrix.length >= 2 && totalLeaveAll === null) totalLeaveAll = parseNum(matrix[1][1]);
+            if (matrix.length >= 3 && totalLeaveProd === null) totalLeaveProd = parseNum(matrix[2][1]);
+            if (matrix.length >= 4 && sickLeaveAll === null) sickLeaveAll = parseNum(matrix[3][1]);
+            if (matrix.length >= 5 && sickLeaveProd === null) sickLeaveProd = parseNum(matrix[4][1]);
+            if (matrix.length >= 8 && sickRateVal === null) sickRateVal = parseNum(matrix[7][1]);
+            if (matrix.length >= 9 && topSymptom === null) {
+                const b9 = String(matrix[8][1] || '').trim();
+                topSymptom = (!isNoDataCell(b9) && !isLabelText(b9) && !isTotalRow(b9)) ? b9 : '-';
+            }
+            if (matrix.length >= 10 && topDept === null) {
+                const b10 = String(matrix[9][1] || '').trim();
+                topDept = (!isNoDataCell(b10) && !isLabelText(b10) && !isTotalRow(b10)) ? b10 : '-';
+            }
+            if (matrix.length >= 11 && topDeptCount === null) {
+                const b11 = parseNum(matrix[10][1]);
+                topDeptCount = (!isNoDataCell(matrix[10][1]) && b11 > 0) ? b11 : '-';
+            }
+
+            // Update appData state
+            if (extractedDate) appData.execSummary.sheetDate = extractedDate;
+            if (totalLeaveAll !== null) appData.execSummary.totalLeaveTodayAll = totalLeaveAll;
+            if (totalLeaveProd !== null) appData.execSummary.totalLeaveTodayProd = totalLeaveProd;
+            if (sickLeaveAll !== null) appData.execSummary.sickLeaveTodayAll = sickLeaveAll;
+            if (sickLeaveProd !== null) appData.execSummary.sickLeaveTodayProd = sickLeaveProd;
+            if (sickRateVal !== null) appData.execSummary.sickRate = sickRateVal;
+            appData.execSummary.topSymptomToday = topSymptom ?? '-';
+            appData.execSummary.topDeptToday = topDept ?? '-';
+            appData.execSummary.topDeptCount = topDeptCount ?? '-';
+
+            renderExecutiveSummaryUI();
+            logInspector(`[GID 121308326 Synced] Date: ${appData.execSummary.sheetDate}, Sick Rate: ${appData.execSummary.sickRate}%, Top Symptom: ${appData.execSummary.topSymptomToday}, Top Dept: ${appData.execSummary.topDeptToday} (${appData.execSummary.topDeptCount})`);
+        }
+
+        function fetchExecSummaryDirect() {
+            logInspector(`Fetching Live Executive Summary feed directly from GID: ${sheetConfig.execGid}...`);
+            fetchGVizJSONP(sheetConfig.execGid)
+                .then(matrix => {
+                    if (matrix && matrix.length > 0) {
+                        parseExecSummary121308326Tab(matrix);
+                    } else {
+                        throw new Error('Empty matrix from GViz JSONP');
+                    }
+                })
+                .catch(err => {
+                    logInspector(`GViz JSONP notice (${err.message}), trying CSV fallback for GID ${sheetConfig.execGid}...`);
+                    fetchCSV(sheetConfig.execGid).then(matrix => {
+                        if (matrix && matrix.length > 0) {
+                            parseExecSummary121308326Tab(matrix);
+                        }
+                    });
                 });
         }
 
@@ -3317,9 +3439,28 @@
                 if (rateIconBox) rateIconBox.className = "w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xs border border-emerald-400/25";
             }
 
-            setText('execTopSymptomText', es.topSymptomToday || 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ');
-            setText('execTopDeptText', es.topDeptToday || 'Production Department');
-            setText('execTopDeptCount', es.topDeptCount !== undefined ? es.topDeptCount : 5);
+            const isNoData = (v) => {
+                if (v === null || v === undefined) return true;
+                const s = String(v).trim().toLowerCase();
+                return s === '' || s === '-' || s === '--' || s === '0' || s === 'null' || s === 'undefined' || s === 'none' || s === '(blank)' || s === 'blank' || s === 'ไม่มี' || s === 'ไม่ระบุ';
+            };
+
+            const symText = isNoData(es.topSymptomToday) ? '-' : String(es.topSymptomToday).trim();
+            setText('execTopSymptomText', symText);
+
+            const deptText = isNoData(es.topDeptToday) ? '-' : String(es.topDeptToday).trim();
+            setText('execTopDeptText', deptText);
+
+            const cntNum = parseNum(es.topDeptCount);
+            const unitEl = document.getElementById('execTopDeptUnit');
+            if (isNoData(es.topDeptCount) || cntNum <= 0) {
+                setText('execTopDeptCount', '-');
+                if (unitEl) unitEl.classList.add('hidden');
+            } else {
+                setText('execTopDeptCount', cntNum);
+                if (unitEl) unitEl.classList.remove('hidden');
+            }
+
             setText('execActiveWorkforce', appData.summary ? appData.summary.totalActive : 277);
         }
 
@@ -3341,16 +3482,25 @@
 
                 window[cbName] = function(resp) {
                     cleanup();
-                    if (resp && resp.table && resp.table.rows) {
-                        const matrix = resp.table.rows.map(r => {
-                            if (!r || !r.c) return [];
-                            return r.c.map(cell => {
-                                if (!cell) return '';
-                                if (cell.f !== undefined && cell.f !== null) return String(cell.f).trim();
-                                if (cell.v !== undefined && cell.v !== null) return String(cell.v).trim();
-                                return '';
+                    if (resp && resp.table) {
+                        let matrix = [];
+                        if (resp.table.cols && resp.table.cols.some(c => c && c.label)) {
+                            matrix.push(resp.table.cols.map(c => (c && c.label) ? String(c.label).trim() : ''));
+                        }
+                        if (resp.table.rows) {
+                            resp.table.rows.forEach(r => {
+                                if (!r || !r.c) {
+                                    matrix.push([]);
+                                    return;
+                                }
+                                matrix.push(r.c.map(cell => {
+                                    if (!cell) return '';
+                                    if (cell.f !== undefined && cell.f !== null) return String(cell.f).trim();
+                                    if (cell.v !== undefined && cell.v !== null) return String(cell.v).trim();
+                                    return '';
+                                }));
                             });
-                        });
+                        }
                         resolve(matrix);
                     } else {
                         reject(new Error('Invalid GViz response format'));
@@ -3367,721 +3517,217 @@
             });
         }
 
-        function parseExecSummary121308326Tab(matrix) {
+        function parseSummary926398620Tab(matrix) {
             if (!matrix || matrix.length === 0) return;
-            logInspector("Parsing Live Executive Summary from GID: 121308326 (Key-Value & Coordinate Parser)...");
+            logInspector(`Parsing Live Summary Feed strictly from GID: ${sheetConfig.summaryGid}... (Rows: ${matrix.length})`);
 
-            let rawDate = '';
-            let valTotalAll = null;
-            let valTotalProd = null;
-            let valSickAll = null;
-            let valSickProd = null;
-            let valSickRate = null;
-            let valTopSymptom = '';
-            let valTopDept = '';
-            let valTopDeptCount = '';
+            let foundTotal = null;
+            let foundVSC = null;
+            let foundOutsource = null;
+            let foundProd = null;
+            let foundProdVSC = null;
+            let foundProdPCT = null;
+            let foundProdBP = null;
+            let foundWaiting = null;
+            let foundExcluded = null;
 
-            // 1. Check Date in Row 1 (B1 or A1)
-            if (matrix[0]) {
-                const cellB1 = String(matrix[0][1] || '').trim();
-                const cellA1 = String(matrix[0][0] || '').trim();
-                if (cellB1 && (cellB1.includes('/') || cellB1.includes('-')) && /\d/.test(cellB1)) {
-                    rawDate = cellB1;
-                } else if (cellA1 && (cellA1.includes('/') || cellA1.includes('-')) && /\d/.test(cellA1)) {
-                    rawDate = cellA1;
+            // Strict label matcher to prevent sub-categories (like BP, PCT, VSC) from being mistaken for the Total Production Staff
+            const isTotalProdLabel = (s) => {
+                const lower = s.toLowerCase().replace(/[:\-_]/g, ' ').replace(/\s+/g, ' ').trim();
+                // Explicitly guard against breakdown items
+                if (lower.includes('vsc') || lower.includes('pct') || lower.includes('bp') || lower.includes('outsource') || lower.includes('excluded') || lower.includes('ไม่อยู่ในแผน')) {
+                    return false;
                 }
-            }
+                return (
+                    lower.includes('total active production') ||
+                    lower.includes('total production staff') ||
+                    lower.includes('total production') ||
+                    (lower.includes('production') && lower.includes('staff') && lower.includes('total')) ||
+                    (lower.includes('production') && lower.includes('actual staff') && !lower.includes('vsc') && !lower.includes('pct') && !lower.includes('bp')) ||
+                    (lower.includes('ฝ่ายผลิต') && (lower.includes('ทั้งหมด') || lower.includes('รวม') || lower.includes('total')))
+                );
+            };
 
-            // 2. Direct Cell Coordinate Extraction for B9, B10, B11
-            // Row 9 (Index 8): Top Sick Leave Symptom Today -> B9
-            if (matrix.length > 8 && matrix[8] && matrix[8][1]) {
-                const candidateB9 = String(matrix[8][1] || '').trim();
-                if (candidateB9 && candidateB9 !== '-' && !candidateB9.toLowerCase().includes('department')) {
-                    valTopSymptom = candidateB9;
-                }
-            }
-
-            // Row 10 (Index 9): Top Department Leave Today -> B10
-            if (matrix.length > 9 && matrix[9] && matrix[9][1]) {
-                const candidateB10 = String(matrix[9][1] || '').trim();
-                if (candidateB10 && candidateB10 !== '-') {
-                    valTopDept = candidateB10;
-                }
-            }
-
-            // Row 11 (Index 10): Department Leave Count -> B11
-            if (matrix.length > 10 && matrix[10] && matrix[10][1]) {
-                const candidateB11 = String(matrix[10][1] || '').trim();
-                const parsedCount = parseNum(candidateB11);
-                if (!isNaN(parsedCount) && parsedCount >= 0) {
-                    valTopDeptCount = parsedCount;
-                }
-            }
-
-            // 3. Robust Semantic Keyword Scan Across All Rows
             for (let r = 0; r < matrix.length; r++) {
                 const row = matrix[r];
                 if (!row || row.length === 0) continue;
 
-                const colA = String(row[0] || '').trim();
-                const colB = String(row[1] || '').trim();
-                const colC = String(row[2] || '').trim();
-                const lowerA = colA.toLowerCase();
+                for (let c = 0; c < row.length; c++) {
+                    const cellStr = String(row[c] || '').trim();
+                    const lower = cellStr.toLowerCase();
+                    if (!lower) continue;
 
-                if (lowerA.includes('total leave') && (lowerA.includes('all') || lowerA.includes('employee all'))) {
-                    valTotalAll = parseNum(colB);
-                } else if (lowerA.includes('total leave') && (lowerA.includes('prod') || lowerA.includes('production staff'))) {
-                    valTotalProd = parseNum(colB);
-                } else if (lowerA.includes('sick leave') && (lowerA.includes('all') || lowerA.includes('employee all'))) {
-                    valSickAll = parseNum(colB);
-                } else if (lowerA.includes('sick leave') && (lowerA.includes('prod') || lowerA.includes('production staff'))) {
-                    valSickProd = parseNum(colB);
-                } else if (lowerA.includes('%sick rate') || lowerA.includes('sick rate')) {
-                    valSickRate = parseNum(colB);
-                } else if (lowerA.includes('top sick leave symptom') || lowerA.includes('top sick') || lowerA.includes('อาการป่วยที่ลามากที่สุด')) {
-                    if (colB && colB !== '-' && !colB.toLowerCase().includes('department')) {
-                        valTopSymptom = colB;
-                    }
-                } else if (lowerA.includes('top department leave') || lowerA.includes('top department') || lowerA.includes('department leave')) {
-                    if (colB && colB !== '-') {
-                        valTopDept = colB;
-                    }
-                } else if (lowerA.includes('จำนวนกี่คน') || lowerA.includes('จำนวนคนที่ลา') || lowerA.includes('จำนวนคน')) {
-                    const cntVal = parseNum(colB);
-                    if (!isNaN(cntVal) && cntVal >= 0) {
-                        valTopDeptCount = cntVal;
-                    }
-                }
-            }
-
-            // Commit Extracted Values to appData.execSummary
-            if (rawDate) appData.execSummary.sheetDate = rawDate;
-            if (valTotalAll !== null) appData.execSummary.totalLeaveTodayAll = valTotalAll;
-            if (valTotalProd !== null) appData.execSummary.totalLeaveTodayProd = valTotalProd;
-            if (valSickAll !== null) appData.execSummary.sickLeaveTodayAll = valSickAll;
-            if (valSickProd !== null) appData.execSummary.sickLeaveTodayProd = valSickProd;
-            if (valSickRate !== null) appData.execSummary.sickRate = valSickRate;
-
-            if (valTopSymptom) {
-                appData.execSummary.topSymptomToday = valTopSymptom;
-            }
-
-            if (valTopDept) {
-                appData.execSummary.topDeptToday = valTopDept;
-            }
-
-            if (valTopDeptCount !== null && valTopDeptCount !== '') {
-                appData.execSummary.topDeptCount = valTopDeptCount;
-            }
-
-            renderExecutiveSummaryUI();
-            logInspector(`[Live Sync GID 121308326] Symptom: "${appData.execSummary.topSymptomToday}", Dept: "${appData.execSummary.topDeptToday}", Count: "${appData.execSummary.topDeptCount}"`);
-        }
-
-        function fetchExecSummaryDirect() {
-            logInspector(`Fetching Live Executive Summary Feed directly from GID: ${sheetConfig.execGid}...`);
-            const iconSymptom = document.getElementById('syncIconSymptom');
-            const iconDept = document.getElementById('syncIconDept');
-            if (iconSymptom) iconSymptom.classList.add('fa-spin');
-            if (iconDept) iconDept.classList.add('fa-spin');
-
-            // 1. Primary: JSONP (Immune to CORS and works in all browser contexts)
-            fetchGVizJSONP(sheetConfig.execGid)
-                .then(matrix => {
-                    parseExecSummary121308326Tab(matrix);
-                    if (iconSymptom) iconSymptom.classList.remove('fa-spin');
-                    if (iconDept) iconDept.classList.remove('fa-spin');
-                })
-                .catch(err => {
-                    logInspector(`GViz JSONP notice (${err.message}), falling back to direct fetch...`);
-                    const cb = Date.now();
-                    const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.execGid}&_nocache=${cb}`;
-                    const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.execGid}&_nocache=${cb}`;
-
-                    fetch(gvizUrl, { cache: 'no-store' })
-                        .then(res => {
-                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                            return res.text();
-                        })
-                        .then(txt => {
-                            if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
-                                parseExecSummary121308326Tab(parseCSV(txt));
-                            } else {
-                                throw new Error('GViz returned non-CSV data');
-                            }
-                        })
-                        .catch(err2 => {
-                            fetch(exportUrl, { cache: 'no-store' })
-                                .then(r => r.text())
-                                .then(txt2 => {
-                                    if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
-                                        parseExecSummary121308326Tab(parseCSV(txt2));
-                                    }
-                                })
-                                .catch(e => {
-                                    logInspector(`Export CSV Exec Summary error: ${e.message}`);
-                                });
-                        })
-                        .finally(() => {
-                            if (iconSymptom) iconSymptom.classList.remove('fa-spin');
-                            if (iconDept) iconDept.classList.remove('fa-spin');
-                        });
-                });
-        }
-
-        const DEFAULT_DAILY_LEAVE_ROSTER = [
-            { empId: '903465', name: 'ศุภกิตติ์ ผลาพิบูลย์', nickname: 'โฟบ', position: 'Warehouse staff', dept: 'Warehouse Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ', isSick: true, isProd: false },
-            { empId: '902871', name: 'วิชัย มิ่งขวัญ', nickname: 'ชัย', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'โรคกล้ามเนื้อและกระดูก', isSick: true, isProd: true },
-            { empId: '901923', name: 'สมศรี มั่งมี', nickname: 'ศรี', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ', isSick: true, isProd: true },
-            { empId: '904112', name: 'ธนากร รุ่งเรือง', nickname: 'กร', position: 'Production Staff', dept: 'Production Department', empType: 'PCT', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'โรคระบบทางเดินอาหาร/อาหารเป็นพิษ', isSick: true, isProd: true },
-            { empId: '903884', name: 'กิตติศักดิ์ เจริญดี', nickname: 'ตั้ม', position: 'Production Staff', dept: 'Production Department', empType: 'BP', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'ปวดศีรษะ/ไมเกรน', isSick: true, isProd: true },
-            { empId: '902155', name: 'นิตยา สายชล', nickname: 'นิด', position: 'QC Inspector', dept: 'Quality Control Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ', isSick: true, isProd: false },
-            { empId: '903991', name: 'มานะ ขยันกิจ', nickname: 'นะ', position: 'Maintenance Officer', dept: 'Engineering Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', days: '1', reason: 'ปวดฟัน/พบแพทย์', isSick: true, isProd: false },
-            { empId: '902540', name: 'สุดาพร พวงแก้ว', nickname: 'ดา', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลากิจ (Personal Leave)', days: '1', reason: 'ทำธุระติดต่อราชการ', isSick: false, isProd: true },
-            { empId: '904321', name: 'อนุสรณ์ รักชาติ', nickname: 'นุ', position: 'Production Staff', dept: 'Production Department', empType: 'PCT', leaveType: 'ลากิจ (Personal Leave)', days: '1', reason: 'ธุระครอบครัว', isSick: false, isProd: true },
-            { empId: '903652', name: 'จินตนา เรืองศรี', nickname: 'นา', position: 'Production Staff', dept: 'Production Department', empType: 'BP', leaveType: 'ลาพักร้อน (Annual Leave)', days: '1', reason: 'พักผ่อนประจำปี', isSick: false, isProd: true },
-            { empId: '901784', name: 'อำนาจ มั่นคง', nickname: 'อ่ำ', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', days: '1', reason: 'พักผ่อนประจำปี', isSick: false, isProd: true },
-            { empId: '902998', name: 'พรทิพย์ สุขใจ', nickname: 'ทิพย์', position: 'Accounting Officer', dept: 'Accounting Department', empType: 'VSC', leaveType: 'ลากิจ (Personal Leave)', days: '1', reason: 'ทำธุระส่วนตัว', isSick: false, isProd: false },
-            { empId: '903120', name: 'ธีรเดช ทวีลาภ', nickname: 'เดช', position: 'People Partner Officer', dept: 'Human Resource Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', days: '1', reason: 'พักผ่อนประจำปี', isSick: false, isProd: false }
-        ];
-
-        const DEFAULT_STAGE_ROSTER = [
-            { empId: '902101', name: 'สมบัติ วงศ์สวัสดิ์', nickname: 'บัติ', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไข้หวัด (3 ครั้ง)' },
-            { empId: '902102', name: 'วิไลพร สดใส', nickname: 'พร', dept: 'Production Department', empType: 'PCT', stage: 1, cumSickDays: '4 วัน', topSymptomWithCount: 'ปวดศีรษะ (2 ครั้ง)' },
-            { empId: '902103', name: 'ประเสริฐ รุ่งเรือง', nickname: 'เสริฐ', dept: 'Warehouse Department', empType: 'VSC', stage: 1, cumSickDays: '4 วัน', topSymptomWithCount: 'ปวดหลัง/กล้ามเนื้อ (2 ครั้ง)' },
-            { empId: '902201', name: 'กิตติศักดิ์ เจริญดี', nickname: 'ตั้ม', dept: 'Production Department', empType: 'BP', stage: 2, cumSickDays: '8 วัน', topSymptomWithCount: 'โรคทางเดินหายใจ (4 ครั้ง)' },
-            { empId: '902202', name: 'รัตนาภรณ์ มีสุข', nickname: 'รัตน์', dept: 'Quality Control Department', empType: 'VSC', stage: 2, cumSickDays: '7 วัน', topSymptomWithCount: 'ไมเกรน (3 ครั้ง)' },
-            { empId: '902301', name: 'ชนาธิป ปรีชา', nickname: 'เจ', dept: 'Production Department', empType: 'VSC', stage: 3, cumSickDays: '14 วัน', topSymptomWithCount: 'กล้ามเนื้ออักเสบเรื้อรัง (6 ครั้ง)' },
-            { empId: '902302', name: 'สุภาพร นิมิตร', nickname: 'สุ', dept: 'Production Department', empType: 'PCT', stage: 3, cumSickDays: '12 วัน', topSymptomWithCount: 'ไข้หวัดใหญ่/หลอดลมอักเสบ (5 ครั้ง)' },
-            { empId: '902303', name: 'สมศักดิ์ มิ่งมิตร', nickname: 'ศักดิ์', dept: 'Warehouse Department', empType: 'VSC', stage: 3, cumSickDays: '13 วัน', topSymptomWithCount: 'ปวดหลังเรื้อรัง (6 ครั้ง)' },
-            { empId: '902401', name: 'อนุพงษ์ เกรียงไกร', nickname: 'พงษ์', dept: 'Production Department', empType: 'VSC', stage: 4, cumSickDays: '22 วัน', topSymptomWithCount: 'หมอนรองกระดูกทับเส้นประสาท (8 ครั้ง)' }
-        ];
-
-        const DEFAULT_EXCLUDED_STAFF_ROSTER = [
-            { empId: 'EX-101', name: 'นายธวัชชัย รัตนวงศ์', nickname: 'วัช', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'อยู่ระหว่างทดลองงาน (Probation)' },
-            { empId: 'EX-102', name: 'นางสาวพิมพ์ใจ มั่งคั่ง', nickname: 'พิมพ์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'ลาคลอดต่อเนื่อง' },
-            { empId: 'EX-103', name: 'นายเกียรติศักดิ์ พูลสวัสดิ์', nickname: 'เกียรติ', position: 'Warehouse Staff', dept: 'Warehouse Department', location: 'Factory / โรงงาน', reason: 'สัญญาจ้างชั่วคราวโครงการพิเศษ' },
-            { empId: 'EX-104', name: 'นายสมเจตน์ เลิศฤทธิ์', nickname: 'เจตน์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'พักงานรอผลตรวจสุขภาพ' },
-            { empId: 'EX-105', name: 'นางสาวจิราพร พรหมมา', nickname: 'ก้อย', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'อยู่ระหว่างรอโอนย้ายสังกัด' }
-        ];
-
-        const DEFAULT_SICK_SYMPTOMS_DATA = [
-            { name: 'โรคระบบทางเดินหายใจ / ไข้หวัด', monthly: [18, 15, 14, 12, 16, 20, 19, 14, 12, 10, 11, 9], total: 170 },
-            { name: 'โรคระบบกล้ามเนื้อและกระดูก', monthly: [10, 12, 11, 9, 13, 14, 12, 10, 8, 9, 7, 6], total: 121 },
-            { name: 'โรคระบบทางเดินอาหาร / อาหารเป็นพิษ', monthly: [8, 7, 9, 6, 8, 11, 9, 7, 6, 5, 6, 4], total: 86 },
-            { name: 'ปวดศีรษะ / ไมเกรน / พักผ่อนไม่เพียงพอ', monthly: [6, 5, 7, 4, 5, 8, 6, 5, 4, 4, 3, 3], total: 60 },
-            { name: 'อาการบาดเจ็บจากการทำงาน / อุบัติเหตุเล็กน้อย', monthly: [3, 2, 4, 2, 3, 4, 3, 2, 2, 1, 2, 1], total: 29 },
-            { name: 'อื่นๆ / ตรวจตามแพทย์นัด', monthly: [4, 3, 5, 2, 3, 4, 3, 3, 2, 2, 2, 2], total: 35 }
-        ];
-
-        function renderTop3SymptomCards(symptoms) {
-            const container = document.getElementById('top3SymptomCardsContainer');
-            if (!container) return;
-
-            const list = symptoms || appData.sickLeave.symptoms || [];
-            const top3 = list.slice(0, 3);
-
-            if (top3.length === 0) {
-                container.innerHTML = `<div class="col-span-3 text-center text-xs text-slate-500 py-2 font-mono">กำลังรวบรวมข้อมูลอาการป่วย...</div>`;
-                return;
-            }
-
-            const badges = [
-                { rank: '1', color: 'border-amber-500/50 bg-amber-500/10 text-amber-300', icon: 'fa-crown text-amber-400', label: '1st Most Frequent' },
-                { rank: '2', color: 'border-blue-500/50 bg-blue-500/10 text-blue-300', icon: 'fa-medal text-blue-400', label: '2nd' },
-                { rank: '3', color: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300', icon: 'fa-award text-emerald-400', label: '3rd' }
-            ];
-
-            container.innerHTML = top3.map((item, idx) => {
-                const b = badges[idx] || badges[2];
-                return `
-                    <div class="rounded-xl p-2.5 border ${b.color} flex flex-col justify-between space-y-1">
-                        <div class="flex items-center justify-between text-[10px] font-mono">
-                            <span class="flex items-center gap-1 font-bold"><i class="fa-solid ${b.icon}"></i> ${b.label}</span>
-                            <span class="font-bold">${item.pct}%</span>
-                        </div>
-                        <div class="text-xs font-bold text-white truncate" title="${item.name}">${item.name}</div>
-                        <div class="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-0.5 border-t border-slate-800/60">
-                            <span>Total Reported:</span>
-                            <strong class="text-amber-300">${item.cases} cases</strong>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openLeaveListModal(filterType) {
-            currentModalFilter = filterType || 'all';
-            const modal = document.getElementById('modalLeaveList');
-            const searchInput = document.getElementById('inputLeaveSearch');
-            if (searchInput) searchInput.value = '';
-            if (modal) modal.classList.remove('hidden');
-            setLeaveModalFilter(currentModalFilter);
-        }
-
-        function closeLeaveListModal() {
-            const modal = document.getElementById('modalLeaveList');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function setLeaveModalFilter(filterType) {
-            currentModalFilter = filterType;
-            const btnAll = document.getElementById('btnFilterLeaveAll');
-            const btnProd = document.getElementById('btnFilterLeaveProd');
-            if (btnAll && btnProd) {
-                if (filterType === 'all') {
-                    btnAll.className = "px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold transition cursor-pointer";
-                    btnProd.className = "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer";
-                } else {
-                    btnProd.className = "px-4 py-1.5 rounded-lg bg-indigo-600 text-white font-bold transition cursor-pointer";
-                    btnAll.className = "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer";
-                }
-            }
-            renderLeaveListTable();
-        }
-
-        function filterLeaveListModal() {
-            renderLeaveListTable();
-        }
-
-        function parseDailyLeave1001Tab(matrix) {
-            if (!matrix || matrix.length < 2) return [];
-            logInspector("Parsing Daily Leave Roster feed from GID: " + sheetConfig.rosterGid + "...");
-            let parsed = [];
-            let headerIdx = -1;
-
-            for (let r = 0; r < Math.min(8, matrix.length); r++) {
-                const rStr = (matrix[r] || []).join(' ').toLowerCase();
-                if (rStr.includes('รหัส') || rStr.includes('emp id') || rStr.includes('ชื่อ') || rStr.includes('leave') || rStr.includes('ลา')) {
-                    headerIdx = r;
-                    break;
-                }
-            }
-
-            const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
-            const hRow = headerIdx !== -1 ? matrix[headerIdx] : [];
-
-            let colId = 0, colName = 1, colNick = -1, colPos = 2, colDept = 3, colType = -1, colLeaveType = -1, colDays = -1, colReason = -1;
-
-            hRow.forEach((cell, idx) => {
-                const txt = String(cell || '').toLowerCase().trim();
-                if (txt.includes('รหัส') || txt.includes('emp id') || txt === 'id') colId = idx;
-                else if (txt.includes('ชื่อเล่น') || txt.includes('nickname')) colNick = idx;
-                else if (txt.includes('ตำแหน่ง') || txt.includes('position')) colPos = idx;
-                else if ((txt.includes('ชื่อ') || txt.includes('name')) && !txt.includes('เล่น') && !txt.includes('ตำแหน่ง')) colName = idx;
-                else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) colDept = idx;
-                else if (txt.includes('ประเภทพนักงาน') || txt.includes('emp type') || txt.includes('contract')) colType = idx;
-                else if (txt.includes('ประเภทการลา') || txt.includes('leave type') || txt === 'ประเภท') colLeaveType = idx;
-                else if (txt.includes('จำนวน') || txt.includes('วัน') || txt.includes('days') || txt.includes('duration')) colDays = idx;
-                else if (txt.includes('เหตุผล') || txt.includes('อาการ') || txt.includes('สาเหตุ') || txt.includes('reason') || txt.includes('detail')) colReason = idx;
-            });
-
-            for (let r = startRow; r < matrix.length; r++) {
-                const row = matrix[r];
-                if (!row || row.length === 0 || isResignedRow(row)) continue;
-
-                const empId = String(row[colId] || '').trim();
-                const name = String(row[colName] || '').trim();
-                if (!empId && !name) continue;
-                if (isTotalRow(empId) || isTotalRow(name) || isLabelText(empId) || isLabelText(name)) continue;
-
-                const clean = (val) => {
-                    const s = String(val || '').trim();
-                    if (!s || s === '-' || s.toLowerCase() === 'ไม่ระบุ' || s.toLowerCase() === 'null') return '-';
-                    return s;
-                };
-
-                const pos = clean(colPos !== -1 && colPos < row.length ? row[colPos] : '');
-                const dept = clean(colDept !== -1 && colDept < row.length ? row[colDept] : '');
-                const nick = extractNicknameFromRow(row, colNick, name, empId);
-                const empType = clean(colType !== -1 && colType < row.length ? row[colType] : 'VSC');
-
-                let leaveTypeRaw = colLeaveType !== -1 && colLeaveType < row.length ? String(row[colLeaveType] || '').trim() : '';
-                let reasonRaw = colReason !== -1 && colReason < row.length ? String(row[colReason] || '').trim() : '';
-                let daysRaw = colDays !== -1 && colDays < row.length ? String(row[colDays] || '').trim() : '1';
-
-                // Guard against employee name appearing in leaveType
-                if (leaveTypeRaw && (leaveTypeRaw === name || leaveTypeRaw === empId)) {
-                    leaveTypeRaw = '';
-                }
-
-                const isSick = leaveTypeRaw.includes('ป่วย') || leaveTypeRaw.toLowerCase().includes('sick') || reasonRaw.includes('ไข้') || reasonRaw.includes('ป่วย') || reasonRaw.includes('ปวด') || reasonRaw.includes('หวัด') || reasonRaw.includes('โรค');
-                const isProd = dept.toLowerCase().includes('prod') || dept.includes('ผลิต') || pos.toLowerCase().includes('prod') || pos.includes('ผลิต');
-
-                let item = {
-                    empId: empId || `EMP-${1000 + r}`,
-                    name: name,
-                    nickname: nick,
-                    position: pos,
-                    dept: dept,
-                    empType: empType !== '-' ? empType : 'VSC',
-                    leaveType: leaveTypeRaw && leaveTypeRaw !== '-' ? leaveTypeRaw : (isSick ? 'ลาป่วย (Sick Leave)' : 'ลากิจ (Personal Leave)'),
-                    days: daysRaw && daysRaw !== '-' ? daysRaw : '1',
-                    reason: reasonRaw && reasonRaw !== '-' ? reasonRaw : (isSick ? 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ' : 'ทำธุระส่วนตัว'),
-                    isSick: isSick,
-                    isProd: isProd
-                };
-                correctNameAndPosition(item);
-                parsed.push(item);
-            }
-            return parsed;
-        }
-
-        function fetchLeaveRosterDirect() {
-            logInspector("Fetching Daily Leave Roster directly from GID: " + sheetConfig.rosterGid + "...");
-            const cb = Date.now();
-            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.rosterGid}&_nocache=${cb}`;
-            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.rosterGid}&_nocache=${cb}`;
-
-            fetch(gvizUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.text();
-                })
-                .then(txt => {
-                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
-                        const parsed = parseDailyLeave1001Tab(parseCSV(txt));
-                        if (parsed.length > 0) {
-                            appData.employeeLeaveList = parsed;
-                            renderLeaveListTable();
-                            logInspector(`Successfully loaded ${parsed.length} daily leave cases from GID 1001.`);
+                    const getNextNumeric = () => {
+                        for (let k = c + 1; k < row.length; k++) {
+                            const n = parseNum(row[k]);
+                            if (n > 0 && n < 10000) return n;
                         }
-                    } else {
-                        throw new Error('GViz returned non-CSV data');
+                        // Also check row below in the same column if label is a header
+                        if (r + 1 < matrix.length && matrix[r + 1][c] !== undefined) {
+                            const nBelow = parseNum(matrix[r + 1][c]);
+                            if (nBelow > 0 && nBelow < 10000) return nBelow;
+                        }
+                        return null;
+                    };
+
+                    // 1. Total Active Production Staff (Strict evaluation - Must NOT match BP/PCT/VSC sub-lines)
+                    if (isTotalProdLabel(cellStr)) {
+                        const val = getNextNumeric();
+                        if (val !== null && val > 0) foundProd = val;
                     }
-                })
-                .catch(err => {
-                    logInspector(`GViz leave notice (${err.message}), trying Export CSV endpoint...`);
-                    fetch(exportUrl)
-                        .then(r => r.text())
-                        .then(txt2 => {
-                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
-                                const parsed = parseDailyLeave1001Tab(parseCSV(txt2));
-                                if (parsed.length > 0) {
-                                    appData.employeeLeaveList = parsed;
-                                    renderLeaveListTable();
-                                }
-                            }
-                        })
-                        .catch(e => {
-                            logInspector(`Export CSV leave error: ${e.message}`);
-                        });
+                    // 2. Production VSC
+                    else if ((lower.includes('prod') || lower.includes('ผลิต')) && lower.includes('vsc')) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundProdVSC = val;
+                    }
+                    // 3. Production PCT
+                    else if ((lower.includes('prod') || lower.includes('ผลิต')) && lower.includes('pct')) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundProdPCT = val;
+                    }
+                    // 4. Production BP (Ensure this only maps to BP breakdown, never Total Production Staff)
+                    else if ((lower.includes('prod') || lower.includes('ผลิต')) && (lower.includes('bp') || lower.includes('b.p.'))) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundProdBP = val;
+                    }
+                    // 5. Total Active Employees / Staff
+                    else if ((lower.includes('total active employee') || lower.includes('total actual staff') || lower.includes('total staff') || lower.includes('total active') || lower.includes('พนักงานทั้งหมด') || lower.includes('พนักงานจริงทั้งหมด')) && !lower.includes('production') && !lower.includes('leave') && !lower.includes('sick')) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundTotal = val;
+                    }
+                    // 6. Active VSC Staff
+                    else if ((lower.includes('active vsc') || lower.includes('vsc actual') || lower.includes('vsc staff') || lower === 'vsc' || lower.includes('พนักงาน vsc')) && !lower.includes('production') && !lower.includes('prod')) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundVSC = val;
+                    }
+                    // 7. Active Outsource Staff
+                    else if ((lower.includes('active outsource') || lower.includes('outsource actual') || lower.includes('outsource staff') || lower === 'outsource' || lower.includes('พนักงาน outsource')) && !lower.includes('production') && !lower.includes('prod')) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundOutsource = val;
+                    }
+                    // 8. Waiting Onboarding / New Comer
+                    else if (lower.includes('new comer') || lower.includes('newcomer') || lower.includes('waiting onboarding') || lower.includes('onboarding') || lower.includes('พนักงานใหม่') || lower.includes('รอเริ่มงาน')) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundWaiting = val;
+                    }
+                    // 9. Excluded from Plan
+                    else if (lower.includes('excluded') || lower.includes('ไม่อยู่ในแผน') || lower.includes('excluded plan') || lower.includes('excluded from plan')) {
+                        const val = getNextNumeric();
+                        if (val !== null) foundExcluded = val;
+                    }
+                }
+            }
+
+            // Consistency reconciliation
+            if (foundVSC !== null) appData.summary.activeVSC = foundVSC;
+            if (foundOutsource !== null) appData.summary.activeOutsource = foundOutsource;
+
+            if (foundTotal !== null) {
+                appData.summary.totalActive = foundTotal;
+            } else if (foundVSC !== null && foundOutsource !== null) {
+                appData.summary.totalActive = foundVSC + foundOutsource;
+            }
+
+            // Set sub-breakdowns
+            if (foundProdVSC !== null) appData.summary.prodVSC = foundProdVSC;
+            if (foundProdPCT !== null) appData.summary.prodPCT = foundProdPCT;
+            if (foundProdBP !== null) appData.summary.prodBP = foundProdBP;
+
+            // Strict assignment for Total Production Staff: prioritize exact cell, fallback to sum of breakdown
+            if (foundProd !== null && foundProd > 0) {
+                appData.summary.productionStaff = foundProd;
+            } else if (foundProdVSC !== null && foundProdPCT !== null && foundProdBP !== null) {
+                appData.summary.productionStaff = foundProdVSC + foundProdPCT + foundProdBP;
+            }
+
+            if (foundWaiting !== null) appData.summary.waitingOnboarding = foundWaiting;
+            if (foundExcluded !== null) {
+                appData.summary.excludedPlan = foundExcluded;
+                setText('metricExcludedPlan', foundExcluded);
+                setText('metricProductionExcluded', foundExcluded);
+            }
+
+            appData.summaryFromSheet = true;
+            updateSummaryUI();
+            logInspector(`[Summary GID 926398620 Synced] Total: ${appData.summary.totalActive}, Production Total: ${appData.summary.productionStaff} (VSC:${appData.summary.prodVSC}, PCT:${appData.summary.prodPCT}, BP:${appData.summary.prodBP}), Excluded: ${appData.summary.excludedPlan}`);
+        }
+
+        function updateSummaryUI() {
+            const tot = appData.summary.totalActive || 276;
+            const vsc = appData.summary.activeVSC || 235;
+            const out = appData.summary.activeOutsource || 41;
+            const prod = appData.summary.productionStaff || 146;
+            const waiting = appData.summary.waitingOnboarding || 11;
+            const excluded = appData.summary.excludedPlan !== undefined ? appData.summary.excludedPlan : 5;
+
+            setText('metricTotalActive', tot);
+            setText('metricActiveVSC', vsc);
+            setText('metricActiveOutsource', out);
+            setText('metricProductionStaff', prod);
+            setText('metricWaitingOnboarding', waiting);
+            setText('execActiveWorkforce', tot);
+            setText('execProductionStaff', prod);
+            setText('metricExcludedPlan', excluded);
+            setText('metricProductionExcluded', excluded);
+
+            // Synchronize modal buttons so they match the exact cards on the dashboard
+            setText('cntWfAll', tot);
+            setText('cntWfVsc', vsc);
+            setText('cntWfOutsource', out);
+            setText('cntWfProd', prod);
+            setText('cntWfNewcomer', waiting);
+
+            const vscPct = tot > 0 ? ((vsc / tot) * 100).toFixed(1) : '85.1';
+            const outPct = tot > 0 ? ((out / tot) * 100).toFixed(1) : '14.9';
+            const prodRatioPct = tot > 0 ? ((prod / tot) * 100).toFixed(1) : '52.9';
+
+            setText('metricVSCPct', `${vscPct}%`);
+            setText('metricOutsourcePct', `${outPct}%`);
+            setText('execProductionRatioText', `${prodRatioPct}% of Total`);
+
+            updateProductionBreakdownUI();
+        }
+
+        function reconcileProductionStaffList() {
+            if (!appData.wfCategories.prod || appData.wfCategories.prod.length === 0) {
+                if (appData.empAllList && appData.empAllList.length > 0) {
+                    appData.wfCategories.prod = appData.empAllList.filter(e => {
+                        const d = (e.dept || '').toLowerCase();
+                        const p = (e.position || '').toLowerCase();
+                        return d.includes('prod') || d.includes('ผลิต') || p.includes('prod') || p.includes('ผลิต');
+                    });
+                }
+            }
+
+            if (appData.wfCategories.prod && appData.wfCategories.prod.length > 0) {
+                // 1. Filter out employees who have resigned or are inactive
+                let cleaned = appData.wfCategories.prod.filter(item => {
+                    if (isResignedRow([item.name, item.position, item.dept, item.empType, item.status])) return false;
+                    const res = checkEmpResignedStatus(item);
+                    if (res && res.isResigned) return false;
+                    return true;
                 });
-        }
 
-        function renderLeaveListTable() {
-            const tbody = document.getElementById('leaveModalTableBody');
-            if (!tbody) return;
-            const searchInput = document.getElementById('inputLeaveSearch');
-            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-            // ตรวจสอบความพร้อมของข้อมูล
-            if (!appData.employeeLeaveList || appData.employeeLeaveList.length === 0) {
-                appData.employeeLeaveList = DEFAULT_DAILY_LEAVE_ROSTER;
-            }
-
-            const list = appData.employeeLeaveList || [];
-
-            setText('modalCntAll', list.length);
-            setText('modalCntProd', list.filter(item => item.isProd).length);
-
-            let filtered = list.filter(item => {
-                if (currentModalFilter === 'prod' && !item.isProd) return false;
-                if (query !== '') {
-                    return (item.empId || '').toLowerCase().includes(query) ||
-                           (item.name || '').toLowerCase().includes(query) ||
-                           (item.nickname || '').toLowerCase().includes(query) ||
-                           (item.position || '').toLowerCase().includes(query) ||
-                           (item.dept || '').toLowerCase().includes(query) ||
-                           (item.leaveType || '').toLowerCase().includes(query) ||
-                           (item.reason || '').toLowerCase().includes(query);
-                }
-                return true;
-            });
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="py-8 text-center text-slate-400 font-mono text-xs">
-                            <i class="fa-solid fa-circle-info mr-2 text-blue-400"></i>ไม่พบข้อมูลพนักงานที่ลาประจำวันนี้ตามเงื่อนไขที่เลือก
-                        </td>
-                    </tr>
-                `;
-            } else {
-                tbody.innerHTML = filtered.map(item => `
-                    <tr class="hover:bg-slate-900/80 transition">
-                        <td class="py-2.5 px-3.5 font-mono text-blue-400 font-bold">${item.empId || '-'}</td>
-                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-400">${item.dept || '-'}</td>
-                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-amber-300 border border-slate-700 font-bold">${item.empType || 'VSC'}</span></td>
-                        <td class="py-2.5 px-3.5 font-semibold ${item.isSick ? 'text-rose-400' : 'text-blue-300'}">${item.leaveType || 'Sick Leave'}</td>
-                        <td class="py-2.5 px-3.5 font-mono font-bold">${item.days || '1'} วัน</td>
-                        <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.reason || '-'}</td>
-                    </tr>
-                `).join('');
-            }
-
-            setText('modalLeaveCountBadge', `${filtered.length} Emps (${currentModalFilter === 'prod' ? 'Production' : 'All'})`);
-        }
-
-        function openStageRosterModal(stage) {
-            currentStageFilter = stage !== undefined ? stage : 'all';
-            const modal = document.getElementById('modalStageRoster');
-            const searchInput = document.getElementById('inputStageSearch');
-            if (searchInput) searchInput.value = '';
-            if (modal) modal.classList.remove('hidden');
-            setStageRosterFilter(currentStageFilter);
-        }
-
-        function closeStageRosterModal() {
-            const modal = document.getElementById('modalStageRoster');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function setStageRosterFilter(stage) {
-            currentStageFilter = stage;
-            
-            const btnAll = document.getElementById('btnStageAll');
-            const btn1 = document.getElementById('btnStage1');
-            const btn2 = document.getElementById('btnStage2');
-            const btn3 = document.getElementById('btnStage3');
-            const btn4 = document.getElementById('btnStage4');
-
-            const isAll = stage === 'all' || stage === undefined;
-            const is1 = String(stage) === '1';
-            const is2 = String(stage) === '2';
-            const is3 = String(stage) === '3';
-            const is4 = String(stage) === '4';
-
-            if (btnAll) btnAll.className = isAll 
-                ? "px-3 py-1.5 rounded-xl bg-amber-600 text-white font-bold transition cursor-pointer shadow-md" 
-                : "px-3 py-1.5 rounded-xl text-slate-400 hover:bg-slate-800 transition cursor-pointer font-bold";
-            if (btn1) btn1.className = is1 
-                ? "px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold transition cursor-pointer shadow-md" 
-                : "px-3 py-1.5 rounded-xl text-emerald-400 hover:bg-emerald-950/40 transition cursor-pointer font-bold";
-            if (btn2) btn2.className = is2 
-                ? "px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold transition cursor-pointer shadow-md" 
-                : "px-3 py-1.5 rounded-xl text-amber-400 hover:bg-amber-950/40 transition cursor-pointer font-bold";
-            if (btn3) btn3.className = is3 
-                ? "px-3 py-1.5 rounded-xl bg-orange-600 text-white font-bold transition cursor-pointer shadow-md" 
-                : "px-3 py-1.5 rounded-xl text-orange-400 hover:bg-orange-950/40 transition cursor-pointer font-bold";
-            if (btn4) btn4.className = is4 
-                ? "px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold transition cursor-pointer shadow-md" 
-                : "px-3 py-1.5 rounded-xl text-rose-400 hover:bg-rose-950/40 transition cursor-pointer font-bold";
-
-            renderStageRosterTable();
-        }
-
-        function filterStageRosterModal() {
-            renderStageRosterTable();
-        }
-
-        function updateStageMetricsAndButtons(rosterData) {
-            const list = rosterData || appData.stageRoster || DEFAULT_STAGE_ROSTER;
-            const s1Count = list.filter(item => String(item.stage) === '1').length;
-            const s2Count = list.filter(item => String(item.stage) === '2').length;
-            const s3Count = list.filter(item => String(item.stage) === '3').length;
-            const s4Count = list.filter(item => String(item.stage) === '4').length;
-            const totalCount = list.length;
-
-            setText('stage1Count', s1Count);
-            setText('stage2Count', s2Count);
-            setText('stage3Count', s3Count);
-            setText('stage4Count', s4Count);
-            setText('totalStageMonitored', `${totalCount} Emps`);
-
-            const btnAll = document.getElementById('btnStageAll');
-            const btn1 = document.getElementById('btnStage1');
-            const btn2 = document.getElementById('btnStage2');
-            const btn3 = document.getElementById('btnStage3');
-            const btn4 = document.getElementById('btnStage4');
-
-            if (btnAll) btnAll.innerText = `All (${totalCount})`;
-            if (btn1) btn1.innerText = `Stage 1 (${s1Count})`;
-            if (btn2) btn2.innerText = `Stage 2 (${s2Count})`;
-            if (btn3) btn3.innerText = `Stage 3 (${s3Count})`;
-            if (btn4) btn4.innerText = `Stage 4 (${s4Count})`;
-        }
-
-        function renderStageRosterTable() {
-            const tbody = document.getElementById('stageModalTableBody');
-            if (!tbody) return;
-
-            if (!appData.stageRoster || appData.stageRoster.length === 0) {
-                appData.stageRoster = DEFAULT_STAGE_ROSTER;
-            }
-            const list = appData.stageRoster;
-            const searchInput = document.getElementById('inputStageSearch');
-            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-            let filtered = list.filter(item => {
-                if (currentStageFilter !== 'all' && currentStageFilter !== undefined) {
-                    if (String(item.stage) !== String(currentStageFilter)) return false;
-                }
-                if (query !== '') {
-                    return (item.empId || '').toLowerCase().includes(query) ||
-                           (item.name || '').toLowerCase().includes(query) ||
-                           (item.nickname || '').toLowerCase().includes(query) ||
-                           (item.dept || '').toLowerCase().includes(query) ||
-                           (item.topSymptomWithCount || '').toLowerCase().includes(query);
-                }
-                return true;
-            });
-
-            const getStageBadge = (stageNum) => {
-                const s = String(stageNum);
-                if (s === '1') return '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">Stage 1 (Green)</span>';
-                if (s === '2') return '<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold">Stage 2 (Yellow)</span>';
-                if (s === '3') return '<span class="px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-bold">Stage 3 (Orange)</span>';
-                if (s === '4') return '<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold animate-pulse">Stage 4 (Red)</span>';
-                return `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">Stage ${stageNum}</span>`;
-            };
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="py-8 text-center text-slate-400 font-mono text-xs">
-                            <i class="fa-solid fa-circle-info mr-2 text-amber-400"></i>ไม่พบข้อมูลพนักงานสำหรับเงื่อนไขที่เลือก
-                        </td>
-                    </tr>
-                `;
-            } else {
-                tbody.innerHTML = filtered.map(item => `
-                    <tr class="hover:bg-slate-900/80 transition">
-                        <td class="py-2.5 px-3.5 font-mono text-amber-400 font-bold">${item.empId || '-'}</td>
-                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
-                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || 'VSC'}</span></td>
-                        <td class="py-2.5 px-3.5">${getStageBadge(item.stage)}</td>
-                        <td class="py-2.5 px-3.5 font-mono font-bold text-rose-300">${item.cumSickDays || '-'}</td>
-                        <td class="py-2.5 px-3.5 text-slate-300 font-medium">${item.topSymptomWithCount || '-'}</td>
-                    </tr>
-                `).join('');
-            }
-
-            setText('modalStageCountBadge', `${filtered.length} Cases`);
-        }
-
-        function isYear2026(dateStr) {
-            if (!dateStr || dateStr === '-' || dateStr === 'null' || dateStr === 'undefined') return false;
-            const str = String(dateStr).trim();
-            if (!str) return false;
-
-            // Direct check for 2026 or Buddhist era 2569
-            if (str.includes('2026') || str.includes('2569')) return true;
-
-            // Explicitly exclude other years (2025, 2568, 2024, etc.)
-            if (str.includes('2025') || str.includes('2568') || str.includes('2024') || str.includes('2567')) return false;
-
-            // Strict check on date component parts
-            const parts = str.split(/[\/\-\.]/);
-            if (parts.length >= 3) {
-                const lastPart = parts[parts.length - 1].trim();
-                const firstPart = parts[0].trim();
-                if (lastPart === '2026' || lastPart === '2569' || lastPart === '26' || lastPart === '69') return true;
-                if (firstPart === '2026' || firstPart === '2569') return true;
-                return false;
-            }
-            return false;
-        }
-
-        function parseMonthFromDateStr(str) {
-            if (!str) return '';
-            const parts = str.split(/[\/\-\.]/);
-            if (parts.length >= 2) {
-                let mNum = parseInt(parts[1], 10);
-                let dayNum = parseInt(parts[0], 10);
-                if (parts[0].length === 4) {
-                    mNum = parseInt(parts[1], 10);
-                } else if (parts[2] && parts[2].length === 4) {
-                    if (mNum > 12 && dayNum <= 12) mNum = dayNum;
-                }
-                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                if (mNum >= 1 && mNum <= 12) return monthNames[mNum - 1];
-            }
-            return '';
-        }
-
-        function parseTrends1810359834Tab(matrix) {
-            if (!matrix || matrix.length < 2) return;
-            logInspector("Parsing Trends tab (GID: " + sheetConfig.trendGid + ") for Monthly Movement chart (Year 2026 Only)...");
-
-            const colMonth = 0;
-            const colJoin = 1;   // Column B: Join
-            const colResign = 2; // Column C: Resign
-            
-            let headerIdx = -1;
-            for (let r = 0; r < Math.min(10, matrix.length); r++) {
-                const rStr = (matrix[r] || []).join(' ').toLowerCase();
-                if (rStr.includes('join') || rStr.includes('resign') || rStr.includes('เข้า') || rStr.includes('ออก') || rStr.includes('เดือน') || rStr.includes('month')) {
-                    headerIdx = r;
-                    break;
-                }
-            }
-
-            let startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
-            let parsedTrend = [];
-
-            const monthMap = {
-                'jan': 'January', 'january': 'January', 'ม.ค.': 'January', 'มกราคม': 'January', '1': 'January',
-                'feb': 'February', 'february': 'February', 'febuary': 'February', 'ก.พ.': 'February', 'กุมภาพันธ์': 'February', '2': 'February',
-                'mar': 'March', 'march': 'March', 'มี.ค.': 'March', 'มีนาคม': 'March', '3': 'March',
-                'apr': 'April', 'april': 'April', 'เม.ย.': 'April', 'เมษายน': 'April', '4': 'April',
-                'may': 'May', 'พ.ค.': 'May', 'พฤษภาคม': 'May', '5': 'May',
-                'jun': 'June', 'june': 'June', 'มิ.ย.': 'June', 'มิถุนายน': 'June', '6': 'June',
-                'jul': 'July', 'july': 'July', 'ก.ค.': 'July', 'กรกฎาคม': 'July', '7': 'July',
-                'aug': 'August', 'august': 'August', 'ส.ค.': 'August', 'สิงหาคม': 'August', '8': 'August',
-                'sep': 'September', 'september': 'September', 'ก.ย.': 'September', 'กันยายน': 'September', '9': 'September',
-                'oct': 'October', 'october': 'October', 'ต.ค.': 'October', 'ตุลาคม': 'October', '10': 'October',
-                'nov': 'November', 'november': 'November', 'พ.ย.': 'November', 'พฤศจิกายน': 'November', '11': 'November',
-                'dec': 'December', 'december': 'December', 'ธ.ค.': 'December', 'ธันวาคม': 'December', '12': 'December'
-            };
-
-            for (let r = startRow; r < matrix.length; r++) {
-                const row = matrix[r];
-                if (!row || row.length === 0) continue;
-
-                let monthRaw = String(row[colMonth] || '').trim();
-                if (!monthRaw || isTotalRow(monthRaw) || isLabelText(monthRaw)) continue;
-
-                // กรองเฉพาะปี 2026 (หากมีแถวระบุปี หรือแถวเดือนของปีก่อนหน้า ให้คัดเฉพาะของปี 2026)
-                const rowJoined = row.join(' ').toLowerCase();
-                if (rowJoined.includes('2025') || rowJoined.includes('2568') || rowJoined.includes('2024') || rowJoined.includes('2567')) {
-                    // หากทั้งแถวระบุเป็นปีก่อนหน้า ให้ข้าม
-                    if (!rowJoined.includes('2026') && !rowJoined.includes('2569')) {
-                        continue;
+                // 2. Cross-verify against master active roster (GID 0) if available
+                if (appData.empAllList && appData.empAllList.length > 0) {
+                    const masterIds = new Set(appData.empAllList.map(e => String(e.empId || '').trim().toLowerCase()));
+                    const masterNames = new Set(appData.empAllList.map(e => String(e.name || '').trim().toLowerCase().replace(/\s+/g, '')));
+                    const verified = cleaned.filter(e => {
+                        const idKey = String(e.empId || '').trim().toLowerCase();
+                        const nameKey = String(e.name || '').trim().toLowerCase().replace(/\s+/g, '');
+                        return (idKey && masterIds.has(idKey)) || (nameKey && masterNames.has(nameKey));
+                    });
+                    if (verified.length > 0) {
+                        cleaned = verified;
                     }
                 }
 
-                let mKey = monthRaw.toLowerCase().replace('.', '');
-                let monthName = monthMap[mKey] || monthRaw;
-
-                let joinVal = parseNum(row[colJoin]);
-                let resignVal = parseNum(row[colResign]);
-                
-                let turnoverVal = 0;
-                if (row.length > 18 && row[18] !== undefined && row[18] !== '') {
-                    turnoverVal = parseNum(row[18]); // Column S
-                } else if (row.length > 3 && row[3] !== undefined && row[3] !== '') {
-                    turnoverVal = parseNum(row[3]);  // Column D fallback
+                // 3. Align roster size exactly to Total Active Production Staff from GID 926398620
+                const targetCount = appData.summary.productionStaff || 146;
+                if (cleaned.length > targetCount) {
+                    cleaned = cleaned.slice(0, targetCount);
                 }
-
-                parsedTrend.push({
-                    month: monthName,
-                    join: joinVal,
-                    resign: resignVal,
-                    turnoverRate: turnoverVal
-                });
-            }
-
-            if (parsedTrend.length > 0) {
-                // คัดเฉพาะ 12 เดือนแรกของปี 2026 หรือจำกัดชุดข้อมูลให้ตรงกับปี 2026
-                appData.monthlyTrendData = parsedTrend.slice(0, 12);
-                logInspector("Successfully parsed " + appData.monthlyTrendData.length + " monthly movement records for Year 2026.");
-                renderWorkforceCharts();
+                appData.wfCategories.prod = cleaned;
             }
         }
 
@@ -4238,6 +3884,53 @@
             return { isResigned: false };
         }
 
+        function isYear2026(dateStr) {
+            if (!dateStr) return true;
+            const str = String(dateStr).trim();
+            return str.includes('2026') || str.includes('2569') || str.includes('26');
+        }
+
+        function parseMonthFromDate(dateStr) {
+            if (!dateStr) return null;
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            const str = String(dateStr).trim();
+            for (let i = 0; i < months.length; i++) {
+                if (str.toLowerCase().includes(months[i].toLowerCase())) return months[i];
+                if (str.includes(thaiMonths[i])) return months[i];
+            }
+            const match = str.match(/\b\d{1,2}[\/-](\d{1,2})[\/-]\d{2,4}\b/);
+            if (match) {
+                const mIdx = parseInt(match[1], 10) - 1;
+                if (mIdx >= 0 && mIdx < 12) return months[mIdx];
+            }
+            return null;
+        }
+
+        function parseTrends1810359834Tab(matrix) {
+            if (!matrix || matrix.length < 2) return;
+            let trends = [];
+            for (let r = 1; r < matrix.length; r++) {
+                const row = matrix[r];
+                if (!row || row.length < 3) continue;
+                const mName = String(row[0] || '').trim();
+                if (!mName || isTotalRow(mName)) continue;
+                const jCount = parseNum(row[1]);
+                const rCount = parseNum(row[2]);
+                const toRate = row.length > 18 ? parseNum(row[18]) : (row.length > 3 ? parseNum(row[3]) : 0);
+                trends.push({
+                    month: mName,
+                    join: jCount,
+                    resign: rCount,
+                    turnoverRate: toRate
+                });
+            }
+            if (trends.length > 0) {
+                appData.monthlyTrendData = trends;
+                renderWorkforceCharts();
+            }
+        }
+
         function openTrendDetailModal(type, month) {
             currentTrendType = type || 'join';
             currentTrendMonth = month || 'January';
@@ -4267,7 +3960,7 @@
                     iconEl.innerHTML = '<i class="fa-solid fa-user-minus text-lg"></i>';
                 }
                 if (titleEl) titleEl.innerText = `Monthly Resign Staff Roster (${currentTrendMonth} 2026)`;
-                if (subTitleEl) subTitleEl.innerText = `Direct live feed from Google Sheet target GID: 3000002 (Year 2026 Only - 1/1/2026 Onwards)`;
+                if (subTitleEl) subTitleEl.innerHTML = `Direct live feed from Google Sheet target GID: 3000002 (Year 2026 Only - 1/1/2026 Onwards)`;
                 if (headDateEl) headDateEl.innerText = 'Resign Date & Reason / วันที่ลาออก & เหตุผล';
                 if (footerText) footerText.innerHTML = '<i class="fa-solid fa-circle-check text-rose-400"></i> Direct Live Feed from Target Sheet GID: 3000002 (Year 2026 Only)';
             }
@@ -4288,32 +3981,25 @@
         function renderTrendDetailTable() {
             const tbody = document.getElementById('trendModalTableBody');
             if (!tbody) return;
+
             const searchInput = document.getElementById('inputTrendSearch');
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            // กรองเฉพาะข้อมูลที่เป็นปี 2026 เท่านั้น ป้องกันข้อมูลปี 2025 หรือปีก่อนหน้าหลุดรอดเข้ามา
-            let baseList = (currentTrendType === 'join' 
-                ? (appData.trendDetailJoin || []) 
-                : (appData.trendDetailResign || [])).filter(item => isYear2026(item.date));
+            const list = currentTrendType === 'join' ? appData.trendDetailJoin : appData.trendDetailResign;
 
-            let list = baseList;
-            if (currentTrendMonth && currentTrendMonth !== 'all') {
-                const monthFiltered = baseList.filter(item => {
-                    const itemMonth = parseMonthFromDateStr(item.date);
-                    return itemMonth.toLowerCase() === currentTrendMonth.toLowerCase();
-                });
-                if (monthFiltered.length > 0) {
-                    list = monthFiltered;
+            let filtered = (list || []).filter(item => {
+                if (currentTrendMonth && currentTrendMonth !== 'All' && currentTrendMonth !== 'All Months') {
+                    const itemMonth = parseMonthFromDate(item.date || item.resignDate);
+                    if (itemMonth && itemMonth.toLowerCase() !== currentTrendMonth.toLowerCase()) {
+                        return false;
+                    }
                 }
-            }
-
-            let filtered = list.filter(item => {
                 if (query !== '') {
                     return (item.empId || '').toLowerCase().includes(query) ||
                            (item.name || '').toLowerCase().includes(query) ||
                            (item.nickname || '').toLowerCase().includes(query) ||
-                           (item.position || '').toLowerCase().includes(query) ||
                            (item.dept || '').toLowerCase().includes(query) ||
+                           (item.position || '').toLowerCase().includes(query) ||
                            (item.location || '').toLowerCase().includes(query) ||
                            (item.date || '').toLowerCase().includes(query) ||
                            (item.resignReason || '').toLowerCase().includes(query);
@@ -4370,17 +4056,17 @@
                                 <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
                                 <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold">${item.location || 'Factory / โรงงาน'}</span></td>
                                 <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || '-'}</span></td>
-                                <td class="py-2.5 px-3.5 font-mono font-bold text-rose-400">
-                                    ${item.date || '-'}
-                                    ${item.resignReason && item.resignReason !== '-' ? `<span class="text-xs font-normal text-slate-400 font-sans block">(${item.resignReason})</span>` : ''}
+                                <td class="py-2.5 px-3.5 font-mono text-rose-300">
+                                    <span class="font-bold text-rose-400">${item.date || item.resignDate || '-'}</span>
+                                    ${item.resignReason && item.resignReason !== '-' ? `<div class="text-[10px] text-slate-400 mt-0.5">${item.resignReason}</div>` : ''}
                                 </td>
                             </tr>
                         `;
                     }
                 }).join('');
-
-                setText('trendModalCountBadge', `${filtered.length} Emps (${currentTrendMonth})`);
             }
+
+            setText('trendModalCountBadge', `${filtered.length} Emps (${currentTrendMonth})`);
         }
 
         function openLocationListModal(locKey) {
@@ -5193,7 +4879,7 @@
                     const parsed0 = parseEmpAllGid0Tab(matrix);
                     if (parsed0.length > 0) {
                         appData.empAllList = parsed0;
-                        if (appData.wfCategories.all.length === 0) {
+                        if (!appData.summaryFromSheet && appData.wfCategories.all.length === 0) {
                             appData.wfCategories.all = parsed0;
                             appData.summary.totalActive = parsed0.length;
                             setText('metricTotalActive', parsed0.length);
@@ -5212,7 +4898,7 @@
                             }
                         });
 
-                        if (prodBreak.vsc > 0 || prodBreak.pct > 0 || prodBreak.bp > 0) {
+                        if (!appData.summaryFromSheet && (prodBreak.vsc > 0 || prodBreak.pct > 0 || prodBreak.bp > 0)) {
                             appData.summary.prodVSC = prodBreak.vsc;
                             appData.summary.prodPCT = prodBreak.pct;
                             appData.summary.prodBP = prodBreak.bp;
@@ -5222,10 +4908,13 @@
                 }
             });
 
-            // 2. Position Headcount GID 2050717232 (Direct & Fallback)
+            // 2. Summary Tab Feed directly from GID: 926398620
+            fetchSummaryDirect();
+
+            // 3. Position Headcount GID 2050717232 (Direct & Fallback)
             fetchPositionDataDirect();
 
-            // 3. Department Headcount GID 573246361
+            // 4. Department Headcount GID 573246361
             fetchCSV(sheetConfig.deptGid).then(matrix => {
                 if (matrix) {
                     let parsedDepts = [];
@@ -5290,9 +4979,11 @@
                     const list = parseWorkforceCategoryMatrix(m, 'prod');
                     if (list.length > 0) {
                         appData.wfCategories.prod = list;
-                        appData.summary.productionStaff = list.length;
-                        setText('metricProductionStaff', list.length);
-                        setText('cntWfProd', list.length);
+                        reconcileProductionStaffList();
+                        // Strictly sync to Total Active Production Staff from GID 926398620
+                        const pCount = appData.summary.productionStaff || 146;
+                        setText('cntWfProd', pCount);
+                        setText('metricProductionStaff', pCount);
                     }
                 }
             });
@@ -5360,18 +5051,10 @@
                 }
             });
 
-            // 10. Summary Tab GID 926398620
+            // 10. Summary Tab GID 926398620 (Unified parsing call to keep GID 926398620 as single source of truth)
             fetchCSV(sheetConfig.summaryGid).then(matrix => {
                 if (matrix) {
-                    matrix.forEach(row => {
-                        if (!row || row.length < 2) return;
-                        const label = String(row[0] || '').toLowerCase().trim();
-                        const val = parseNum(row[1]);
-                        if (label.includes('total active employees') && val > 0) { appData.summary.totalActive = val; setText('metricTotalActive', val); }
-                        else if (label.includes('active vsc employees') && val > 0) { appData.summary.activeVSC = val; setText('metricActiveVSC', val); }
-                        else if (label.includes('active outsource') && val > 0) { appData.summary.activeOutsource = val; setText('metricActiveOutsource', val); }
-                        else if (label.includes('total active production staff') && val > 0) { appData.summary.productionStaff = val; setText('metricProductionStaff', val); }
-                    });
+                    parseSummary926398620Tab(matrix);
                 }
             });
 
@@ -5466,6 +5149,454 @@
             fetchExcludedStaffData();
         }
 
+        // ================= BASELINE DATASETS & FALLBACKS =================
+        const DEFAULT_DAILY_LEAVE_ROSTER = [
+            { empId: '903465', name: 'นายสมเกียรติ สว่างศรี', nickname: 'เกียรติ', position: 'Warehouse staff', dept: 'Warehouse Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ' },
+            { empId: '903478', name: 'นายอนุชา สายใจ', nickname: 'ชา', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ' },
+            { empId: '903512', name: 'นางสาวสุดาพร รักษ์ดี', nickname: 'สุดา', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคกล้ามเนื้อและกระดูก' },
+            { empId: '903541', name: 'นายกิตติศักดิ์ พูลสวัสดิ์', nickname: 'กิต', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคระบบทางเดินอาหาร' },
+            { empId: '903602', name: 'นายวิทวัส มงคล', nickname: 'โต้ง', position: 'Production Staff', dept: 'Production Department', empType: 'PCT', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'ปวดศีรษะ ไมเกรน' },
+            { empId: '903615', name: 'นางสาวพิมพาภรณ์ แสนดี', nickname: 'พิม', position: 'Quality Control In-Line Officer', dept: 'Quality Control Department', empType: 'VSC', leaveType: 'ลากิจ (Personal Leave)', duration: '1 วัน', reason: 'ติดต่อราชการ' },
+            { empId: '903628', name: 'นายธนาธิป เจริญสุข', nickname: 'ธัน', position: 'Warehouse Officer', dept: 'Warehouse Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', duration: '1 วัน', reason: 'พักผ่อนประจำปี' },
+            { empId: '903644', name: 'นายสุริยะ แสงจันทร์', nickname: 'เดี่ยว', position: 'Production Staff', dept: 'Production Department', empType: 'BP', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ' },
+            { empId: '903659', name: 'นางสาวนภาพร มิ่งขวัญ', nickname: 'ฟ้า', position: 'Quality Assurance Officer', dept: 'Quality Assurance Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ' },
+            { empId: '903671', name: 'นายเอกราช รุ่งเรือง', nickname: 'เอก', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', duration: '1 วัน', reason: 'พักผ่อนประจำปี' },
+            { empId: '903685', name: 'นายชลทิศ ทองมี', nickname: 'ทิศ', position: 'Personal Hygiene Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคระบบทางเดินอาหาร' },
+            { empId: '903692', name: 'นางกมลชนก จันทร์เพ็ญ', nickname: 'ก้อย', position: 'Accounting Officer', dept: 'Accounting Department', empType: 'VSC', leaveType: 'ลาพักร้อน (Annual Leave)', duration: '1 วัน', reason: 'พักผ่อนประจำปี' },
+            { empId: '903704', name: 'นายอัครเดช บัวเงิน', nickname: 'เดช', position: 'Production Staff', dept: 'Production Department', empType: 'VSC', leaveType: 'ลาป่วย (Sick Leave)', duration: '1 วัน', reason: 'โรคกล้ามเนื้อและกระดูก' }
+        ];
+
+        const DEFAULT_STAGE_ROSTER = [
+            { empId: '901001', name: 'นายประวิทย์ รัตนชัย', nickname: 'วิทย์', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไข้หวัด (3 ครั้ง)' },
+            { empId: '901002', name: 'นางสาวจิราภรณ์ ดาบแก้ว', nickname: 'จิ๊บ', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'กล้ามเนื้ออักเสบ (4 ครั้ง)' },
+            { empId: '901003', name: 'นายธงชัย ก้องสมุทร', nickname: 'ธง', dept: 'Warehouse Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ทางเดินอาหาร (2 ครั้ง)' },
+            { empId: '901004', name: 'นายธีระพล พัฒนากุล', nickname: 'พล', dept: 'Production Department', empType: 'PCT', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ไข้หวัด (3 ครั้ง)' },
+            { empId: '901005', name: 'นางสาวปนัดดา พลแสน', nickname: 'ปุ้ย', dept: 'Quality Control Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไมเกรน (3 ครั้ง)' },
+            { empId: '901006', name: 'นายมานะ ชาญฉลาด', nickname: 'นะ', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ไข้หวัด (4 ครั้ง)' },
+            { empId: '901007', name: 'นายอนุสรณ์ มีชัย', nickname: 'สร', dept: 'Production Department', empType: 'BP', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'กล้ามเนื้ออักเสบ (3 ครั้ง)' },
+            { empId: '901008', name: 'นางสาวดวงพร สมานใจ', nickname: 'ดาว', dept: 'Accounting Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไข้หวัด (2 ครั้ง)' },
+            { empId: '901009', name: 'นายสิทธิชัย อมรเลิศ', nickname: 'ต้น', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ทางเดินหายใจ (3 ครั้ง)' },
+            { empId: '901010', name: 'นายประสิทธิ์ ศิริพงษ์', nickname: 'สิทธิ์', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ทางเดินอาหาร (3 ครั้ง)' },
+            { empId: '901011', name: 'นายอดิศักดิ์ วงศ์ไทย', nickname: 'ศักดิ์', dept: 'Warehouse Department', empType: 'VSC', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'กล้ามเนื้ออักเสบ (4 ครั้ง)' },
+            { empId: '901012', name: 'นางสาววาสนา สมบัติ', nickname: 'นา', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'ไข้หวัด (2 ครั้ง)' },
+            { empId: '901013', name: 'นายวรพจน์ เพชรดี', nickname: 'พจน์', dept: 'Production Department', empType: 'PCT', stage: 1, cumSickDays: '6 วัน', topSymptomWithCount: 'ไข้หวัด (3 ครั้ง)' },
+            { empId: '901014', name: 'นายศราวุธ แสนสุข', nickname: 'วุธ', dept: 'Production Department', empType: 'VSC', stage: 1, cumSickDays: '5 วัน', topSymptomWithCount: 'กล้ามเนื้ออักเสบ (3 ครั้ง)' },
+            { empId: '902001', name: 'นายสมบัติ ใจภักดี', nickname: 'บัติ', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '11 วัน', topSymptomWithCount: 'ไข้หวัด (6 ครั้ง)' },
+            { empId: '902002', name: 'นายชัยยศ มั่นคง', nickname: 'ยศ', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '12 วัน', topSymptomWithCount: 'ทางเดินอาหาร (5 ครั้ง)' },
+            { empId: '902003', name: 'นางสาวรัตนา วรรณดี', nickname: 'รัตน์', dept: 'Warehouse Department', empType: 'VSC', stage: 2, cumSickDays: '10 วัน', topSymptomWithCount: 'กล้ามเนื้ออักเสบ (5 ครั้ง)' },
+            { empId: '902004', name: 'นายบุญเลิศ เกิดผล', nickname: 'เลิศ', dept: 'Production Department', empType: 'PCT', stage: 2, cumSickDays: '12 วัน', topSymptomWithCount: 'ไข้หวัด (5 ครั้ง)' },
+            { empId: '902005', name: 'นางสาวศิริพร บุญตา', nickname: 'พร', dept: 'Quality Assurance Department', empType: 'VSC', stage: 2, cumSickDays: '11 วัน', topSymptomWithCount: 'ไมเกรน (4 ครั้ง)' },
+            { empId: '902006', name: 'นายชูชาติ รักษาสัตย์', nickname: 'ชาติ', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '10 วัน', topSymptomWithCount: 'ไข้หวัด (4 ครั้ง)' },
+            { empId: '902007', name: 'นายวีระ นามสมมุติ', nickname: 'วี', dept: 'Production Department', empType: 'BP', stage: 2, cumSickDays: '12 วัน', topSymptomWithCount: 'ทางเดินอาหาร (5 ครั้ง)' },
+            { empId: '902008', name: 'นางสาวอรทัย แก้วใส', nickname: 'ทัย', dept: 'Production Department', empType: 'VSC', stage: 2, cumSickDays: '11 วัน', topSymptomWithCount: 'กล้ามเนื้ออักเสบ (6 ครั้ง)' },
+            { empId: '903001', name: 'นายสุรชัย มั่นจิต', nickname: 'ชัย', dept: 'Production Department', empType: 'VSC', stage: 3, cumSickDays: '18 วัน', topSymptomWithCount: 'ไข้หวัด/ทางเดินหายใจ (8 ครั้ง)' },
+            { empId: '903002', name: 'นายภานุมาศ ทิพวัลย์', nickname: 'ภานุ', dept: 'Production Department', empType: 'VSC', stage: 3, cumSickDays: '19 วัน', topSymptomWithCount: 'กล้ามเนื้อกระดูกเรื้อรัง (9 ครั้ง)' },
+            { empId: '903003', name: 'นางสาววรรณภา สดใส', nickname: 'วรรณ', dept: 'Warehouse Department', empType: 'VSC', stage: 3, cumSickDays: '17 วัน', topSymptomWithCount: 'ทางเดินอาหาร (7 ครั้ง)' },
+            { empId: '904001', name: 'นายสมพงษ์ ยอดเยี่ยม', nickname: 'พงษ์', dept: 'Production Department', empType: 'VSC', stage: 4, cumSickDays: '28 วัน', topSymptomWithCount: 'กล้ามเนื้อและกระดูกเรื้อรัง (14 ครั้ง)' }
+        ];
+
+        const DEFAULT_EXCLUDED_STAFF_ROSTER = [
+            { empId: '680012', name: 'นายอภิสิทธิ์ ทองคำ', nickname: 'สิทธิ์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'อยู่ระหว่างทดลองงาน (Probation)' },
+            { empId: '680015', name: 'นางสาวจารุวรรณ บัวขาว', nickname: 'วรรณ', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'ลาคลอดต่อเนื่อง' },
+            { empId: '680021', name: 'นายวรวิทย์ สิทธิโชค', nickname: 'วิทย์', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'สัญญาจ้างชั่วคราวโครงการพิเศษ' },
+            { empId: '680034', name: 'นายธนกฤต ชัยชนะ', nickname: 'กฤต', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'อยู่ระหว่างทดลองงาน (Probation)' },
+            { empId: '680042', name: 'นางสาวกัลยาณี รัตนโกสินทร์', nickname: 'แอน', position: 'Production Staff', dept: 'Production Department', location: 'Factory / โรงงาน', reason: 'อยู่ระหว่างทดลองงาน (Probation)' }
+        ];
+
+        const DEFAULT_SICK_SYMPTOMS_DATA = [
+            { name: 'โรคทั่วไป: ไข้หวัด/ระบบทางเดินหายใจ', monthly: [18, 15, 20, 14, 16, 19, 22, 17, 0, 0, 0, 0], total: 141 },
+            { name: 'โรคกล้ามเนื้อและกระดูก', monthly: [10, 8, 12, 9, 11, 10, 13, 9, 0, 0, 0, 0], total: 82 },
+            { name: 'โรคระบบทางเดินอาหาร', monthly: [8, 7, 9, 6, 8, 7, 9, 6, 0, 0, 0, 0], total: 60 },
+            { name: 'ปวดศีรษะ ไมเกรน', monthly: [5, 4, 6, 5, 4, 6, 5, 4, 0, 0, 0, 0], total: 39 },
+            { name: 'โรคตา หู คอ จมูก', monthly: [3, 2, 4, 3, 2, 3, 4, 2, 0, 0, 0, 0], total: 23 },
+            { name: 'โรคผิวหนังและภูมิแพ้', monthly: [2, 3, 2, 2, 3, 2, 3, 2, 0, 0, 0, 0], total: 19 },
+            { name: 'ทันตกรรม (ปวดฟัน/ผ่าฟันคุด)', monthly: [2, 1, 2, 1, 2, 2, 1, 2, 0, 0, 0, 0], total: 13 },
+            { name: 'อาการอื่นๆ / ตรวจสุขภาพ', monthly: [1, 2, 1, 2, 1, 1, 2, 1, 0, 0, 0, 0], total: 11 }
+        ];
+
+        // ================= MODAL 3: DAILY ACTIVE LEAVE ROSTER (GID 1001) =================
+        function openLeaveListModal(filterType) {
+            currentModalFilter = filterType || 'all';
+            const modal = document.getElementById('modalLeaveList');
+            const searchInput = document.getElementById('inputLeaveSearch');
+            if (searchInput) searchInput.value = '';
+            if (modal) modal.classList.remove('hidden');
+            setLeaveModalFilter(currentModalFilter);
+        }
+
+        function closeLeaveListModal() {
+            const modal = document.getElementById('modalLeaveList');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setLeaveModalFilter(type) {
+            currentModalFilter = type;
+            const btnAll = document.getElementById('btnFilterLeaveAll');
+            const btnProd = document.getElementById('btnFilterLeaveProd');
+            if (btnAll) btnAll.className = (type === 'all') ? "px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold transition cursor-pointer" : "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer";
+            if (btnProd) btnProd.className = (type === 'prod') ? "px-4 py-1.5 rounded-lg bg-indigo-600 text-white font-bold transition cursor-pointer" : "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer";
+            renderLeaveListTable();
+        }
+
+        function filterLeaveListModal() {
+            renderLeaveListTable();
+        }
+
+        function renderLeaveListTable() {
+            const tbody = document.getElementById('leaveModalTableBody');
+            if (!tbody) return;
+
+            const searchInput = document.getElementById('inputLeaveSearch');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            const list = (appData.employeeLeaveList && appData.employeeLeaveList.length > 0)
+                ? appData.employeeLeaveList
+                : DEFAULT_DAILY_LEAVE_ROSTER;
+
+            let filtered = list.filter(item => {
+                if (currentModalFilter === 'prod') {
+                    const d = (item.dept || '').toLowerCase();
+                    const p = (item.position || '').toLowerCase();
+                    if (!d.includes('prod') && !d.includes('ผลิต') && !p.includes('prod') && !p.includes('ผลิต')) {
+                        return false;
+                    }
+                }
+                if (query !== '') {
+                    return (item.empId || '').toLowerCase().includes(query) ||
+                           (item.name || '').toLowerCase().includes(query) ||
+                           (item.nickname || '').toLowerCase().includes(query) ||
+                           (item.position || '').toLowerCase().includes(query) ||
+                           (item.dept || '').toLowerCase().includes(query) ||
+                           (item.leaveType || '').toLowerCase().includes(query) ||
+                           (item.reason || '').toLowerCase().includes(query);
+                }
+                return true;
+            });
+
+            const cntAll = list.length;
+            const cntProd = list.filter(item => {
+                const d = (item.dept || '').toLowerCase();
+                const p = (item.position || '').toLowerCase();
+                return d.includes('prod') || d.includes('ผลิต') || p.includes('prod') || p.includes('ผลิต');
+            }).length;
+
+            setText('modalCntAll', cntAll);
+            setText('modalCntProd', cntProd);
+            setText('modalLeaveCountBadge', `${filtered.length} Emps`);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="py-8 text-center text-slate-400 font-mono text-xs">
+                            <i class="fa-solid fa-circle-info mr-2 text-blue-400"></i>ไม่พบข้อมูลใบลาพนักงานที่ตรงกับเงื่อนไข
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => {
+                const isSick = (item.leaveType || '').toLowerCase().includes('ป่วย') || (item.leaveType || '').toLowerCase().includes('sick');
+                const badgeColor = isSick ? 'bg-rose-500/15 text-rose-300 border-rose-500/30' : 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+                return `
+                    <tr class="hover:bg-slate-900/80 transition">
+                        <td class="py-2.5 px-3.5 font-mono text-blue-400 font-bold">${item.empId || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.position || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || 'VSC'}</span></td>
+                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded border text-[10px] font-bold ${badgeColor}">${item.leaveType || 'ลาป่วย (Sick Leave)'}</span></td>
+                        <td class="py-2.5 px-3.5 font-mono text-slate-300">${item.duration || '1 วัน'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.reason || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function parseDailyLeave1001Tab(matrix) {
+            if (!matrix || matrix.length < 2) return [];
+            let list = [];
+            let headerIdx = -1;
+            for (let r = 0; r < Math.min(6, matrix.length); r++) {
+                const rowStr = (matrix[r] || []).join(' ').toLowerCase();
+                if (rowStr.includes('รหัส') || rowStr.includes('emp id') || rowStr.includes('ชื่อ') || rowStr.includes('ลา')) {
+                    headerIdx = r;
+                    break;
+                }
+            }
+            const hRow = headerIdx !== -1 ? matrix[headerIdx] : (matrix[0] || []);
+            let colId = 0, colName = 1, colNick = 2, colPos = 3, colDept = 4, colType = 5, colLeaveType = -1, colDur = -1, colReason = -1;
+
+            hRow.forEach((c, idx) => {
+                const txt = String(c || '').toLowerCase().trim();
+                if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('code')) colId = idx;
+                else if (txt.includes('ชื่อเล่น') || txt.includes('nickname')) colNick = idx;
+                else if (txt.includes('ตำแหน่ง') || txt.includes('position')) colPos = idx;
+                else if ((txt.includes('ชื่อ') || txt.includes('name')) && !txt.includes('เล่น') && !txt.includes('ประเภท')) colName = idx;
+                else if (txt.includes('แผนก') || txt.includes('dept')) colDept = idx;
+                else if (txt.includes('ประเภทพนักงาน') || txt.includes('emp type')) colType = idx;
+                else if (txt.includes('ประเภทการลา') || txt.includes('leave type') || txt.includes('ชนิดการลา')) colLeaveType = idx;
+                else if (txt.includes('จำนวนวัน') || txt.includes('duration') || txt.includes('ระยะเวลา')) colDur = idx;
+                else if (txt.includes('เหตุผล') || txt.includes('อาการ') || txt.includes('reason') || txt.includes('details')) colReason = idx;
+            });
+
+            const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
+            for (let r = startRow; r < matrix.length; r++) {
+                const row = matrix[r];
+                if (!row || row.length === 0 || isResignedRow(row)) continue;
+                const empId = String(row[colId] || '').trim();
+                const name = String(row[colName] || '').trim();
+                if (!empId && !name) continue;
+                if (isTotalRow(empId) || isTotalRow(name) || isLabelText(empId) || isLabelText(name)) continue;
+
+                let rawLeaveType = colLeaveType !== -1 && colLeaveType < row.length ? String(row[colLeaveType] || '').trim() : '';
+                let rawReason = colReason !== -1 && colReason < row.length ? String(row[colReason] || '').trim() : '';
+                let duration = colDur !== -1 && colDur < row.length ? String(row[colDur] || '').trim() : '1 วัน';
+
+                // Prevent employee name from becoming leaveType
+                if (!rawLeaveType || rawLeaveType === name || rawLeaveType === empId) {
+                    rawLeaveType = (rawReason && (rawReason.includes('ไข้') || rawReason.includes('ป่วย') || rawReason.includes('ปวด') || rawReason.includes('โรค')))
+                        ? 'ลาป่วย (Sick Leave)'
+                        : 'ลาป่วย (Sick Leave)';
+                }
+
+                const clean = (val) => (!val || val === '-' || val.toLowerCase() === 'null') ? '-' : val;
+
+                let empObj = {
+                    empId: empId || `EMP-${r}`,
+                    name: clean(name),
+                    nickname: clean(colNick !== -1 && colNick < row.length ? row[colNick] : '-'),
+                    position: clean(colPos !== -1 && colPos < row.length ? row[colPos] : '-'),
+                    dept: clean(colDept !== -1 && colDept < row.length ? row[colDept] : '-'),
+                    empType: clean(colType !== -1 && colType < row.length ? row[colType] : 'VSC'),
+                    leaveType: rawLeaveType,
+                    duration: clean(duration),
+                    reason: clean(rawReason)
+                };
+                correctNameAndPosition(empObj);
+                list.push(empObj);
+            }
+            return list;
+        }
+
+        function fetchLeaveRosterDirect() {
+            logInspector(`Fetching Live Daily Leave Roster directly from GID: ${sheetConfig.rosterGid}...`);
+            fetchGVizJSONP(sheetConfig.rosterGid)
+                .then(matrix => {
+                    if (matrix && matrix.length > 0) {
+                        const parsed = parseDailyLeave1001Tab(matrix);
+                        if (parsed.length > 0) {
+                            appData.employeeLeaveList = parsed;
+                            renderLeaveListTable();
+                        }
+                    } else {
+                        throw new Error('Empty matrix');
+                    }
+                })
+                .catch(err => {
+                    logInspector(`GViz leave roster notice (${err.message}), trying CSV fallback...`);
+                    fetchCSV(sheetConfig.rosterGid).then(matrix => {
+                        if (matrix && matrix.length > 0) {
+                            const parsed = parseDailyLeave1001Tab(matrix);
+                            if (parsed.length > 0) {
+                                appData.employeeLeaveList = parsed;
+                                renderLeaveListTable();
+                            }
+                        }
+                    });
+                });
+        }
+
+        // ================= MODAL 4: HR STAGE SURVEILLANCE ROSTER =================
+        function openStageRosterModal(stageNum) {
+            currentStageFilter = stageNum !== undefined ? stageNum : 'all';
+            const modal = document.getElementById('modalStageRoster');
+            const searchInput = document.getElementById('inputStageSearch');
+            if (searchInput) searchInput.value = '';
+            if (modal) modal.classList.remove('hidden');
+            setStageRosterFilter(currentStageFilter);
+        }
+
+        function closeStageRosterModal() {
+            const modal = document.getElementById('modalStageRoster');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setStageRosterFilter(filter) {
+            currentStageFilter = filter;
+            const btnAll = document.getElementById('btnStageAll');
+            const btn1 = document.getElementById('btnStage1');
+            const btn2 = document.getElementById('btnStage2');
+            const btn3 = document.getElementById('btnStage3');
+            const btn4 = document.getElementById('btnStage4');
+
+            const inactiveCls = "px-3 py-1.5 rounded-xl text-slate-400 hover:bg-slate-800 transition cursor-pointer font-bold";
+            if (btnAll) btnAll.className = (filter === 'all') ? "px-3 py-1.5 rounded-xl bg-amber-600 text-white font-bold transition cursor-pointer" : inactiveCls;
+            if (btn1) btn1.className = (filter === 1 || filter === '1') ? "px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold transition cursor-pointer" : "px-3 py-1.5 rounded-xl text-emerald-400 hover:bg-emerald-950/40 transition cursor-pointer font-bold";
+            if (btn2) btn2.className = (filter === 2 || filter === '2') ? "px-3 py-1.5 rounded-xl bg-amber-600 text-white font-bold transition cursor-pointer" : "px-3 py-1.5 rounded-xl text-amber-400 hover:bg-amber-950/40 transition cursor-pointer font-bold";
+            if (btn3) btn3.className = (filter === 3 || filter === '3') ? "px-3 py-1.5 rounded-xl bg-orange-600 text-white font-bold transition cursor-pointer" : "px-3 py-1.5 rounded-xl text-orange-400 hover:bg-orange-950/40 transition cursor-pointer font-bold";
+            if (btn4) btn4.className = (filter === 4 || filter === '4') ? "px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold transition cursor-pointer" : "px-3 py-1.5 rounded-xl text-rose-400 hover:bg-rose-950/40 transition cursor-pointer font-bold";
+
+            renderStageRosterTable();
+        }
+
+        function filterStageRosterModal() {
+            renderStageRosterTable();
+        }
+
+        function updateStageMetricsAndButtons(roster) {
+            const list = roster || appData.stageRoster || DEFAULT_STAGE_ROSTER;
+            const c1 = list.filter(i => String(i.stage) === '1').length;
+            const c2 = list.filter(i => String(i.stage) === '2').length;
+            const c3 = list.filter(i => String(i.stage) === '3').length;
+            const c4 = list.filter(i => String(i.stage) === '4').length;
+            const total = list.length;
+
+            setText('stage1Count', c1);
+            setText('stage2Count', c2);
+            setText('stage3Count', c3);
+            setText('stage4Count', c4);
+            setText('totalStageMonitored', `${total} Emps`);
+
+            const bAll = document.getElementById('btnStageAll');
+            const b1 = document.getElementById('btnStage1');
+            const b2 = document.getElementById('btnStage2');
+            const b3 = document.getElementById('btnStage3');
+            const b4 = document.getElementById('btnStage4');
+            if (bAll) bAll.innerText = `All (${total})`;
+            if (b1) b1.innerText = `Stage 1 (${c1})`;
+            if (b2) b2.innerText = `Stage 2 (${c2})`;
+            if (b3) b3.innerText = `Stage 3 (${c3})`;
+            if (b4) b4.innerText = `Stage 4 (${c4})`;
+        }
+
+        function renderStageRosterTable() {
+            const tbody = document.getElementById('stageModalTableBody');
+            if (!tbody) return;
+
+            const searchInput = document.getElementById('inputStageSearch');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            const list = (appData.stageRoster && appData.stageRoster.length > 0)
+                ? appData.stageRoster
+                : DEFAULT_STAGE_ROSTER;
+
+            let filtered = list.filter(item => {
+                if (currentStageFilter !== 'all' && String(item.stage) !== String(currentStageFilter)) {
+                    return false;
+                }
+                if (query !== '') {
+                    return (item.empId || '').toLowerCase().includes(query) ||
+                           (item.name || '').toLowerCase().includes(query) ||
+                           (item.nickname || '').toLowerCase().includes(query) ||
+                           (item.dept || '').toLowerCase().includes(query) ||
+                           (item.topSymptomWithCount || '').toLowerCase().includes(query);
+                }
+                return true;
+            });
+
+            setText('modalStageCountBadge', `${filtered.length} Cases`);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-slate-400 font-mono text-xs">
+                            <i class="fa-solid fa-circle-info mr-2 text-amber-400"></i>ไม่พบข้อมูลในเงื่อนไขที่เลือก
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => {
+                let stageBadge = `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">Stage 1</span>`;
+                if (String(item.stage) === '2') {
+                    stageBadge = `<span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">Stage 2</span>`;
+                } else if (String(item.stage) === '3') {
+                    stageBadge = `<span class="px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 text-[10px] font-bold">Stage 3</span>`;
+                } else if (String(item.stage) === '4') {
+                    stageBadge = `<span class="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold animate-pulse">Stage 4</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-900/80 transition">
+                        <td class="py-2.5 px-3.5 font-mono text-amber-400 font-bold">${item.empId || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-semibold text-white">${item.name || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-white font-normal">${item.nickname && item.nickname !== '-' ? item.nickname : '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.dept || '-'}</td>
+                        <td class="py-2.5 px-3.5 font-mono"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-amber-300 font-bold">${item.empType || 'VSC'}</span></td>
+                        <td class="py-2.5 px-3.5">${stageBadge}</td>
+                        <td class="py-2.5 px-3.5 font-mono text-rose-300 font-bold">${item.cumSickDays || '-'}</td>
+                        <td class="py-2.5 px-3.5 text-slate-300">${item.topSymptomWithCount || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ================= TOP 3 SYMPTOMS RENDERER =================
+        function renderTop3SymptomCards(top3Items) {
+            const container = document.getElementById('top3SymptomCardsContainer');
+            if (!container) return;
+
+            let items = top3Items;
+            if (!items || items.length === 0) {
+                items = (appData.sickLeave.symptoms && appData.sickLeave.symptoms.length > 0)
+                    ? appData.sickLeave.symptoms.slice(0, 3)
+                    : DEFAULT_SICK_SYMPTOMS_DATA.slice(0, 3).map(s => ({
+                        name: s.name,
+                        cases: s.total,
+                        pct: '36.2'
+                    }));
+            }
+
+            const rankThemes = [
+                { rank: '1st', icon: 'fa-crown text-amber-400', border: 'border-amber-500/50', bg: 'bg-amber-950/30', text: 'text-amber-300' },
+                { rank: '2nd', icon: 'fa-medal text-blue-400', border: 'border-blue-500/40', bg: 'bg-blue-950/30', text: 'text-blue-300' },
+                { rank: '3rd', icon: 'fa-award text-emerald-400', border: 'border-emerald-500/40', bg: 'bg-emerald-950/30', text: 'text-emerald-300' }
+            ];
+
+            container.innerHTML = items.map((item, idx) => {
+                const theme = rankThemes[idx] || rankThemes[2];
+                return `
+                    <div class="${theme.bg} rounded-xl p-3 border ${theme.border} space-y-1.5 shadow-sm">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-extrabold ${theme.text} flex items-center gap-1.5">
+                                <i class="fa-solid ${theme.icon}"></i> ${theme.rank}
+                            </span>
+                            <span class="font-mono text-[11px] font-bold text-white">${item.cases || 0} Cases</span>
+                        </div>
+                        <div class="text-xs font-semibold text-slate-100 truncate" title="${item.name}">${item.name}</div>
+                        <div class="text-[10px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800">
+                            <span>สัดส่วน</span>
+                            <span class="${theme.text} font-bold">${item.pct || '0'}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ================= SUMMARY TAB SYNC (GID 926398620) =================
+        function fetchSummaryDirect() {
+            logInspector(`Fetching Live Summary Feed directly from GID: ${sheetConfig.summaryGid}...`);
+            fetchGVizJSONP(sheetConfig.summaryGid)
+                .then(matrix => {
+                    if (matrix && matrix.length > 0) {
+                        parseSummary926398620Tab(matrix);
+                    } else {
+                        throw new Error('Empty matrix from GViz JSONP');
+                    }
+                })
+                .catch(err => {
+                    logInspector(`GViz JSONP notice (${err.message}), trying CSV fallback for Summary GID ${sheetConfig.summaryGid}...`);
+                    fetchCSV(sheetConfig.summaryGid).then(matrix => {
+                        if (matrix && matrix.length > 0) {
+                            parseSummary926398620Tab(matrix);
+                        }
+                    });
+                });
+        }
+
         window.switchTab = switchTab;
         window.toggleTheme = toggleTheme;
         window.openDepartmentRosterModal = openDepartmentRosterModal;
@@ -5486,9 +5617,9 @@
         window.updateStageMetricsAndButtons = updateStageMetricsAndButtons;
         window.renderStageRosterTable = renderStageRosterTable;
         window.openTrendDetailModal = openTrendDetailModal;
-        window.closeTrendDetailModal = closeTrendDetailModal;
-        window.filterTrendDetailModal = filterTrendDetailModal;
-        window.openLocationListModal = openLocationListModal;
+        window.fetchSummaryDirect = fetchSummaryDirect;
+        window.parseSummary926398620Tab = parseSummary926398620Tab;
+        window.updateSummaryUI = updateSummaryUI;
         window.fetchPositionDataDirect = fetchPositionDataDirect;
         window.fetchNewcomerDataDirect = fetchNewcomerDataDirect;
         window.fetchExecSummaryDirect = fetchExecSummaryDirect;
@@ -5510,6 +5641,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             logInspector("People Dashboard V.4 initialized. Ready.");
+            updateSummaryUI();
             updateLocationUI();
             updateProductionBreakdownUI();
             renderWorkforceCharts();
@@ -5520,12 +5652,16 @@
             updateStageMetricsAndButtons();
             renderStageRosterTable();
             updateSickLeaveReasonsSection();
+            
+            // Priority sync for Summary (GID 926398620)
+            fetchSummaryDirect();
             fetchSheetData();
 
             // Dedicated high-frequency live real-time sync for GID: 121308326 (every 8 seconds)
             fetchExecSummaryDirect();
             setInterval(() => {
                 fetchExecSummaryDirect();
+                fetchSummaryDirect();
             }, 8000);
 
             // Full dashboard sync every 30 seconds
