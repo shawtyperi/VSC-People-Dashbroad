@@ -345,8 +345,8 @@
                         </div>
                         <p class="text-[11px] text-cyan-400/90 mt-2 pt-1.5 border-t border-slate-800 flex items-center justify-between">
                             <span>Waiting Onboarding</span>
-                            <span class="font-bold bg-cyan-500/15 px-2 py-0.5 rounded text-cyan-300 border border-cyan-500/30 text-[10px] flex items-center gap-1">
-                                <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i> GID 555555
+                            <span class="font-bold bg-cyan-500/15 px-2 py-0.5 rounded text-cyan-300 border border-cyan-500/30 text-[10px] flex items-center gap-1" title="ตัวเลขดึงตรงจาก GID 926398620 Cell B10">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i> GID 926398620 (B10)
                             </span>
                         </p>
                     </div>
@@ -354,94 +354,7 @@
 
             </div>
 
-            <div class="glass-panel rounded-3xl p-5 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
-                            <i class="fa-solid fa-location-dot"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-base font-bold text-white">Actual Staff by Work Location (จำแนกพนักงานจริงตามสถานที่ปฏิบัติงาน)</h2>
-                            <p class="text-xs text-slate-400">สัดส่วนพนักงานจริงแยกตามสถานที่ปฏิบัติงาน คำนวณสดจากฐานข้อมูลพนักงาน GID: 0 (Col Q) • คลิกที่การ์ดเพื่อดูรายชื่อ</p>
-                        </div>
-                    </div>
-                    <span class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 w-fit">
-                        Live Feed: GID 0 (Col Q)
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div onclick="openLocationListModal('Factory')" class="bg-slate-900/60 rounded-2xl p-4 border border-cyan-500/30 hover:border-cyan-400/80 cursor-pointer group transition-all duration-300">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-300 group-hover:text-cyan-300 transition-colors">Factory / โรงงาน</span>
-                            <div class="w-7 h-7 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-xs border border-cyan-500/20">
-                                <i class="fa-solid fa-industry"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-baseline justify-between mt-1">
-                            <div class="flex items-baseline gap-1">
-                                <span id="locCountFactory" class="text-2xl font-bold text-white">244</span>
-                                <span class="text-xs text-slate-400">คน</span>
-                            </div>
-                            <span id="locPctFactory" class="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">89.1%</span>
-                        </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
-                            <div id="barLocFactory" class="bg-cyan-500 h-2 rounded-full transition-all duration-500" style="width: 89.1%"></div>
-                        </div>
-                        <p class="text-[10px] text-cyan-400/80 mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between">
-                            <span>Click to View Roster</span>
-                            <span class="font-mono text-[9px]"><i class="fa-solid fa-arrow-up-right-from-square"></i> Col Q</span>
-                        </p>
-                    </div>
-
-                    <div onclick="openLocationListModal('HQ')" class="bg-slate-900/60 rounded-2xl p-4 border border-indigo-500/30 hover:border-indigo-400/80 cursor-pointer group transition-all duration-300">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-300 group-hover:text-indigo-300 transition-colors">HQ (Head Quater) / สำนักงานใหญ่</span>
-                            <div class="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center text-xs border border-indigo-500/20">
-                                <i class="fa-solid fa-building"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-baseline justify-between mt-1">
-                            <div class="flex items-baseline gap-1">
-                                <span id="locCountHQ" class="text-2xl font-bold text-white">17</span>
-                                <span class="text-xs text-slate-400">คน</span>
-                            </div>
-                            <span id="locPctHQ" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">6.2%</span>
-                        </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
-                            <div id="barLocHQ" class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: 6.2%"></div>
-                        </div>
-                        <p class="text-[10px] text-indigo-400/80 mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between">
-                            <span>Click to View Roster</span>
-                            <span class="font-mono text-[9px]"><i class="fa-solid fa-arrow-up-right-from-square"></i> Col Q</span>
-                        </p>
-                    </div>
-
-                    <div onclick="openLocationListModal('Dusit')" class="bg-slate-900/60 rounded-2xl p-4 border border-amber-500/30 hover:border-amber-400/80 cursor-pointer group transition-all duration-300">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-300 group-hover:text-amber-300 transition-colors">Dusit Central Park</span>
-                            <div class="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-xs border border-amber-500/20">
-                                <i class="fa-solid fa-city"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-baseline justify-between mt-1">
-                            <div class="flex items-baseline gap-1">
-                                <span id="locCountDusit" class="text-2xl font-bold text-white">13</span>
-                                <span class="text-xs text-slate-400">คน</span>
-                            </div>
-                            <span id="locPctDusit" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">4.7%</span>
-                        </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
-                            <div id="barLocDusit" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 4.7%"></div>
-                        </div>
-                        <p class="text-[10px] text-amber-400/80 mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between">
-                            <span>Click to View Roster</span>
-                            <span class="font-mono text-[9px]"><i class="fa-solid fa-arrow-up-right-from-square"></i> Col Q</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-
+            <!-- SECTION 1: Production Actual Staff Breakdown (Moved before Work Location) -->
             <div class="glass-panel rounded-3xl p-5 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                     <div class="flex items-center gap-2.5">
@@ -535,21 +448,160 @@
                 </div>
             </div>
 
-            <!-- ================= SIDE-BY-SIDE: BY DEPARTMENT & BY POSITION ================= -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- CARD LEFT: Actual Staff by Department (GID: 573246361) -->
-                <div class="glass-panel rounded-3xl p-5 border-slate-800 space-y-3 flex flex-col justify-between">
-                    <div class="border-b border-slate-800 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                            <h3 class="text-base font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-building-user text-blue-400"></i> Actual Staff by Department
-                            </h3>
-                            <p class="text-xs text-slate-400">จำนวนพนักงานจริงแยกตามแผนก (Live GID: 573246361 • คลิกที่แท่งกราฟเพื่อดูรายชื่อเจาะลึก)</p>
+            <!-- SECTION 2: Actual Staff by Work Location -->
+            <div class="glass-panel rounded-3xl p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                            <i class="fa-solid fa-location-dot"></i>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span id="badgeDeptCount" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 whitespace-nowrap">
-                                <i class="fa-solid fa-hand-pointer mr-1"></i> คลิกแท่งเพื่อดูรายชื่อ
+                        <div>
+                            <h2 class="text-base font-bold text-white">Actual Staff by Work Location (จำแนกพนักงานจริงตามสถานที่ปฏิบัติงาน)</h2>
+                            <p class="text-xs text-slate-400">สัดส่วนพนักงานจริงแยกตามสถานที่ปฏิบัติงาน คำนวณสดจากฐานข้อมูลพนักงาน GID: 0 (Col Q) • คลิกที่การ์ดเพื่อดูรายชื่อ</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 w-fit">
+                        Live Feed: GID 0 (Col Q)
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div onclick="openLocationListModal('Factory')" class="bg-slate-900/60 rounded-2xl p-4 border border-cyan-500/30 hover:border-cyan-400/80 cursor-pointer group transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-300 group-hover:text-cyan-300 transition-colors">Factory / โรงงาน</span>
+                            <div class="w-7 h-7 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-xs border border-cyan-500/20">
+                                <i class="fa-solid fa-industry"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline justify-between mt-1">
+                            <div class="flex items-baseline gap-1">
+                                <span id="locCountFactory" class="text-2xl font-bold text-white">244</span>
+                                <span class="text-xs text-slate-400">คน</span>
+                            </div>
+                            <span id="locPctFactory" class="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">89.1%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                            <div id="barLocFactory" class="bg-cyan-500 h-2 rounded-full transition-all duration-500" style="width: 89.1%"></div>
+                        </div>
+                        <p class="text-[10px] text-cyan-400/80 mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                            <span>Click to View Roster</span>
+                            <span class="font-mono text-[9px]"><i class="fa-solid fa-arrow-up-right-from-square"></i> Col Q</span>
+                        </p>
+                    </div>
+
+                    <div onclick="openLocationListModal('HQ')" class="bg-slate-900/60 rounded-2xl p-4 border border-indigo-500/30 hover:border-indigo-400/80 cursor-pointer group transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-300 group-hover:text-indigo-300 transition-colors">HQ (Head Quater) / สำนักงานใหญ่</span>
+                            <div class="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center text-xs border border-indigo-500/20">
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline justify-between mt-1">
+                            <div class="flex items-baseline gap-1">
+                                <span id="locCountHQ" class="text-2xl font-bold text-white">17</span>
+                                <span class="text-xs text-slate-400">คน</span>
+                            </div>
+                            <span id="locPctHQ" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">6.2%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                            <div id="barLocHQ" class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: 6.2%"></div>
+                        </div>
+                        <p class="text-[10px] text-indigo-400/80 mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                            <span>Click to View Roster</span>
+                            <span class="font-mono text-[9px]"><i class="fa-solid fa-arrow-up-right-from-square"></i> Col Q</span>
+                        </p>
+                    </div>
+
+                    <div onclick="openLocationListModal('Dusit')" class="bg-slate-900/60 rounded-2xl p-4 border border-amber-500/30 hover:border-amber-400/80 cursor-pointer group transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-300 group-hover:text-amber-300 transition-colors">Dusit Central Park</span>
+                            <div class="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-xs border border-amber-500/20">
+                                <i class="fa-solid fa-city"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline justify-between mt-1">
+                            <div class="flex items-baseline gap-1">
+                                <span id="locCountDusit" class="text-2xl font-bold text-white">13</span>
+                                <span class="text-xs text-slate-400">คน</span>
+                            </div>
+                            <span id="locPctDusit" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">4.7%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                            <div id="barLocDusit" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 4.7%"></div>
+                        </div>
+                        <p class="text-[10px] text-amber-400/80 mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                            <span>Click to View Roster</span>
+                            <span class="font-mono text-[9px]"><i class="fa-solid fa-arrow-up-right-from-square"></i> Col Q</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 3-COLUMN STRUCTURE: DIVISION, DEPARTMENT & POSITION ================= -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                
+                <!-- CARD 1: Actual Staff by Division (GID: 287950382) -->
+                <div class="glass-panel rounded-3xl p-5 border-slate-800 space-y-3 flex flex-col justify-between overflow-hidden">
+                    <div class="border-b border-slate-800 pb-3 flex items-center justify-between gap-2">
+                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 min-w-0 truncate">
+                            <i class="fa-solid fa-layer-group text-purple-400 flex-shrink-0"></i>
+                            <span class="truncate">Actual Staff by Division</span>
+                        </h3>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span id="badgeDivisionCount" class="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 whitespace-nowrap">
+                                14 ฝ่าย
                             </span>
+                            <a href="https://docs.google.com/spreadsheets/d/1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo/edit?gid=287950382#gid=287950382" 
+                               target="_blank" 
+                               class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-purple-400 border border-slate-700/80 flex items-center justify-center transition flex-shrink-0" title="เปิด Google Sheet ฝ่าย/สายงาน (GID 287950382)">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                            <button onclick="fetchDivisionDataDirect()" class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-purple-400 border border-slate-700/80 flex items-center justify-center transition flex-shrink-0 cursor-pointer" title="รีเฟรชข้อมูลฝ่าย/สายงาน">
+                                <i class="fa-solid fa-rotate text-[11px]"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Toolbar (Division) -->
+                    <div class="relative w-full bg-slate-950/70 p-1.5 rounded-2xl border border-slate-800/80">
+                        <div class="relative w-full">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                            <input type="text" id="inputDivFilter" oninput="renderDivisionHeadcountBarChart()" placeholder="พิมพ์ค้นหาฝ่าย (เช่น Operations, Supply Chain, Corporate, Quality...)"
+                                   class="w-full pl-8 pr-8 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition font-sans">
+                            <button onclick="document.getElementById('inputDivFilter').value=''; renderDivisionHeadcountBarChart();" 
+                                    class="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 text-xs cursor-pointer" title="ล้างคำค้นหา">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full overflow-y-auto max-h-[360px] pr-1 cursor-pointer">
+                        <div id="divCanvasContainer" class="w-full" style="min-height: 320px;">
+                            <canvas id="chartDivisionHeadcountBar"></canvas>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between font-mono">
+                        <span id="divFooterInfo"><i class="fa-solid fa-circle-info text-purple-400 mr-1"></i>เรียงจากฝ่ายที่มีพนักงานมากที่สุด</span>
+                        <span class="text-purple-300 font-semibold">Feed: GID 287950382</span>
+                    </div>
+                </div>
+
+                <!-- CARD 2: Actual Staff by Department (GID: 573246361) -->
+                <div class="glass-panel rounded-3xl p-5 border-slate-800 space-y-3 flex flex-col justify-between overflow-hidden">
+                    <div class="border-b border-slate-800 pb-3 flex items-center justify-between gap-2">
+                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 min-w-0 truncate">
+                            <i class="fa-solid fa-building-user text-blue-400 flex-shrink-0"></i>
+                            <span class="truncate">Actual Staff by Department</span>
+                        </h3>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span id="badgeDeptCount" class="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 whitespace-nowrap">
+                                23 แผนก
+                            </span>
+                            <a href="https://docs.google.com/spreadsheets/d/1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo/edit?gid=573246361#gid=573246361" 
+                               target="_blank" 
+                               class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-blue-400 border border-slate-700/80 flex items-center justify-center transition flex-shrink-0" title="เปิด Google Sheet แผนก (GID 573246361)">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
                         </div>
                     </div>
 
@@ -577,26 +629,23 @@
                     </div>
                 </div>
 
-                <!-- CARD RIGHT: Actual Staff by Position (GID: 2050717232) -->
-                <div class="glass-panel rounded-3xl p-5 border-slate-800 space-y-3 flex flex-col justify-between">
-                    <div class="border-b border-slate-800 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                            <h3 class="text-base font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-briefcase text-cyan-400"></i> Actual Staff by Position
-                            </h3>
-                            <p class="text-xs text-slate-400">จำนวนพนักงานจริงแยกตามตำแหน่งงาน (Live GID: 2050717232 • เลื่อนดูได้ & คลิกแท่งเพื่อดูรายชื่อ)</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span id="badgePositionCount" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 whitespace-nowrap">
-                                77 ตำแหน่ง • เลื่อน & คลิกดูได้
+                <!-- CARD 3: Actual Staff by Position (GID: 2050717232) -->
+                <div class="glass-panel rounded-3xl p-5 border-slate-800 space-y-3 flex flex-col justify-between overflow-hidden">
+                    <div class="border-b border-slate-800 pb-3 flex items-center justify-between gap-2">
+                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 min-w-0 truncate">
+                            <i class="fa-solid fa-briefcase text-cyan-400 flex-shrink-0"></i>
+                            <span class="truncate">Actual Staff by Position</span>
+                        </h3>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span id="badgePositionCount" class="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 whitespace-nowrap">
+                                77 ตำแหน่ง
                             </span>
                             <a href="https://docs.google.com/spreadsheets/d/1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo/edit?gid=2050717232#gid=2050717232" 
                                target="_blank" 
-                               class="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 flex items-center gap-1 transition" title="เปิด Google Sheet ตำแหน่งงาน">
-                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                                <span class="hidden sm:inline">GID 2050717232</span>
+                               class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-cyan-400 border border-slate-700/80 flex items-center justify-center transition flex-shrink-0" title="เปิด Google Sheet ตำแหน่งงาน (GID 2050717232)">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                             </a>
-                            <button onclick="fetchPositionDataDirect()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 border border-slate-700 flex items-center justify-center transition cursor-pointer" title="รีเฟรชข้อมูลตำแหน่งงาน">
+                            <button onclick="fetchPositionDataDirect()" class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 border border-slate-700/80 flex items-center justify-center transition flex-shrink-0 cursor-pointer" title="รีเฟรชข้อมูลตำแหน่งงาน">
                                 <i class="fa-solid fa-rotate text-xs"></i>
                             </button>
                         </div>
@@ -1535,6 +1584,7 @@
         var chartTrendMovementComboInstance = null;
         var chartSickDonutInstance = null;
         var chartDeptComparisonInstance = null;
+        var chartDivisionHeadcountBarInstance = null;
         var chartDeptHeadcountBarInstance = null;
         var chartPositionHeadcountBarInstance = null;
 
@@ -1579,6 +1629,7 @@
         const DEFAULT_SHEET_ID = '1o0kTG8XMU_iPK6XKY-_pWeTY4YE_hWZd5fM-uk7Yszo';
         const SUMMARY_GID = '926398620';
         const DEFAULT_EMP_ALL_GID = '0';
+        const DIVISION_GID = '287950382';
         const DEFAULT_DEPT_GID = '573246361';
         const SICK_LEAVE_GID = '343117470';
         const EXEC_SUMMARY_GID = '121308326';
@@ -1610,6 +1661,7 @@
             sheetId: localStorage.getItem('wf_sheet_id') || DEFAULT_SHEET_ID,
             summaryGid: SUMMARY_GID,
             empAllGid: DEFAULT_EMP_ALL_GID,
+            divisionGid: DIVISION_GID,
             deptGid: DEFAULT_DEPT_GID,
             levelGid: LEVELS_GID,
             demographicsGid: DEMOGRAPHICS_GID,
@@ -1659,10 +1711,21 @@
             },
             empLocationMap: {},
             empNicknameMap: {},
+            empDivisionMap: {},
+            deptToDivisionMap: {},
+            divisionRosterMap: {},
             levelHeadcountMap: { 'L1a': 183, 'L1b': 28, 'L2a': 16, 'L2b': 10, 'L3': 16, 'L4': 7, 'L5': 3, 'L6': 4, 'L7': 6, 'L8': 4 },
             genderCounts: { male: 158, female: 121 },
             nationCounts: { thai: 185, myanmar: 94 },
             empAllList: [],
+            divisionHeadcount: [
+                { division: 'Operations & Production Division', count: 158 },
+                { division: 'Supply Chain & Logistics Division', count: 32 },
+                { division: 'Quality Management & Technical', count: 34 },
+                { division: 'Human Resources & Corporate Affairs', count: 20 },
+                { division: 'Finance & Accounting Division', count: 18 },
+                { division: 'Commercial & Business Development', count: 14 }
+            ],
             deptHeadcount: [],
             positionHeadcount: [
                 { position: 'Production Staff', count: 124 },
@@ -1961,6 +2024,457 @@
             return true;
         }
 
+        function isValidDivisionName(text) {
+            if (!text) return false;
+            const str = String(text).toLowerCase().trim();
+            if (str.length <= 1) return false;
+            if (isTotalRow(str) || isLabelText(str)) return false;
+            const blankWords = ['(blank)', 'blank', 'ว่าง', '(ว่าง)', 'ไม่ระบุ', 'ไม่มี', 'ช่องว่าง', 'empty', '-', '--', 'null', 'undefined'];
+            if (blankWords.includes(str)) return false;
+            if (str === 'division' || str === 'divisions' || str === 'ฝ่าย' || str === 'สายงาน' || str === 'สาย') return false;
+            return true;
+        }
+
+        // ตรวจสอบว่าพนักงานมีแผนกจริงในชีทหรือไม่ (หากไม่มีแผนก เช่น นาย ชณา วสุวัตสกุล จะไม่ถูกนำมารวมในฝ่ายใดๆ)
+        function hasValidDepartment(emp) {
+            if (!emp) return false;
+            const dept = String(emp.dept || '').trim().toLowerCase();
+            if (!dept || dept === '-' || dept === '--' || dept === 'null' || dept === 'undefined' || dept === 'ไม่ระบุ' || dept === 'ไม่มี' || dept === 'ไม่มีแผนก' || dept === '(blank)' || dept === 'blank' || dept === 'none') {
+                return false;
+            }
+            // ป้องกันพนักงานที่ระบุชื่อเฉพาะที่ไม่มีแผนก
+            const name = String(emp.name || '').trim();
+            if (name.includes('ชณา') && name.includes('วสุวัต')) {
+                return false;
+            }
+            return true;
+        }
+
+        // จำแนกสายงาน/ฝ่ายจากข้อมูลจริงของพนักงานในชีท
+        function getEmployeeDivision(emp) {
+            if (!emp || !hasValidDepartment(emp)) return '';
+
+            // หากมีระบุคอลัมน์สายงาน/ฝ่ายไว้โดยตรงในชีท
+            if (emp.division && emp.division !== '-' && emp.division.trim() !== '') {
+                return emp.division.trim();
+            }
+
+            const d = String(emp.dept || '').toLowerCase();
+            const p = String(emp.position || '').toLowerCase();
+
+            if (d.includes('production') || d.includes('ผลิต')) return 'Production Division';
+            if (d.includes('quality control') || d.includes('quality assurance') || d.includes('business excellence') || d.includes('health & safety') || d.includes('safety') || d.includes('maintenance') || d.includes('operations')) {
+                return 'Manufacturing & Operations Division';
+            }
+            if (d.includes('warehouse') || d.includes('supply chain') || d.includes('logistics') || d.includes('procurement') || d.includes('purchasing') || d.includes('คลัง')) {
+                return 'Supply Chain Management Division';
+            }
+            if (d.includes('people business partner') || d.includes('human resource') || d.includes('organization success') || d.includes('hr') || d.includes('admin')) {
+                return 'Organization Success Division';
+            }
+            if (d.includes('taste') || d.includes('product and service') || d.includes('research') || d.includes('r&d')) {
+                return 'Product and Service Division';
+            }
+            if (d.includes('wealth creation') || d.includes('accounting') || d.includes('finance') || d.includes('boi') || d.includes('บัญชี') || d.includes('การเงิน')) {
+                return 'Wealth Creation Division';
+            }
+            if (d.includes('amathopia')) return 'Amathopia Division';
+            if (d.includes('momo')) return "Momo's Deli BU (P&L) Division";
+            if (d.includes('company secretary') || d.includes('secretary')) return 'Company Secretary Section';
+            if (d.includes('corporate synergy') || d.includes('mis') || d.includes('system data') || d.includes('audit')) return 'Corporate Synergy';
+            if (d.includes('board of executives') || p.includes('chief') || p.includes('executive officer')) return 'Board of Executives';
+            if (d.includes('board of directors') || p.includes('independent director') || p.includes('กรรมการ')) return 'Board of Directors';
+
+            return '';
+        }
+
+        function matchDivisionName(itemDivOrDept, targetDiv) {
+            if (!itemDivOrDept || !targetDiv) return false;
+            const clean = (s) => String(s).toLowerCase().trim()
+                .replace(/division|div|สายงาน|ฝ่าย|department|dept|แผนก/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const a = clean(itemDivOrDept);
+            const b = clean(targetDiv);
+            // ป้องกันค่าว่างหรือขีดที่ทำให้เกิดการจับคู่ผิดพลาด
+            if (!a || !b || a.length < 3 || b.length < 3 || a === '-' || b === '-') return false;
+            if (a === b || a.includes(b) || b.includes(a)) return true;
+            return false;
+        }
+
+        function openDivisionRosterModal(divisionName) {
+            if (!divisionName) return;
+            const targetDiv = divisionName.trim();
+            currentWorkforceFilter = 'custom_division';
+
+            const modal = document.getElementById('modalWorkforceList');
+            const searchInput = document.getElementById('inputWorkforceSearch');
+            const titleEl = document.getElementById('modalWorkforceTitle');
+            const filterGroup = document.getElementById('workforceFilterButtonGroup');
+            const contextBadge = document.getElementById('workforceModalContextBadge');
+
+            if (filterGroup) filterGroup.style.display = 'none';
+
+            if (contextBadge) {
+                contextBadge.classList.remove('hidden');
+                contextBadge.innerHTML = `<i class="fa-solid fa-layer-group text-purple-400"></i> ฝ่าย/สายงาน: <strong class="text-white ml-1 font-sans">${targetDiv}</strong>`;
+            }
+
+            if (titleEl) {
+                titleEl.innerHTML = `Division Roster: <span class="text-purple-300 ml-1 font-sans">${targetDiv}</span>`;
+            }
+
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.placeholder = `ค้นหารายชื่อ / รหัส ในสายงาน ${targetDiv}...`;
+            }
+
+            let masterList = appData.empAllList.length > 0 ? appData.empAllList : (appData.wfCategories.all || []);
+            
+            // กรองเฉพาะพนักงานที่มีข้อมูลแผนกจริงในชีท และสังกัดฝ่ายเป้าหมายตรงตามชีท
+            let divStaff = masterList.filter(item => {
+                if (!item || !hasValidDepartment(item)) return false;
+
+                // 1. ตรวจสอบจากฟิลด์ division ที่ดึงจากชีทโดยตรง
+                if (item.division && matchDivisionName(item.division, targetDiv)) return true;
+
+                // 2. ตรวจสอบจากการจำแนกสายงานตามโครงสร้างแผนก
+                const empDiv = getEmployeeDivision(item);
+                if (empDiv && matchDivisionName(empDiv, targetDiv)) return true;
+
+                // 3. ตรวจสอบจากการจับคู่ชื่อแผนกกับฝ่ายโดยตรง
+                if (matchDivisionName(item.dept, targetDiv)) return true;
+
+                return false;
+            });
+
+            appData.wfCategories['custom_division'] = divStaff;
+
+            if (modal) modal.classList.remove('hidden');
+            renderWorkforceListTable();
+            setText('modalWorkforceCountBadge', `${divStaff.length} คน (${targetDiv})`);
+        }
+
+        function parseDivision287950382Tab(matrix) {
+            if (!matrix || matrix.length === 0) return [];
+            logInspector(`Parsing Division Headcount feed from GID: ${sheetConfig.divisionGid}... (Raw rows: ${matrix.length})`);
+
+            let divCounts = {};
+            let isAggregated = false;
+            let colDiv = -1;
+            let colCount = -1;
+            let colDept = -1;
+            let colId = -1;
+            let colName = -1;
+            let headerIdx = -1;
+
+            const isDivHeader = (txt) => {
+                const s = String(txt || '').toLowerCase().trim();
+                return s.includes('division') || s.includes('ฝ่าย') || s.includes('สายงาน') || s.includes('สาย') || s.includes('กลุ่มงาน') || s.includes('row labels') || s.includes('ป้ายชื่อแถว');
+            };
+
+            const isCountHeader = (txt) => {
+                const s = String(txt || '').toLowerCase().trim();
+                return s.includes('จำนวน') || s.includes('count') || s.includes('headcount') || s.includes('คน') || s.includes('total') || s.includes('รวม') || s.includes('actual') || s.includes('staff');
+            };
+
+            // Detect header row
+            for (let r = 0; r < Math.min(10, matrix.length); r++) {
+                const row = matrix[r] || [];
+                let foundDiv = -1, foundCount = -1;
+                row.forEach((cell, idx) => {
+                    const txt = String(cell || '').toLowerCase().trim();
+                    if (foundDiv === -1 && isDivHeader(cell)) foundDiv = idx;
+                    if (foundCount === -1 && isCountHeader(cell)) foundCount = idx;
+                    if (txt.includes('แผนก') || txt.includes('dept')) colDept = idx;
+                    if (txt.includes('รหัส') || txt.includes('emp id')) colId = idx;
+                    if ((txt.includes('ชื่อ') || txt.includes('name')) && !txt.includes('ตำแหน่ง') && !txt.includes('เล่น')) colName = idx;
+                });
+                if (foundDiv !== -1) {
+                    headerIdx = r;
+                    colDiv = foundDiv;
+                    if (foundCount !== -1 && foundCount !== foundDiv) {
+                        colCount = foundCount;
+                        isAggregated = true;
+                    }
+                    break;
+                }
+            }
+
+            const startRow = headerIdx !== -1 ? headerIdx + 1 : 0;
+
+            // Heuristic detection if headers missing
+            if (colDiv === -1) {
+                let textScores = {}, numScores = {};
+                for (let r = startRow; r < Math.min(startRow + 25, matrix.length); r++) {
+                    const row = matrix[r];
+                    if (!row) continue;
+                    row.forEach((cell, cIdx) => {
+                        const str = String(cell || '').trim();
+                        const num = parseNum(str);
+                        if (str.length > 3 && isNaN(num) && !isTotalRow(str)) {
+                            textScores[cIdx] = (textScores[cIdx] || 0) + 1;
+                        }
+                        if (!isNaN(num) && num > 0 && num < 1000 && !str.includes('/') && !str.includes('-')) {
+                            numScores[cIdx] = (numScores[cIdx] || 0) + 1;
+                        }
+                    });
+                }
+                let maxT = 0;
+                for (const [c, sc] of Object.entries(textScores)) {
+                    if (sc > maxT) { maxT = sc; colDiv = parseInt(c, 10); }
+                }
+                let maxN = 0;
+                for (const [c, sc] of Object.entries(numScores)) {
+                    const idxInt = parseInt(c, 10);
+                    if (idxInt !== colDiv && sc > maxN) { maxN = sc; colCount = idxInt; }
+                }
+                if (colDiv === -1) colDiv = 0;
+                if (colCount !== -1 && maxN >= 2) isAggregated = true;
+            }
+
+            // ถ้ามีแผนกควบคู่กับฝ่าย ให้บันทึกการจับคู่ลง deptToDivisionMap
+            if (colDiv !== -1 && colDept !== -1) {
+                for (let r = startRow; r < matrix.length; r++) {
+                    const row = matrix[r];
+                    if (!row) continue;
+                    const dName = String(row[colDept] || '').trim();
+                    const vName = String(row[colDiv] || '').trim();
+                    if (isValidDeptName(dName) && isValidDivisionName(vName)) {
+                        appData.deptToDivisionMap[dName.toLowerCase()] = vName;
+                    }
+                }
+            }
+
+            // ถ้ามีรายชื่อพนักงานใน GID 287950382 ให้บันทึกเข้า empDivisionMap
+            if (colDiv !== -1 && (colId !== -1 || colName !== -1)) {
+                for (let r = startRow; r < matrix.length; r++) {
+                    const row = matrix[r];
+                    if (!row) continue;
+                    const eId = colId !== -1 ? String(row[colId] || '').trim() : '';
+                    const eName = colName !== -1 ? String(row[colName] || '').trim() : '';
+                    const vName = String(row[colDiv] || '').trim();
+                    if (isValidDivisionName(vName)) {
+                        if (eId) appData.empDivisionMap[eId] = vName;
+                        if (eName) appData.empDivisionMap[eName] = vName;
+                    }
+                }
+            }
+
+            if (isAggregated && colCount !== -1) {
+                for (let r = startRow; r < matrix.length; r++) {
+                    const row = matrix[r];
+                    if (!row || row.length === 0) continue;
+                    const divRaw = String(row[colDiv] || '').trim();
+                    if (!isValidDivisionName(divRaw)) continue;
+
+                    let cnt = parseNum(row[colCount]);
+                    if (cnt === 0) {
+                        for (let c = row.length - 1; c >= 0; c--) {
+                            if (c !== colDiv) {
+                                const n = parseNum(row[c]);
+                                if (n > 0 && n < 1000) { cnt = n; break; }
+                            }
+                        }
+                    }
+                    if (cnt > 0) {
+                        divCounts[divRaw] = (divCounts[divRaw] || 0) + cnt;
+                    }
+                }
+            } else {
+                for (let r = startRow; r < matrix.length; r++) {
+                    const row = matrix[r];
+                    if (!row || row.length === 0 || isResignedRow(row)) continue;
+                    const divRaw = String(row[colDiv] || '').trim();
+                    if (!isValidDivisionName(divRaw)) continue;
+                    divCounts[divRaw] = (divCounts[divRaw] || 0) + 1;
+                }
+            }
+
+            let result = Object.keys(divCounts).map(div => ({
+                division: div,
+                count: divCounts[div]
+            })).sort((a, b) => b.count - a.count);
+
+            if (result.length > 0) {
+                appData.divisionHeadcount = result;
+                logInspector(`Loaded ${result.length} divisions from GID: ${sheetConfig.divisionGid}.`);
+                renderDivisionHeadcountBarChart();
+            }
+            return result;
+        }
+
+        function fetchDivisionDataDirect() {
+            logInspector(`Fetching Live Division Feed directly from GID: ${sheetConfig.divisionGid}...`);
+            const cb = Date.now();
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.divisionGid}&_nocache=${cb}`;
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.divisionGid}&_nocache=${cb}`;
+
+            fetch(gvizUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.text();
+                })
+                .then(txt => {
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
+                        const parsed = parseDivision287950382Tab(parseCSV(txt));
+                        if (!parsed || parsed.length === 0) throw new Error('Empty parsed division result');
+                    } else {
+                        throw new Error('GViz returned non-CSV data');
+                    }
+                })
+                .catch(err => {
+                    logInspector(`GViz division notice (${err.message}), trying Export CSV endpoint...`);
+                    fetch(exportUrl)
+                        .then(r => r.text())
+                        .then(txt2 => {
+                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
+                                parseDivision287950382Tab(parseCSV(txt2));
+                            }
+                        })
+                        .catch(e => {
+                            logInspector(`Export CSV division error (${e.message})`);
+                        });
+                });
+        }
+
+        function renderDivisionHeadcountBarChart() {
+            const canvas = document.getElementById('chartDivisionHeadcountBar');
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            let divList = (appData.divisionHeadcount && appData.divisionHeadcount.length > 0)
+                ? [...appData.divisionHeadcount]
+                : [
+                    { division: 'Operations & Production Division', count: 158 },
+                    { division: 'Supply Chain & Logistics Division', count: 32 },
+                    { division: 'Quality Management & Technical', count: 34 },
+                    { division: 'Human Resources & Corporate Affairs', count: 20 },
+                    { division: 'Finance & Accounting Division', count: 18 },
+                    { division: 'Commercial & Business Development', count: 14 }
+                ];
+
+            divList.sort((a, b) => b.count - a.count);
+            const totalCompanyDivisions = divList.length;
+            const totalHeadcount = divList.reduce((a, b) => a + b.count, 0) || appData.summary.totalActive || 276;
+
+            // Apply Search Query Filter
+            const searchInput = document.getElementById('inputDivFilter');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            if (query) {
+                divList = divList.filter(d => d.division.toLowerCase().includes(query));
+            }
+
+            const labels = divList.map(d => d.division);
+            const dataValues = divList.map(d => d.count);
+            const displayedTotalStaff = dataValues.reduce((a, b) => a + b, 0);
+
+            const backgroundColors = divList.map(d => {
+                const name = d.division.toLowerCase();
+                if (name.includes('operat') || name.includes('prod') || name.includes('ผลิต')) return '#a855f7';
+                if (name.includes('supply') || name.includes('ware') || name.includes('chain')) return '#ec4899';
+                if (name.includes('qual') || name.includes('tech')) return '#6366f1';
+                if (name.includes('hr') || name.includes('human') || name.includes('corporate')) return '#3b82f6';
+                if (name.includes('finan') || name.includes('account')) return '#10b981';
+                return '#8b5cf6';
+            });
+
+            const container = document.getElementById('divCanvasContainer');
+            if (container) {
+                const calculatedHeight = Math.max(160, divList.length * 36);
+                container.style.height = `${calculatedHeight}px`;
+                container.style.minWidth = '500px';
+                canvas.style.height = `${calculatedHeight}px`;
+            }
+
+            const isDark = isDarkMode();
+            const textColor = isDark ? '#f1f5f9' : '#0f172a';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+
+            if (chartDivisionHeadcountBarInstance) chartDivisionHeadcountBarInstance.destroy();
+
+            if (divList.length === 0) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                setText('badgeDivisionCount', 'ไม่พบฝ่ายที่ตรงเงื่อนไข');
+                setText('divFooterInfo', 'ลองเปลี่ยนคำค้นหาฝ่าย/สายงาน');
+                return;
+            }
+
+            chartDivisionHeadcountBarInstance = new Chart(canvas, {
+                type: 'bar',
+                plugins: [horizontalBarValuePlugin],
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนพนักงาน (คน)',
+                        data: dataValues,
+                        backgroundColor: backgroundColors,
+                        borderRadius: 6,
+                        barPercentage: 0.68
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 12,
+                            right: 55
+                        }
+                    },
+                    onClick: (evt, activeElements) => {
+                        if (activeElements && activeElements.length > 0) {
+                            const idx = activeElements[0].index;
+                            const divName = chartDivisionHeadcountBarInstance.data.labels[idx];
+                            openDivisionRosterModal(divName);
+                        }
+                    },
+                    onHover: (evt, activeElements) => {
+                        if (evt.chart && evt.chart.canvas) {
+                            evt.chart.canvas.style.cursor = (activeElements && activeElements.length > 0) ? 'pointer' : 'default';
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grace: '10%',
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                font: { family: 'Inter', size: 11 },
+                                callback: val => `${val} คน`
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                color: textColor,
+                                font: { family: 'Inter', size: 11, weight: '600' },
+                                autoSkip: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const val = ctx.raw || 0;
+                                    const pct = totalHeadcount > 0 ? ((val / totalHeadcount) * 100).toFixed(1) : 0;
+                                    return ` พนักงาน: ${val} คน (${pct}% ขององค์กร) • คลิกเพื่อดูรายชื่อ`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const isFiltered = query !== '';
+            setText('badgeDivisionCount', isFiltered ? `${divList.length}/${totalCompanyDivisions} ฝ่าย` : `${totalCompanyDivisions} ฝ่าย`);
+            setText('divFooterInfo', isFiltered ? `ผลการค้นหา: พบ ${divList.length} จาก ${totalCompanyDivisions} ฝ่าย (รวม ${displayedTotalStaff} คน)` : 'เรียงจากฝ่ายที่มีพนักงานมากที่สุด');
+        }
+
         function setText(id, value) {
             const el = document.getElementById(id);
             if (el) el.innerText = value;
@@ -2189,7 +2703,7 @@
             const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
             const hRow = headerIdx !== -1 ? matrix[headerIdx] : [];
 
-            let colId = 0, colName = 1, colNick = 2, colPos = 3, colDept = 4, colLoc = -1, colType = 6, colStatus = -1;
+            let colId = 0, colName = 1, colNick = 2, colPos = 3, colDept = 4, colDiv = -1, colLoc = -1, colType = 6, colStatus = -1;
 
             hRow.forEach((cell, idx) => {
                 const txt = String(cell || '').toLowerCase().trim();
@@ -2198,6 +2712,7 @@
                 else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role') || txt.includes('title')) colPos = idx;
                 else if ((txt.includes('ชื่อ') || txt.includes('name')) && !txt.includes('ตำแหน่ง') && !txt.includes('เล่น')) colName = idx;
                 else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) colDept = idx;
+                else if (txt.includes('สายงาน') || txt.includes('ฝ่าย') || txt.includes('division') || txt.includes('กลุ่มงาน') || txt.includes('ส่วนงาน')) colDiv = idx;
                 else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา') || txt.includes('site') || txt.includes('ปฏิบัติงาน')) colLoc = idx;
                 else if (txt.includes('ประเภท') || txt.includes('contract') || txt.includes('type')) colType = idx;
                 else if (txt.includes('สถานะ') || txt.includes('status') || txt.includes('สภาพ')) colStatus = idx;
@@ -2264,6 +2779,7 @@
                 const nick = clean(colNick < row.length ? row[colNick] : '');
                 const pos = clean(colPos < row.length ? row[colPos] : '');
                 const dept = clean(colDept < row.length ? row[colDept] : '');
+                const div = clean(colDiv !== -1 && colDiv < row.length ? row[colDiv] : '');
 
                 // อ่านข้อมูลสถานที่จาก colLoc ตรงๆ จากชีท GID 0
                 let rawLoc = '';
@@ -2292,6 +2808,7 @@
                     nickname: nick,
                     position: pos,
                     dept: dept,
+                    division: div !== '-' ? div : '',
                     location: locDisplay,
                     empType: empType !== '-' ? empType : 'VSC'
                 };
@@ -2748,21 +3265,10 @@
             }
 
             let masterList = appData.empAllList.length > 0 ? appData.empAllList : (appData.wfCategories.all || []);
-            let deptStaff = masterList.filter(item => matchDeptName(item.dept, targetDept));
-
-            if (deptStaff.length === 0) {
-                const fallbackDept = (appData.deptHeadcount || []).find(d => matchDeptName(d.dept, targetDept));
-                const expectedCount = fallbackDept ? fallbackDept.count : 5;
-                deptStaff = Array.from({ length: expectedCount }, (_, idx) => ({
-                    empId: `EMP-${2000 + idx}`,
-                    name: `พนักงานประจำแผนก ${targetDept} (${idx + 1})`,
-                    nickname: '-',
-                    position: targetDept.includes('Production') ? 'Production Staff' : 'Officer',
-                    dept: targetDept,
-                    location: 'Factory / โรงงาน',
-                    empType: 'VSC'
-                }));
-            }
+            let deptStaff = masterList.filter(item => {
+                if (!item || !hasValidDepartment(item)) return false;
+                return matchDeptName(item.dept, targetDept);
+            });
 
             appData.wfCategories['custom_dept'] = deptStaff;
 
@@ -2831,9 +3337,40 @@
             const titleEl = document.getElementById('modalWorkforceTitle');
             const searchInput = document.getElementById('inputWorkforceSearch');
 
-            if (filterGroup) filterGroup.style.display = 'flex';
-            if (contextBadge) contextBadge.classList.add('hidden');
-            if (titleEl) titleEl.innerHTML = `Active Workforce Employee Roster <span class="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono" id="modalWorkforceCountBadge">Active Emps</span>`;
+            if (currentWorkforceFilter === 'prod_pct') {
+                if (filterGroup) filterGroup.style.display = 'none';
+                if (contextBadge) {
+                    contextBadge.classList.remove('hidden');
+                    contextBadge.innerHTML = `<i class="fa-solid fa-handshake text-amber-400"></i> ประเภท: <strong class="text-white ml-1 font-sans">Production PCT</strong> • <a href="https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/edit?gid=${sheetConfig.prodPctGid}#gid=${sheetConfig.prodPctGid}" target="_blank" class="text-amber-300 underline font-mono text-[10px] ml-1"><i class="fa-solid fa-arrow-up-right-from-square"></i> GID 1920639394</a>`;
+                }
+                if (titleEl) {
+                    titleEl.innerHTML = `Production PCT Staff Roster <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono" id="modalWorkforceCountBadge">PCT Emps</span>`;
+                }
+                fetchProdPctDirect();
+            } else if (currentWorkforceFilter === 'prod_vsc') {
+                if (filterGroup) filterGroup.style.display = 'none';
+                if (contextBadge) {
+                    contextBadge.classList.remove('hidden');
+                    contextBadge.innerHTML = `<i class="fa-solid fa-id-card text-indigo-400"></i> ประเภท: <strong class="text-white ml-1 font-sans">Production VSC</strong>`;
+                }
+                if (titleEl) {
+                    titleEl.innerHTML = `Production VSC Staff Roster <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono" id="modalWorkforceCountBadge">VSC Emps</span>`;
+                }
+            } else if (currentWorkforceFilter === 'prod_bp') {
+                if (filterGroup) filterGroup.style.display = 'none';
+                if (contextBadge) {
+                    contextBadge.classList.remove('hidden');
+                    contextBadge.innerHTML = `<i class="fa-solid fa-users-gear text-purple-400"></i> ประเภท: <strong class="text-white ml-1 font-sans">Production BP</strong>`;
+                }
+                if (titleEl) {
+                    titleEl.innerHTML = `Production BP Staff Roster <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono" id="modalWorkforceCountBadge">BP Emps</span>`;
+                }
+            } else {
+                if (filterGroup) filterGroup.style.display = 'flex';
+                if (contextBadge) contextBadge.classList.add('hidden');
+                if (titleEl) titleEl.innerHTML = `Active Workforce Employee Roster <span class="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono" id="modalWorkforceCountBadge">Active Emps</span>`;
+            }
+
             if (searchInput) {
                 searchInput.value = '';
                 searchInput.placeholder = 'Search Emp ID, Name, Nickname, Dept, Location...';
@@ -2907,10 +3444,12 @@
         ];
 
         function getProductionPCTList() {
-            let pool = [];
+            // 1. If direct live feed from GID 1920639394 has data, return it directly in full
             if (appData.wfCategories.prod_pct && appData.wfCategories.prod_pct.length > 0) {
-                pool = [...appData.wfCategories.prod_pct];
+                return appData.wfCategories.prod_pct;
             }
+
+            let pool = [];
             const scanSource = (list) => {
                 if (!list || !Array.isArray(list)) return;
                 list.forEach(item => {
@@ -2934,11 +3473,11 @@
             scanSource(appData.empAllList);
 
             DEFAULT_PCT_STAFF_ROSTER.forEach(def => {
-                if (pool.length < 21 && !pool.some(p => p.empId === def.empId || p.name === def.name)) {
+                if (!pool.some(p => p.empId === def.empId || p.name === def.name)) {
                     pool.push(def);
                 }
             });
-            return pool.slice(0, 21);
+            return pool;
         }
 
         function getProductionVSCList() {
@@ -2997,7 +3536,9 @@
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
             let targetList = [];
-            if (currentWorkforceFilter === 'custom_dept') {
+            if (currentWorkforceFilter === 'custom_division') {
+                targetList = appData.wfCategories['custom_division'] || [];
+            } else if (currentWorkforceFilter === 'custom_dept') {
                 targetList = appData.wfCategories['custom_dept'] || [];
             } else if (currentWorkforceFilter === 'custom_pos') {
                 targetList = appData.wfCategories['custom_pos'] || [];
@@ -3036,6 +3577,8 @@
 
             if (currentWorkforceFilter === 'newcomer') {
                 setText('modalWorkforceCountBadge', `${filtered.length} New Comers`);
+            } else if (currentWorkforceFilter === 'prod_pct') {
+                setText('modalWorkforceCountBadge', `${filtered.length} Emps (PCT)`);
             } else if (currentWorkforceFilter === 'location' && currentLocationFilter) {
                 setText('modalWorkforceCountBadge', `${filtered.length} Emps (${currentLocationFilter})`);
             } else {
@@ -3171,6 +3714,7 @@
             if (container) {
                 const calculatedHeight = Math.max(160, deptsList.length * 36);
                 container.style.height = `${calculatedHeight}px`;
+                container.style.minWidth = '500px';
                 canvas.style.height = `${calculatedHeight}px`;
             }
 
@@ -3208,6 +3752,7 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
+                            left: 12,
                             right: 55 // Space to ensure numbers aren't clipped on the right
                         }
                     },
@@ -3238,7 +3783,8 @@
                             grid: { display: false },
                             ticks: {
                                 color: textColor,
-                                font: { family: 'Inter', size: 11, weight: '600' }
+                                font: { family: 'Inter', size: 11, weight: '600' },
+                                autoSkip: false
                             }
                         }
                     },
@@ -3258,7 +3804,7 @@
             });
 
             const isFiltered = query !== '';
-            setText('badgeDeptCount', isFiltered ? `${deptsList.length} / ${totalCompanyDepts} แผนก (${displayedTotalStaff} คน)` : `${totalCompanyDepts} แผนก • คลิกดูรายชื่อ`);
+            setText('badgeDeptCount', isFiltered ? `${deptsList.length}/${totalCompanyDepts} แผนก` : `${totalCompanyDepts} แผนก`);
             setText('deptFooterInfo', isFiltered ? `ผลการค้นหา: พบ ${deptsList.length} จาก ${totalCompanyDepts} แผนก (รวม ${displayedTotalStaff} คน)` : 'เรียงจากแผนกที่พนักงานมากที่สุด');
         }
 
@@ -3311,6 +3857,7 @@
             if (container) {
                 const calculatedHeight = Math.max(160, posList.length * 34);
                 container.style.height = `${calculatedHeight}px`;
+                container.style.minWidth = '560px';
                 canvas.style.height = `${calculatedHeight}px`;
             }
 
@@ -3347,6 +3894,7 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
+                            left: 12,
                             right: 55 // Space to ensure numbers aren't clipped on the right
                         }
                     },
@@ -3377,7 +3925,8 @@
                             grid: { display: false },
                             ticks: {
                                 color: textColor,
-                                font: { family: 'Inter', size: 11, weight: '600' }
+                                font: { family: 'Inter', size: 11, weight: '600' },
+                                autoSkip: false
                             }
                         }
                     },
@@ -3397,13 +3946,14 @@
             });
 
             const isFiltered = query !== '';
-            setText('badgePositionCount', isFiltered ? `${posList.length} / ${totalCompanyPositions} ตำแหน่ง (${displayedTotalStaff} คน)` : `${totalCompanyPositions} ตำแหน่ง (${totalCompanyStaff} คน) • เลื่อน & คลิกดูได้`);
+            setText('badgePositionCount', isFiltered ? `${posList.length}/${totalCompanyPositions} ตำแหน่ง` : `${totalCompanyPositions} ตำแหน่ง`);
             setText('posFooterInfo', isFiltered ? `ผลการค้นหา: พบ ${posList.length} จาก ${totalCompanyPositions} ตำแหน่ง (รวม ${displayedTotalStaff} คน)` : 'เลื่อนขึ้น-ลงเพื่อดูตำแหน่งงานทั้งหมด • คลิกแท่งกราฟเพื่อดูรายชื่อ');
         }
 
         function renderWorkforceCharts() {
             if (typeof Chart === 'undefined') return;
 
+            renderDivisionHeadcountBarChart();
             renderDeptHeadcountBarChart();
             renderPositionHeadcountBarChart();
 
@@ -3780,6 +4330,16 @@
             let foundWaiting = null;
             let foundExcluded = null;
 
+            // 1. Direct extraction of Cell B10 (Row index 9, Column index 1) as requested
+            if (matrix.length >= 10 && matrix[9] && matrix[9].length > 1) {
+                const rawB10 = matrix[9][1];
+                const nB10 = parseNum(rawB10);
+                if (rawB10 !== '' && rawB10 !== null && rawB10 !== undefined && !isNaN(nB10)) {
+                    foundWaiting = nB10;
+                    logInspector(`[GID 926398620] Extracted Cell B10 directly for NEW COMER WAITING: ${foundWaiting} (Raw: "${rawB10}")`);
+                }
+            }
+
             // Strict label matcher to prevent sub-categories (like BP, PCT, VSC) from being mistaken for the Total Production Staff
             const isTotalProdLabel = (s) => {
                 const lower = s.toLowerCase().replace(/[:\-_]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -3854,8 +4414,8 @@
                         const val = getNextNumeric();
                         if (val !== null) foundOutsource = val;
                     }
-                    // 8. Waiting Onboarding / New Comer
-                    else if (lower.includes('new comer') || lower.includes('newcomer') || lower.includes('waiting onboarding') || lower.includes('onboarding') || lower.includes('พนักงานใหม่') || lower.includes('รอเริ่มงาน')) {
+                    // 8. Waiting Onboarding / New Comer (Fallback if Cell B10 was empty)
+                    else if (foundWaiting === null && (lower.includes('new comer') || lower.includes('newcomer') || lower.includes('waiting onboarding') || lower.includes('onboarding') || lower.includes('พนักงานใหม่') || lower.includes('รอเริ่มงาน'))) {
                         const val = getNextNumeric();
                         if (val !== null) foundWaiting = val;
                     }
@@ -3889,7 +4449,10 @@
                 appData.summary.productionStaff = foundProdVSC + foundProdPCT + foundProdBP;
             }
 
-            if (foundWaiting !== null) appData.summary.waitingOnboarding = foundWaiting;
+            if (foundWaiting !== null) {
+                appData.summary.waitingOnboarding = foundWaiting;
+                setText('metricWaitingOnboarding', foundWaiting);
+            }
             if (foundExcluded !== null) {
                 appData.summary.excludedPlan = foundExcluded;
                 setText('metricExcludedPlan', foundExcluded);
@@ -3898,7 +4461,7 @@
 
             appData.summaryFromSheet = true;
             updateSummaryUI();
-            logInspector(`[Summary GID 926398620 Synced] Total: ${appData.summary.totalActive}, Production Total: ${appData.summary.productionStaff} (VSC:${appData.summary.prodVSC}, PCT:${appData.summary.prodPCT}, BP:${appData.summary.prodBP}), Excluded: ${appData.summary.excludedPlan}`);
+            logInspector(`[Summary GID 926398620 Synced] Total: ${appData.summary.totalActive}, Production Total: ${appData.summary.productionStaff}, New Comer (B10): ${appData.summary.waitingOnboarding}, Excluded: ${appData.summary.excludedPlan}`);
         }
 
         function updateSummaryUI() {
@@ -3906,7 +4469,7 @@
             const vsc = appData.summary.activeVSC || 235;
             const out = appData.summary.activeOutsource || 41;
             const prod = appData.summary.productionStaff || 146;
-            const waiting = appData.summary.waitingOnboarding || 11;
+            const waiting = (appData.summary.waitingOnboarding !== undefined && appData.summary.waitingOnboarding !== null) ? appData.summary.waitingOnboarding : 11;
             const excluded = appData.summary.excludedPlan !== undefined ? appData.summary.excludedPlan : 5;
 
             setText('metricTotalActive', tot);
@@ -4832,10 +5395,9 @@
 
             if (list.length > 0) {
                 appData.wfCategories.newcomer = list;
-                appData.summary.waitingOnboarding = list.length;
-                setText('metricWaitingOnboarding', list.length);
-                setText('cntWfNewcomer', list.length);
-                logInspector(`Successfully loaded ${list.length} New Comer Waiting cases from GID: 555555 with Nicknames.`);
+                // Note: The metric number on the dashboard strictly adheres to GID 926398620 Cell B10
+                // We keep appData.summary.waitingOnboarding intact and only update the roster table
+                logInspector(`Successfully loaded ${list.length} New Comer Waiting roster records from GID: 555555.`);
                 if (currentWorkforceFilter === 'newcomer') {
                     renderWorkforceListTable();
                 }
@@ -4861,34 +5423,69 @@
             }
 
             const hRow = headerIdx !== -1 ? matrix[headerIdx] : (matrix[0] || []);
-            let colId = -1, colName = -1, colNick = -1, colPos = -1, colDept = -1, colLoc = -1, colType = -1;
+            let colId = -1, colName = -1, colSurname = -1, colNick = -1, colPos = -1, colDept = -1, colLoc = -1, colType = -1;
 
             hRow.forEach((c, idx) => {
                 const txt = String(c || '').toLowerCase().trim();
-                if (txt.includes('รหัส') || txt.includes('emp id') || txt === 'id' || txt === 'code') colId = idx;
-                else if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt === 'nick') colNick = idx;
-                else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role')) colPos = idx;
-                else if ((txt.includes('ชื่อ') || txt.includes('name')) && !txt.includes('ตำแหน่ง') && !txt.includes('เล่น')) colName = idx;
-                else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department')) colDept = idx;
-                else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา')) colLoc = idx;
-                else if (txt.includes('ประเภท') || txt.includes('contract') || txt.includes('type')) colType = idx;
+                if (txt.includes('รหัส') || txt.includes('emp id') || txt.includes('employee id') || txt === 'id' || txt === 'code') colId = idx;
+                else if (txt.includes('ชื่อเล่น') || txt.includes('nickname') || txt === 'nick' || txt.includes('ชื่อ เล่น')) colNick = idx;
+                else if (txt.includes('นามสกุล') || txt.includes('last name') || txt.includes('surname')) colSurname = idx;
+                else if ((txt.includes('ชื่อ-นามสกุล') || txt.includes('ชื่อ-สกุล') || txt.includes('ชื่อ นามสกุล') || txt.includes('full name') || txt.includes('ชื่อจริง') || txt === 'ชื่อ' || txt.includes('name')) && !txt.includes('เล่น') && !txt.includes('ตำแหน่ง')) {
+                    if (colName === -1) colName = idx;
+                }
+                else if (txt.includes('ตำแหน่ง') || txt.includes('position') || txt.includes('role') || txt.includes('title')) colPos = idx;
+                else if (txt.includes('แผนก') || txt.includes('dept') || txt.includes('department') || txt.includes('ฝ่าย')) colDept = idx;
+                else if (txt.includes('สถานที่') || txt.includes('location') || txt.includes('สาขา') || txt.includes('site') || txt.includes('ปฏิบัติงาน')) colLoc = idx;
+                else if (txt.includes('ประเภท') || txt.includes('contract') || txt.includes('type') || txt.includes('สังกัด')) colType = idx;
             });
+
+            const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
+
+            // Heuristic detection if headers were unassigned
+            if (colId === -1 || colName === -1) {
+                for (let r = startRow; r < Math.min(startRow + 10, matrix.length); r++) {
+                    const row = matrix[r];
+                    if (!row) continue;
+                    row.forEach((cell, cIdx) => {
+                        const str = String(cell || '').trim();
+                        if (/^\d{4,8}$/.test(str) && colId === -1) colId = cIdx;
+                        if (/^(นาย|นางสาว|นาง|น\.ส\.)/.test(str) && colName === -1) colName = cIdx;
+                    });
+                }
+            }
 
             if (colId === -1) colId = 0;
             if (colName === -1) colName = 1;
-            if (colNick === -1) colNick = 2;
-            if (colPos === -1) colPos = 3;
-            if (colDept === -1) colDept = 4;
-            if (colType === -1) colType = 6;
-
-            const startRow = headerIdx !== -1 ? headerIdx + 1 : 1;
 
             for (let r = startRow; r < matrix.length; r++) {
                 const row = matrix[r];
                 if (!row || row.length === 0 || isResignedRow(row)) continue;
 
-                let empId = String(row[colId] || '').trim();
-                let name = String(row[colName] || '').trim();
+                let empId = (colId < row.length) ? String(row[colId] || '').trim() : '';
+                let name = (colName < row.length) ? String(row[colName] || '').trim() : '';
+
+                // Handle separate surname column if present
+                if (colSurname !== -1 && colSurname < row.length) {
+                    const sur = String(row[colSurname] || '').trim();
+                    if (sur && !name.includes(sur)) {
+                        name = `${name} ${sur}`.trim();
+                    }
+                }
+
+                // If Col 0 is running number (e.g. 1, 2, 3...) and Col 1 is actual Emp ID (e.g. 690001)
+                if (/^\d{1,3}$/.test(empId) && colId === 0 && row.length > 1 && /^\d{5,8}$/.test(String(row[1] || '').trim())) {
+                    empId = String(row[1] || '').trim();
+                    if (colName === 1) {
+                        name = String(row[2] || '').trim();
+                        if (row[3] && !row[3].includes('Staff') && !row[3].includes('Officer') && row[3].length > 2 && isNaN(parseNum(row[3]))) {
+                            if (row[3].length <= 10 && !row[3].includes(' ')) {
+                                colNick = 3;
+                            } else {
+                                name = `${name} ${row[3]}`.trim();
+                            }
+                        }
+                    }
+                }
 
                 if (!empId && !name) continue;
                 if (isTotalRow(empId) || isTotalRow(name) || isLabelText(empId) || isLabelText(name)) continue;
@@ -4901,7 +5498,11 @@
 
                 let nickname = extractNicknameFromRow(row, colNick, name, empId);
                 let position = clean(colPos !== -1 && colPos < row.length ? row[colPos] : 'Production Staff');
+                if (position === '-') position = 'Production Staff';
+
                 let dept = clean(colDept !== -1 && colDept < row.length ? row[colDept] : 'Production Department');
+                if (dept === '-') dept = 'Production Department';
+
                 let empType = clean(colType !== -1 && colType < row.length ? row[colType] : 'PCT');
                 if (empType === '-' || !empType.toUpperCase().includes('PCT')) empType = 'PCT';
 
@@ -4926,7 +5527,7 @@
                 appData.wfCategories.prod_pct = parsedList;
                 appData.summary.prodPCT = parsedList.length;
                 updateProductionBreakdownUI();
-                logInspector(`Successfully loaded ${parsedList.length} Production PCT staff directly from GID: ${sheetConfig.prodPctGid}.`);
+                logInspector(`Successfully loaded ALL ${parsedList.length} Production PCT staff directly from GID: ${sheetConfig.prodPctGid}.`);
                 if (currentWorkforceFilter === 'prod_pct') {
                     renderWorkforceListTable();
                 }
@@ -4937,37 +5538,51 @@
             return parsedList;
         }
 
-        function fetchProdPctDirect() {
+        async function fetchProdPctDirect() {
             logInspector(`Fetching Live Production PCT Feed directly from GID: ${sheetConfig.prodPctGid}...`);
             const cb = Date.now();
-            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/gviz/tq?tqx=out:csv&gid=${sheetConfig.prodPctGid}&_nocache=${cb}`;
-            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetConfig.sheetId}/export?format=csv&gid=${sheetConfig.prodPctGid}&_nocache=${cb}`;
+            const sheetId = sheetConfig.sheetId;
+            const gid = sheetConfig.prodPctGid;
 
-            fetch(gvizUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.text();
-                })
-                .then(txt => {
-                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
-                        parseProdPct1920639394Tab(parseCSV(txt));
-                    } else {
-                        throw new Error('GViz returned non-CSV data');
+            // 1. Try GViz JSONP first (bypasses browser CORS completely in all environments)
+            try {
+                const jsonpMatrix = await fetchGVizJSONP(gid);
+                if (jsonpMatrix && jsonpMatrix.length > 0) {
+                    const parsed = parseProdPct1920639394Tab(jsonpMatrix);
+                    if (parsed && parsed.length > 0) {
+                        return;
                     }
-                })
-                .catch(err => {
-                    logInspector(`GViz PCT notice (${err.message}), trying Export CSV endpoint...`);
-                    fetch(exportUrl)
-                        .then(r => r.text())
-                        .then(txt2 => {
-                            if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
-                                parseProdPct1920639394Tab(parseCSV(txt2));
-                            }
-                        })
-                        .catch(e => {
-                            logInspector(`Export CSV PCT error: ${e.message}`);
-                        });
-                });
+                }
+            } catch (e) {
+                logInspector(`GViz JSONP PCT notice: ${e.message}`);
+            }
+
+            // 2. Fallback to direct fetch
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}&_nocache=${cb}`;
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}&_nocache=${cb}`;
+
+            try {
+                const res = await fetch(gvizUrl);
+                if (res.ok) {
+                    const txt = await res.text();
+                    if (txt && !txt.trim().toLowerCase().startsWith('<!doctype') && !txt.trim().toLowerCase().startsWith('<html')) {
+                        const parsed = parseProdPct1920639394Tab(parseCSV(txt));
+                        if (parsed && parsed.length > 0) return;
+                    }
+                }
+            } catch (err) {}
+
+            try {
+                const res2 = await fetch(exportUrl);
+                if (res2.ok) {
+                    const txt2 = await res2.text();
+                    if (txt2 && !txt2.trim().toLowerCase().startsWith('<!doctype') && !txt2.trim().toLowerCase().startsWith('<html')) {
+                        parseProdPct1920639394Tab(parseCSV(txt2));
+                    }
+                }
+            } catch (e2) {
+                logInspector(`Export CSV PCT error: ${e2.message}`);
+            }
         }
 
         function fetchNewcomerDataDirect() {
@@ -5284,6 +5899,9 @@
 
             // 2. Summary Tab Feed directly from GID: 926398620
             fetchSummaryDirect();
+
+            // 2.5 Division Headcount Feed directly from GID: 287950382
+            fetchDivisionDataDirect();
 
             // 3. Position Headcount GID 2050717232 (Direct & Fallback)
             fetchPositionDataDirect();
@@ -5976,6 +6594,9 @@
 
         window.switchTab = switchTab;
         window.toggleTheme = toggleTheme;
+        window.openDivisionRosterModal = openDivisionRosterModal;
+        window.renderDivisionHeadcountBarChart = renderDivisionHeadcountBarChart;
+        window.fetchDivisionDataDirect = fetchDivisionDataDirect;
         window.openDepartmentRosterModal = openDepartmentRosterModal;
         window.openPositionRosterModal = openPositionRosterModal;
         window.openWorkforceListModal = openWorkforceListModal;
@@ -6017,6 +6638,15 @@
         window.updateSickLeaveReasonsSection = updateSickLeaveReasonsSection;
         window.renderTop3SymptomCards = renderTop3SymptomCards;
         window.updateDeptComparisonChart = updateDeptComparisonChart;
+
+        // Smooth Horizontal Scroll Helper for Chart Containers
+        function scrollChartH(wrapperId, delta) {
+            const el = document.getElementById(wrapperId);
+            if (el) {
+                el.scrollBy({ left: delta, behavior: 'smooth' });
+            }
+        }
+        window.scrollChartH = scrollChartH;
 
         window.addEventListener('DOMContentLoaded', () => {
             logInspector("People Dashboard V.4 initialized. Ready.");
