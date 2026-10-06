@@ -6680,5 +6680,310 @@
             }, 30000);
         });
     </script>
+
+    <!-- ========================================================================= -->
+    <!-- STANDALONE IIFE: Google Sign-In (@valuesourcing.co) & Eye-Friendly Theme  -->
+    <!-- ========================================================================= -->
+    <script>
+        (function() {
+            'use strict';
+
+            // 1. Config & Constant definitions
+            const GOOGLE_CLIENT_ID = "366252192225-qg2t566uv7hvboneioivo14ud9pp35c9.apps.googleusercontent.com";
+            const ALLOWED_DOMAIN = "@valuesourcing.co";
+            const SESSION_KEY = "vs_corporate_auth_token";
+            const THEME_KEY = "vs_preferred_theme";
+
+            // Ensure GIS script is present in <head>
+            if (!document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+                const gsiScript = document.createElement('script');
+                gsiScript.src = "https://accounts.google.com/gsi/client";
+                gsiScript.async = true;
+                gsiScript.defer = true;
+                document.head.appendChild(gsiScript);
+            }
+
+            // Inject Eye-Friendly Light Mode Style Rules
+            const styleEl = document.createElement('style');
+            styleEl.id = 'vsThemeOverrides';
+            styleEl.textContent = `
+                :root {
+                    --vs-light-bg: #F8F9FA;
+                    --vs-light-surface: #FFFFFF;
+                    --vs-light-panel: rgba(255, 255, 255, 0.95);
+                    --vs-light-text-main: #1F2937;
+                    --vs-light-text-sub: #4B5563;
+                    --vs-light-border: #E5E7EB;
+                }
+                body, header, main, .glass-panel, .glass-card, input, select, button {
+                    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
+                }
+                html:not(.dark) body {
+                    background-color: var(--vs-light-bg) !important;
+                    background-image: 
+                        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+                        radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.04) 0px, transparent 50%),
+                        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%) !important;
+                    color: var(--vs-light-text-main) !important;
+                }
+                html:not(.dark) .glass-panel {
+                    background: var(--vs-light-panel) !important;
+                    border-color: var(--vs-light-border) !important;
+                    color: var(--vs-light-text-main) !important;
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
+                }
+                html:not(.dark) .glass-card {
+                    background: var(--vs-light-surface) !important;
+                    border-color: var(--vs-light-border) !important;
+                    color: var(--vs-light-text-main) !important;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+                }
+                html:not(.dark) .text-white {
+                    color: var(--vs-light-text-main) !important;
+                }
+                html:not(.dark) .text-slate-100,
+                html:not(.dark) .text-slate-200,
+                html:not(.dark) .text-slate-300 {
+                    color: #334155 !important;
+                }
+                html:not(.dark) .text-slate-400,
+                html:not(.dark) .text-slate-500 {
+                    color: var(--vs-light-text-sub) !important;
+                }
+                html:not(.dark) .bg-slate-900,
+                html:not(.dark) .bg-slate-900\\/60,
+                html:not(.dark) .bg-slate-900\\/80,
+                html:not(.dark) .bg-slate-900\\/90,
+                html:not(.dark) .bg-slate-950,
+                html:not(.dark) .bg-slate-950\\/60,
+                html:not(.dark) .bg-slate-950\\/70,
+                html:not(.dark) .bg-slate-950\\/80,
+                html:not(.dark) .bg-slate-950\\/90 {
+                    background-color: #FFFFFF !important;
+                    border-color: var(--vs-light-border) !important;
+                }
+                html:not(.dark) .border-slate-800,
+                html:not(.dark) .border-slate-800\\/80,
+                html:not(.dark) .border-slate-700,
+                html:not(.dark) .border-slate-700\\/60 {
+                    border-color: var(--vs-light-border) !important;
+                }
+            `;
+            document.head.appendChild(styleEl);
+
+            // Inject Floating Controls (Toggle Theme & Logout button)
+            const controlsDiv = document.createElement('div');
+            controlsDiv.id = 'vsFloatingBar';
+            controlsDiv.style.cssText = "position: fixed; top: 1rem; right: 1rem; z-index: 99998; display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif;";
+            controlsDiv.innerHTML = `
+                <button id="vsAuthLogoutBtn" style="display: none; padding: 0.45rem 0.9rem; border-radius: 9999px; background: #E11D48; color: #FFFFFF; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 4px 12px rgba(225,29,72,0.35); cursor: pointer; align-items: center; gap: 0.4rem; transition: all 0.2s ease; backdrop-filter: blur(8px);">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+                <button id="vsThemeToggleBtn" title="สลับโหมด Light / Dark" style="width: 2.35rem; height: 2.35rem; border-radius: 9999px; background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; backdrop-filter: blur(8px);">
+                    <i id="vsThemeToggleIcon" class="fa-solid fa-moon" style="color: #475569;"></i>
+                </button>
+            `;
+            document.body.appendChild(controlsDiv);
+
+            // Inject Fullscreen Auth Overlay
+            const overlayDiv = document.createElement('div');
+            overlayDiv.id = 'vsAuthOverlay';
+            overlayDiv.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; background: rgba(5, 7, 15, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box;";
+            overlayDiv.innerHTML = `
+                <div style="width: 100%; max-width: 26rem; background: #0F172A; border: 1px solid rgba(255,255,255,0.12); border-radius: 1.5rem; padding: 2rem; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); position: relative; overflow: hidden; font-family: 'Inter', 'Kanit', sans-serif;">
+                    <div style="width: 3.5rem; height: 3.5rem; margin: 0 auto 1.25rem; border-radius: 1rem; background: linear-gradient(135deg, #2563EB, #06B6D4); display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 1.5rem; box-shadow: 0 10px 20px rgba(37,99,235,0.35);">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0 0 0.35rem; color: #F8FAFC;">
+                        People Dashboard Authentication
+                    </h2>
+                    <p style="font-size: 0.75rem; margin: 0 0 1.25rem; color: #94A3B8; line-height: 1.5;">
+                        ระบบรายงานอัตรากำลังพลและการลาประจำวันภายในองค์กร
+                    </p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.35); font-size: 0.7rem; font-family: monospace; font-weight: 700; color: #60A5FA; margin-bottom: 1.5rem;">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>สิทธิ์เฉพาะอีเมล ${ALLOWED_DOMAIN} เท่านั้น</span>
+                    </div>
+
+                    <!-- Google Sign-In Button Container -->
+                    <div style="display: flex; justify-content: center; align-items: center; min-height: 48px; margin-bottom: 0.75rem;">
+                        <div id="vsGisBtnContainer"></div>
+                    </div>
+
+                    <!-- Error Alert Box -->
+                    <div id="vsAuthErrorBox" style="display: none; padding: 0.75rem; border-radius: 0.75rem; background: rgba(225,29,72,0.15); border: 1px solid rgba(244,63,94,0.4); color: #FDA4AF; font-size: 0.75rem; text-align: center; margin-top: 0.75rem; line-height: 1.4;">
+                        <div style="font-weight: bold; margin-bottom: 0.2rem;"><i class="fa-solid fa-circle-exclamation"></i> สิทธิ์การเข้าใช้งานถูกปฏิเสธ</div>
+                        <span id="vsAuthErrorText">อนุญาตเฉพาะพนักงาน @valuesourcing.co เท่านั้น</span>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.65rem; color: #64748B;">
+                        Protected by Google Identity Services (GIS SDK)
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlayDiv);
+
+            // 2. JWT Parser Function
+            function decodeGoogleJwt(token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                } catch(e) {
+                    console.error('[GIS Auth] Error decoding credential JWT:', e);
+                    return null;
+                }
+            }
+
+            // 3. Theme Toggle & Persistence
+            function applyTheme(theme) {
+                const icon = document.getElementById('vsThemeToggleIcon');
+                const btn = document.getElementById('vsThemeToggleBtn');
+                if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    if (icon) {
+                        icon.className = 'fa-solid fa-sun';
+                        icon.style.color = '#D97706';
+                    }
+                    if (btn) btn.style.background = '#FFFFFF';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    if (icon) {
+                        icon.className = 'fa-solid fa-moon';
+                        icon.style.color = '#FBBF24';
+                    }
+                    if (btn) btn.style.background = 'rgba(30, 41, 59, 0.85)';
+                }
+                localStorage.setItem(THEME_KEY, theme);
+            }
+
+            function toggleTheme() {
+                const isDark = document.documentElement.classList.contains('dark');
+                applyTheme(isDark ? 'light' : 'dark');
+            }
+
+            // 4. Authentication Logic
+            function unlockDashboard(user) {
+                overlayDiv.style.display = 'none';
+                const logoutBtn = document.getElementById('vsAuthLogoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.style.display = 'flex';
+                    logoutBtn.title = `เข้าสู่ระบบโดย: ${user.email}`;
+                }
+            }
+
+            function handleLogout() {
+                sessionStorage.removeItem(SESSION_KEY);
+                if (window.google && google.accounts && google.accounts.id) {
+                    google.accounts.id.disableAutoSelect();
+                }
+                window.location.reload();
+            }
+
+            function handleGoogleCredential(response) {
+                if (!response || !response.credential) {
+                    showAuthAlert('ไม่สามารถอ่านข้อมูลยืนยันตัวตนได้ กรุณาลองใหม่อีกครั้ง');
+                    return;
+                }
+
+                const payload = decodeGoogleJwt(response.credential);
+                if (!payload || !payload.email) {
+                    showAuthAlert('ไม่พบข้อมูลอีเมลใน Google Account ของคุณ');
+                    return;
+                }
+
+                const email = String(payload.email).toLowerCase().trim();
+
+                // Strict Domain Check (@valuesourcing.co)
+                if (email.endsWith(ALLOWED_DOMAIN)) {
+                    const record = {
+                        email: email,
+                        name: payload.name || email,
+                        sub: payload.sub,
+                        timestamp: Date.now()
+                    };
+                    sessionStorage.setItem(SESSION_KEY, JSON.stringify(record));
+                    unlockDashboard(record);
+                } else {
+                    showAuthAlert(`อนุญาตเฉพาะพนักงาน @valuesourcing.co เท่านั้น (${email} ไม่มีสิทธิ์เข้าถึง)`);
+                    if (window.google && google.accounts && google.accounts.id) {
+                        google.accounts.id.disableAutoSelect();
+                    }
+                }
+            }
+
+            function showAuthAlert(msg) {
+                const errorBox = document.getElementById('vsAuthErrorBox');
+                const errorText = document.getElementById('vsAuthErrorText');
+                if (errorBox && errorText) {
+                    errorText.innerText = msg;
+                    errorBox.style.display = 'block';
+                }
+            }
+
+            // 5. Initialize GIS Sign-In Client
+            function initGIS() {
+                // Check existing session
+                const cached = sessionStorage.getItem(SESSION_KEY);
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        if (parsed && parsed.email && parsed.email.endsWith(ALLOWED_DOMAIN)) {
+                            unlockDashboard(parsed);
+                            return;
+                        }
+                    } catch(e) {
+                        sessionStorage.removeItem(SESSION_KEY);
+                    }
+                }
+
+                // Poll until GIS library is available
+                const pollTimer = setInterval(() => {
+                    if (window.google && google.accounts && google.accounts.id) {
+                        clearInterval(pollTimer);
+
+                        google.accounts.id.initialize({
+                            client_id: GOOGLE_CLIENT_ID,
+                            callback: handleGoogleCredential,
+                            auto_select: false,
+                            cancel_on_tap_outside: false
+                        });
+
+                        const btnTarget = document.getElementById('vsGisBtnContainer');
+                        if (btnTarget) {
+                            google.accounts.id.renderButton(btnTarget, {
+                                theme: 'filled_blue',
+                                size: 'large',
+                                type: 'standard',
+                                shape: 'pill',
+                                text: 'signin_with',
+                                logo_alignment: 'left',
+                                width: 260
+                            });
+                        }
+                    }
+                }, 100);
+            }
+
+            // 6. Bind event listeners
+            document.getElementById('vsThemeToggleBtn').addEventListener('click', toggleTheme);
+            document.getElementById('vsAuthLogoutBtn').addEventListener('click', handleLogout);
+
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            if (savedTheme) {
+                applyTheme(savedTheme);
+            } else {
+                applyTheme('dark');
+            }
+
+            // Start authentication
+            initGIS();
+        })();
+    </script>
 </body>
 </html>
